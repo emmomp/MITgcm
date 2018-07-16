@@ -4,6 +4,262 @@ $Name:  $
     Notes on tags used in MITgcmUV
     ==============================
 
+o pkg/ecco:
+  - Replace "mskTrVol" and "gencost_errfile" with "gencost_mask" in
+    "cost_gencost_transp", mirroring "m_horflux_vol".
+  - Document and warn user (via STDERR) of potential issues with using
+    "cost_gencost_transp" to compute volume, heat, or salt transport.
+
+checkpoint67c (2018/06/26)
+o pkg/generic_advdiff:
+  - Add per tracer run-time param to switch on/off Smolarkiewicz-Hack:
+    Run-time switch for Temp & Salt are set from main param file "data"
+    (default value = FALSE); and for pTracers, they are set from parameter
+    file "data.ptracers" (default value = TRUE).
+  - Add a test in verification exp. global_ocean.90x40x15.down_slope for
+    Smolarkiewicz-Hack (switched on for Salt and pTracer(1)) but results
+    remains unchanged since, in this exp., Salt & pTr(1) are well above 0.
+o pkg/mdsio:
+  - apply same substitution to remaining calls to MDSREADFIELD/MDSWRITEFIELD
+    in pkg/ctrl and in pkg/seaice.
+  - disable the use of obsolete MDSREADFIELD and MDSWRITEFIELD S/R (unless
+    USE_OBSOLETE_MDS_RW_FIELD is defined).
+o pkg/ecco:
+  - replace calls to (obsolete) MDSREADFIELD and MDSWRITEFIELD with calls to
+    pkg/rw S/R: READ_REC_3D_RL and WRITE_REC_3D_RL ; this enable to use pkg/ecco
+    without pkg/autodiff.
+o verification exp:
+  - update few (10) adm & tlm output after latest TAF update, from version 3.9.0
+    to version 3.9.6 on May 16-18.
+
+checkpoint67b (2018/05/05)
+o pkg/exf/exf_wind.F:
+  - fix a bug detected by Stanislav Martyanov: replace wStress by SQRT(wStress)
+    in computing ustar ; this bug does not appear to affect the verification
+    experiments but has been around for a while (inherited from the ecco-branch)
+o pkg/seaice:
+  - new run-time parameter to skip the update of ocean surface stress ; could be
+    useful for testing or when seaice-dynamics is off (add a warning otherwise).
+
+checkpoint67a (2018/03/10)
+o pkg/layers
+  - add Moist Static Energy coordinate in layers package
+o pkg/aim_v23:
+  - change parameter "aim_abs_pCO2" default value (used if aim_select_pCO2=1,3)
+    to calibrated value (from David Ferreira).
+o pkg/layers
+  - fixed up units reported in diagnostics for THETA and SALT term induced layer
+    thickness changes.
+o pkg/seaice:
+  - move wind-stress over seaice out of SEAICE.h into local seaice_dynsolver.F
+    common block ; move initialisation of TAUX & TAUY accordingly and add them
+    to argument list of S/R SEAICE_OCEAN_STRESS (like SEAICE_GET_DYNFORCING).
+    This enable to remove CPP option "SEAICE_EXCLUDE_WIND_STRESS" (hack from
+    June 2016) in pkg/dic/dic_fields_update.F
+o doc:
+  - first addition of reST/sphinx documentation (formerly in
+    https://github.com/altMITgcm/MITgcm/doc/), converted from original MITgcm
+    LaTeX manual in: https://github.com/MITgcm/manual-archive with edits
+    (including new sections) from @jrscott and @edoddridge ;
+  - update section on Ocean State Estimation packages by @gaelforget ;
+  - updated seaice pkg description by @mjlosch.
+
+checkpoint67 (2018/02/05)
+o add Sphinx configuration for documentation on https://mitgcm.readthedocs.io
+o add Travis configuration for testing pull requests
+o migrate from CVS to Git (2018/01/31)
+
+checkpoint66o (2018/01/30)
+  => Final CVS tag ; disable CVS check-in.
+
+checkpoint66n (2018/01/18)
+o pkg/seaice & down_slope:
+  - remove few files from ${pkg}_ad_diff.list (when calling S/R is not in
+    any *_ad_diff.list)
+o pkg/shelfice:
+  - account for "shelficeLoadAnomaly" in computation of initial pressure
+    that is used in EOS (case selectP_inEOS_Zc >= 2).
+o pkg/aim_v23:
+  - merge namelist "AIM_PAR_CO2" into "AIM_PARAMS" and replace Aim_CO2_Flag=2
+    option with aim_select_pCO2=2 (using #define ALLOW_AIM_CO2);
+  - add option to derive LW absorption in CO2 band as function of pCO2,
+    using either prescribed pCO2 (aim_select_pCO2=1), or computed pCO2
+    from well-mixed atm-box (aim_select_pCO2=3).
+o pkg/gchem, changes to enable to use several geo-chemistry pkgs together:
+  - new CPP option GCHEM_ADD2TR_TENDENCY around definition of gchemTendency
+    array (replacing #ifndef GCHEM_SEPARATE_FORCING) ;
+  - in GCHEM_FIELDS.h, change dimension of array "gchemTendency"
+    from PTRACERS_num to GCHEM_tendTr_num ; this later one is set in new header
+    file: GCHEM_SIZE.h, to be included anytime GCHEM_FIELDS.h is included ;
+  - new set of S/R, called from GCHEM_TR_REGISTER, to record rank (in pTracer
+    array) and number of tracers for each geo-chemistry pkg ;
+  - check that GCHEM tracers all fit in pTracer and gchemTendency arrays ;
+  - initialise gchemTendency array in gchem_init_vari.F ;
+  - fix storage directives for gchemTendency ;
+  - add some entry points for new geo-chemistry pkg SPOIL.
+o verification/isomip:
+  - update secondary test (input.htd): a) drop cd_scheme, useJamartWetPoints=T
+    and increase viscAh ; b) use ivdc_kappa with implicit Diff & Visc ;
+    c) switch off SHELFICEboundaryLayer, turn on pCellMix_select (=20) and
+    use SHELFICEselectDragQuadr=1 ; add new set of pickup files.
+o pkg/shelfice:
+  - Replace CPP option: SHI_USTAR_WETPOINT with run-time parameter:
+     SHELFICE_oldCalcUStar (default=F <--> #define SHI_USTAR_WETPOINT)
+    but keep only original (old) formula in SHELFICEboundaryLayer code.
+
+checkpoint66m (2017/12/12)
+o add another hook (S/R PDF_FINALIZE) for the Parallel Data Assimilation
+    Framework PDAF (http://pdaf.awi.de/) in the_main_loop.F
+o pkg/autodiff:
+  - fix pkg/exf AD variable output (mainly ADJprecip), left from pkg/exf modif
+    on Jan 27, 2017. Try also to fix ADJrunoff and TLM output (but less clear).
+o pkg/obcs:
+  - add simpler setting (single value) of OB indices for the case where
+    indices are uniform over the full section (Bruno Deremble contribution).
+o pkg/rbcs:
+  - increase size of "relaxMaskFile" to read-in from namelist and save it
+    (+check) into new (renamed) "relaxMaskTrFile" array.
+o model/src:
+  - option (interViscAr_pCell, interDiffKr_pCell) to account for true vertical
+    distance (including hFac) in vertical viscous flux and diffusive flux ;
+  - add option to increase vertical mixing (for both momentum and tracers)
+    near surface and/or bottom where partial cell is too thin ;
+  - for now, both additions above are within: #ifndef EXCLUDE_PCELL_MIX_CODE ;
+
+checkpoint66l (2017/10/24)
+o pkg/kpp, ggl90 & ebm:
+  - read namelist without IOSTAT=errIO to force to stop if there is an error
+    in the parameter file namelist.
+o pkg/cheapaml: major changes to relaxation coefficient setting:
+  - rename parameters cheapaml_taurelax & cheapaml_taurelaxocean (in days)
+    to cheap_tauRelax & cheap_tauRelaxOce (now in seconds);
+  - if using cheapMaskFile, set relaxation coeff to: cheapMask/tauRelax
+    (instead of 1/cheapMask over ocean and 1/tauRelax over land);
+  - with cheapMaskFile unset: set relaxation coeff according to land/ocean mask
+    (unchanged) but skip increase near domain edges for periodic domain (in X
+    or Y dir) when cheapamlX/Yperiodic=T ; also fix linear increase (over
+    Cheapaml_mask_width grid points) of coeff towards domain edges (previously
+    was increasing away from edges). Update output of experiment "cheapAML_box".
+o pkg/cheapaml:
+  - move setting of (fixed in time) relaxation coefficient
+    from cheapaml_init_varia.F to cheapaml_init_fixed.F
+o pkg/exf:
+  - add specific forcing field for tides to feed model new geopotential anomaly
+    forcing, for now within #ifdef EXF_ALLOW_TIDES.
+  - remove from common block unused params: exf_inscal_sst & exf_inscal_sss.
+o model:
+  - add new 2-d forcing field for time-dependent geopotential anomaly (e.g.,
+    tidal forcing), in m^2/s^2 ; add run-time param to allow to turn it off.
+o eesupp/src:
+  - shift standardMessageUnit in eeboot.F and I/O units in mdsfindunit.F
+    for coupling to GEOS AGCM: HACK_FOR_GMAO_CPL option in CPP_EEOPTIONS.h
+
+checkpoint66k (2017/09/20)
+o model/src:
+  - add missing CPP brackets (ALLOW_COST, ALLOW_CTRL in load_fields_driver.F
+    and the_model_main.F)
+o ctrl:
+  - use zeroRL in place of fc when ALLOW_COST is not compiled (in ctrl_pack.F)
+  - call MDS_READ_FIELD / MDS_WRITE_FIELD instead of deprecated
+    mdsreadfield / mdswritefield (in ctrl_get_gen.F, ctrl_map_ini_gen.F,
+    ctrl_map_ini_genarr.F, and ctrl_map_ini_gentim2d.F )
+o eesupp:
+  - add CPP option to activate some pieces of code for coupling to GEOS AGCM;
+  - shift commonly used IO unit (in eeboot.F) for coupling to GEOS AGCM.
+o pkg/bling:
+  - bling_production: Fix typo in calcium carbonate uptake. Also rearranging
+    and cleaning
+o model/src:
+  - move k loop inside correction_step.F (+ update calling S/R)
+  - collect implicit pressure gradient tendencies in local 2-D array;
+    affect results (at machine truncation level) when using 3-D solver; update
+    output of exp.: exp4 (x1), global_ocean.cs32x15 (x2),hs94.cs-32x32x5.impIGW,
+                    rotating_tank, short_surf_wave,tutorial_deep_convection (x2)
+                    & tutorial_plume_on_slope.
+
+checkpoint66j (2017/08/15)
+o pkg/ptracers:
+  - fix surface forcing under ice-shelf (useShelfIce=T).
+o pkg/atm_phys:
+  - use hFac weighted average when applying A-grid atm-phys momentum tendency
+    to C-grid dynamics; this ensures wind-stress match mom tendency.
+o eesupp/src:
+  - change default for opening scratch files to avoid STATUS='SCRATCH'
+  - close scratch files with STATUS='DELETE'
+  - changes affect eeset_parms.F and open_copy_data_file.F and many routines
+    that read namelists (because they close the scratch files)
+  - you can revert to old default by setting USE_FORTRAN_SCRATCH_FILES
+    in CPP_EEOPTIONS.h (tested in ideal_2D_oce/code & lab_sea/code_ad)
+o pkg/atm_phys:
+  - fix unset arguments in (unused) S/R surface_flux_0d.
+o eesupp/src:
+  - add argument "procId" to S/R EESET_PARMS to fix  scratchFile1 & 2 setting
+    (case TARGET_BGL or TARGET_CRAYXT) for early call (from eeboot_minimal.F):
+    called with myProcId in eeboot.F and with mpiMyWId in eeboot_minimal.F
+o pkg/streamice:
+  - remove blank between _EXCH_XY_RL and "()", which my Apple Xcode
+    preprocessor /usr/bin/cpp cannot interpret; 3 instances in total in
+    streamice_driving_stress_fd.F and streamice_advect_2dtracer.F
+o pkg/diagnostics:
+  - new option to allow to cumulate thickness-factor (hFac) weighted field
+    (if field permitted); implemented by changing sign of "jdiag" pointer
+    (> 0: cumlulate field, < 0: cumulate hFac weighted field).
+    a) restricted to 3-d (Nr levels), level centered diagnostics at U,V or Cell
+       center position (gcode(2)='U','V','M' & gcode(3,5,9:10)='R',' ','MR')
+    b) for now, activated by setting fileFlags 3rd character to 'h'.
+
+checkpoint66i (2017/07/18)
+o pkg/cheapaml:
+  - add parameter "useRelativeWind", default set to False; this change the
+    previous setting which was always using relative wind.
+o add hooks for the Parallel Data Assimilation Framework PDAF
+    (http://pdaf.awi.de/) in eeboot_minimal.F and the_main_loop.F;
+    to use set CPP-flag USE_PDAF in CPP_EEOPTIONS.h
+o pkg/exf:
+  - interpolation of vector fields (exf_interp_uv.F): fix bug in calculation
+    of South-Pole mean value.	
+  - interpolation near the poles, case where second additional row is at the
+    pole (or beyond the pole and moved to the pole): change first addition row
+    value to a linear interpolation between pole and 1rst (S.pole)/last (N.pole)
+    row (instead of just a copy of it).
+o pkg/seaice:
+  - prevent JFNK and KRYLOV solvers from trying to reduce a residual of 0
+  - add the option to compute no-slip du/dy, dv/dx (i.e.
+    the offdiagonal strain rate e12) by a second order approximation
+    on the boundary; works only with JFNK, KRYLOV, or EVP solvers, because
+    it is too messy to implement for the implicit LSR matrix.
+    SEAICE_2ndOrderBC = .FALSE. by default
+
+checkpoint66h (2017/06/02)
+o pkg/seaice:
+  - add new routines to compute stress tensor components and stress tensor
+    divergence to be reused in s/r seaice_lsr and s/r seaice_calc_lhs
+  - change names of diagnostics SIsigI/II (commonly used for invariants)
+    to SIsig1/sig2 (more common for principal components) to avoid confusion
+o pkf/exf:
+  - add a stop if useRelativeWind with un-updated uwind/vwind (e.g., constant);
+    similarly, stop if rotateStressOnAgrid with constant wind-stress.
+o pkg/seaice:
+  - remove (comment out) diagnostics SIuwind,SIvwind,SIfu,SIfv (duplicate of
+    EXFuwind,EXFvwind,oceTAUX,oceTAUY) and point them to their equivalent.
+  - add diagnostics of wind-stress over seaice (SItaux,SItauy) and seaice
+    fraction weighted wind stress over ocean+seaice (SIatmTx,SIatmTy).
+o pkg/diagnostics:
+  - small piece of code to rename (old) diagnostics, when namelist is processed.
+o model/src:
+  - new run-time param (useMin4hFacEdges) to select method for setting hFacW,S:
+    originally, set as minimum of adjacent hFacC factor ; now (new default)
+    computed from rSurfW,S and rLowW,S by applying same rules as for hFacC.
+    Only matters when useShelfIce=T with particular ice-shelf cavity geometry.
+o pkg/seaice:
+  - add momemtum advection, off by default, still in test phase
+    most of the momentum advection code is adapted and reused from mom_vecinv
+o pkg/mom_vecinv:
+  - pass these runtime flags:
+    selectVortScheme, highOrderVorticity, upwindVorticity, useJamartMomAdv
+    as formal parameters to s/r mom_vi_u/v_coriolis, mom_vi_u/v_coriolis_c4,
+    so that these routines can also be used in pkg/seaice.
+
 checkpoint66g (2017/04/24)
 o model/src:
   - more robust ordering of column thickness integral (=Sum_k(drF*hFac) )

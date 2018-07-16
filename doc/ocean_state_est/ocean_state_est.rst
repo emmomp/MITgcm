@@ -473,47 +473,29 @@ horizontal transport (or overturn) will be computed accordingly.
 Custom Cost Functions
 ~~~~~~~~~~~~~~~~~~~~~
 
-This section (very much a work in progress...) pertains to the special cases of
-:filelink:`cost_gencost_bpv4.F <pkg/ecco/cost_gencost_bpv4.F>`,
-:filelink:`cost_gencost_seaicev4.F <pkg/ecco/cost_gencost_seaicev4.F>`,
-:filelink:`cost_gencost_sshv4.F <pkg/ecco/cost_gencost_sshv4.F>`,
-:filelink:`cost_gencost_sstv4.F <pkg/ecco/cost_gencost_sstv4.F>`,
-:filelink:`cost_gencost_transp.F <pkg/ecco/>`, and
-:filelink:`cost_gencost_moc.F <pkg/ecco/cost_gencost_moc.>`.  The
-:filelink:`cost_gencost_transp.F <pkg/ecco/cost_gencost_transp.F>` function can
-be used to compute a transport of volume, heat, or salt through a specified
-section (non quadratic cost function). To this end one sets ``gencost_name =
-‘transp*’``, where ``*`` is an optional suffix starting with ``‘_’``, and set
-:varlink:`gencost_barfile` to one of ``m_trVol``, ``m_trHeat``, and
-``m_trSalt``.
+This section (very much a work in progress...) pertains to the special
+cases of ``cost_gencost_bpv4.F``, ``cost_gencost_seaicev4.F``,
+``cost_gencost_sshv4.F``, ``cost_gencost_sstv4.F``, and
+``cost_gencost_transp.F``. The cost_gencost_transp.F function can be
+used to compute a transport of volume, heat, or salt through a specified
+section (non quadratic cost function). To this end one sets
+``gencost_name = ‘transp*’``, where ``*`` is an optional suffix starting
+with ``‘_’``, and set ``gencost_barfile`` to one of ``m_trVol``,
+``m_trHeat``, and ``m_trSalt``.
 
-The :filelink:`cost_gencost_moc.F <pkg/ecco/cost_gencost_moc.F>` function is
-similar to transport function, but is intended to compute the meridional
-overturning streamfunction maximum based on the volumetric transport integrated
-from the floor to surface, as in Smith and Heimbach (2019) :cite:`smith:19`.
-Therefore, this function is intended to work with :varlink:`gencost_barfile`
-``= m_trVol``, and note that the first 3 characters of :varlink:`gencost_name`
-must be ``moc``, as depicted in :numref:`gencost_ecco_name`.  Users can specify
-a latitude band to compute the MOC with appropriately defined West ('W') and
-South ('S') masks as described in :numref:`intgen`.  As an example see
-parameter group (3) in `this data.ecco file
-<https://github.com/MITgcm/verification_other/blob/master/global_oce_cs32/input_ad.sens/data.ecco>`_
-.
-
-Note: the functionality in :filelink:`cost_gencost_transp.F
-<pkg/ecco/cost_gencost_transp.F>` is not regularly tested.  Users interested in
-computing volumetric transports through a section are recommended to use the
-``m_horflux_vol`` capabilities described above as it is regularly tested. Users
-interested in computing heat and salt transport should note the following about
-``m_trHeat`` and ``m_trSalt``:
+Note: the functionality in ``cost_gencost_transp.F`` is not regularly tested.
+Users interested in computing volumetric transports through a section
+are recommended to use the ``m_horflux_vol`` capabilities described above as 
+it is regularly tested. Users interested in computing heat and salt transport 
+should note the following about ``m_trHeat`` and ``m_trSalt``:
 
     1. The associated advection scheme with transports may be inconsistent with
-       the model unless ``ENUM_CENTERED_2ND`` is implemented
+       the model unless ``ENUM_CENTERED_2ND`` is implemented 
     2. Bolus velocities are not included
     3. Diffusion components are not included
 
 
-.. table:: Pre-defined :varlink:`gencost_name` special cases (as of checkpoint
+.. table:: Pre-defined ``gencost_name`` special cases (as of checkpoint
            65z; :numref:`v4custom`).
   :name: gencost_ecco_name
 
