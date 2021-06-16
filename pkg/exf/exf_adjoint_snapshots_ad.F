@@ -71,6 +71,7 @@ C     msgBuf :: Error message buffer
       CHARACTER*(10) suff
       CHARACTER*(MAX_LEN_MBUF) msgBuf
       INTEGER dumpAdRecEx
+      LOGICAL doDump
 CEOP
 
       CALL TIMER_START('I/O (WRITE)        [ADJOINT LOOP]', myThid )

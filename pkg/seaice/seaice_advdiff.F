@@ -74,6 +74,8 @@ C     xA,yA     :: "areas" of X and Y face of tracer cells
       INTEGER ks
       LOGICAL SEAICEmultiDimAdvection
 #ifdef ALLOW_AUTODIFF_TAMC
+      INTEGER act1, act2, act3, act4
+      INTEGER max1, max2, max3
       INTEGER itmpkey
 #endif /* ALLOW_AUTODIFF_TAMC */
 #ifdef ALLOW_SITRACER

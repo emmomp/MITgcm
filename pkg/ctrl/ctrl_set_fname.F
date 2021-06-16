@@ -37,7 +37,6 @@ c     == routine arguments ==
 
 c     == local variables ==
 
-      integer ii
       integer il
 
 c     == external ==

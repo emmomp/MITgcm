@@ -38,11 +38,8 @@ c     == routine arguments ==
 
 c     == local variables ==
 
-      integer errio
-      integer il
       integer iUnit
 
-      character*(max_len_prec) record
       character*(max_len_mbuf) msgbuf
 
 c     == external ==
@@ -109,4 +106,3 @@ c--     Set default values.
 
       return
       end
-

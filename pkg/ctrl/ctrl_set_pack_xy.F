@@ -34,7 +34,7 @@ c     == routine arguments ==
       integer cunit
       integer ivartype
       _RL precondScalar
-      character*( 80) fname, fnameGlobal
+      character*( 80) fname
       character*(  9) masktype
       character*( 80) weighttype
       logical lxxadxx
@@ -48,7 +48,6 @@ c     == local variables ==
       integer ip,jp
       integer i,j,k
       integer ii
-      integer il
       integer irec,nrec_nl
       integer itlo,ithi
       integer jtlo,jthi
@@ -60,11 +59,14 @@ c     == local variables ==
       _RL     globmsk  ( snx,nsx,npx,sny,nsy,npy,nr )
       _RL     globfld3d( snx,nsx,npx,sny,nsy,npy,nr )
 #ifdef ALLOW_NONDIMENSIONAL_CONTROL_IO
+      integer il
       _RL     weightfld2d( snx,nsx,npx,sny,nsy,npy )
 #endif
       real*4 cbuff      ( snx*nsx*npx*sny*nsy*npy )
 
+#ifdef ALLOW_NONDIMENSIONAL_CONTROL_IO
       character*( 80) weightname
+#endif
 
       integer reclen, irectrue
       integer cunit2, cunit3
@@ -213,11 +215,11 @@ cph)
                      endif
 #else
                      if (lxxadxx) then
-                        cbuff(cbuffindex) = 
+                        cbuff(cbuffindex) =
      &                       globfld3d(i,bi,ip,j,bj,jp,k)
      &                       / PrecondScalar
                      else
-                        cbuff(cbuffindex) = 
+                        cbuff(cbuffindex) =
      &                       globfld3d(i,bi,ip,j,bj,jp,k)
      &                       * PrecondScalar
                      endif
@@ -307,11 +309,11 @@ cph)
                      endif
 #else
                      if (lxxadxx) then
-                        cbuff(cbuffindex) = 
+                        cbuff(cbuffindex) =
      &                       globfld3d(i,bi,ip,j,bj,jp,k)
      &                       / PrecondScalar
                      else
-                        cbuff(cbuffindex) = 
+                        cbuff(cbuffindex) =
      &                       globfld3d(i,bi,ip,j,bj,jp,k)
      &                       * PrecondScalar
                      endif
@@ -397,7 +399,6 @@ c     == local variables ==
 
       real*4 cbuff      ( snx*nsx*npx*sny*nsy*npy )
 
-      character*(80) weightname
       _RL delZnorm
       character*(80) cfile2, cfile3
       _RL dummy
@@ -570,4 +571,3 @@ c-- 2.4: array -> buffer -> global buffer -> global file
 
       return
       end
-

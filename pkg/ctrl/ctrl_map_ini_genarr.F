@@ -192,24 +192,23 @@ C     == routine arguments ==
 #ifdef ALLOW_GENARR2D_CONTROL
 
 C     !LOCAL VARIABLES:
-C     == local variables ==
-      integer bi,bj
-      integer i,j
-      integer jmin,jmax
-      integer imin,imax
-      integer numsmo, k2
-      logical dowc01
-      logical dosmooth
-      logical doscaling
-      _RL xx_gen  (1-olx:snx+olx,1-oly:sny+oly,nsx,nsy)
-      character*(80) fnamegenIn
-      character*(80) fnamegenOut
-      character*(80) fnamebase
-      INTEGER  ILNBLNK
-      EXTERNAL ILNBLNK
-      integer ilgen
-      logical doglobalread
-      logical ladinit
+      INTEGER bi,bj
+      INTEGER i,j
+      INTEGER numsmo, k2
+      LOGICAL dowc01
+      LOGICAL dosmooth
+      LOGICAL doscaling
+      LOGICAL dolog10ctrl
+      _RL log10initval
+      _RL xx_gen  (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
+      _RS dummyRS(1)
+      CHARACTER*(80) fnamegenIn
+      CHARACTER*(80) fnamegenOut
+      CHARACTER*(MAX_LEN_FNAM) fnamebase
+      INTEGER ilgen
+      LOGICAL doglobalread
+      LOGICAL ladinit
+      _RS mask2D (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
 CEOP
 
 c--   Now, read the control vector.
@@ -346,25 +345,23 @@ C     == routine arguments ==
 #ifdef ALLOW_GENARR3D_CONTROL
 
 C     !LOCAL VARIABLES:
-C     == local variables ==
-      integer bi,bj
-      integer i,j,k
-      integer numsmo,k2
-      logical dowc01
-      logical dosmooth
-      logical doscaling
-      _RL xx_gen  (1-olx:snx+olx,1-oly:sny+oly,nr,nsx,nsy)
-      character*(80) fnamegenIn
-      character*(80) fnamegenOut
-      character*(80) fnamebase
-      INTEGER  ILNBLNK
-      EXTERNAL ILNBLNK
-      integer ilgen
-      logical doglobalread
-      logical ladinit
-#if (defined (ALLOW_UVEL0_CONTROL) && defined (ALLOW_VVEL0_CONTROL))
-      _RL localmask  (1-olx:snx+olx,1-oly:sny+oly,nr,nsx,nsy)
-#endif
+      INTEGER bi,bj
+      INTEGER i,j,k
+      INTEGER numsmo,k2
+      LOGICAL dowc01
+      LOGICAL dosmooth
+      LOGICAL doscaling
+      LOGICAL dolog10ctrl
+      _RL log10initval
+      _RL xx_gen(1-OLx:sNx+OLx,1-OLy:sNy+OLy,Nr,nSx,nSy)
+      _RS dummyRS(1)
+      CHARACTER*(80) fnamegenIn
+      CHARACTER*(80) fnamegenOut
+      CHARACTER*(MAX_LEN_FNAM) fnamebase
+      INTEGER ilgen
+      LOGICAL doglobalread
+      LOGICAL ladinit
+      _RS mask3D(1-OLx:sNx+OLx,1-OLy:sNy+OLy,nr,nSx,nSy)
 CEOP
 
 c--   Now, read the control vector.

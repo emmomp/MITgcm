@@ -70,6 +70,7 @@ C     == Local variables ==
       integer il
       logical doglobalread
       logical ladinit
+      _RL     tmpfld2d(1-olx:snx+olx,1-oly:sny+oly,nsx,nsy)
 
       character*( 80)   fnametauu
       character*( 80)   fnametauv
@@ -105,6 +106,16 @@ CEOP
 
       doglobalread = .false.
       ladinit      = .false.
+
+      do bj = jtlo,jthi
+        do bi = itlo,ithi
+          do j = 1-oly,sny+oly
+            do i = 1-olx,snx+olx
+              tmpfld2d(i,j,bi,bj) = 0. _d 0
+            enddo
+          enddo
+        enddo
+      enddo
 
       IF ( myIter .EQ. nIter0 ) THEN
 

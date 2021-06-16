@@ -102,7 +102,9 @@ C     betaFacU/V     :: analog betaFacP1U/V
       INTEGER kSrf
       INTEGER nEVPstep, iEVPstep
 #ifdef ALLOW_AUTODIFF_TAMC
-      INTEGER ikeyloc
+      INTEGER act1, act2, act3, act4
+      INTEGER max1, max2, max3
+      INTEGER ikeyloc, iicekey
 #else
       INTEGER nEVPstepMax
 #endif

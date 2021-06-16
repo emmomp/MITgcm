@@ -37,7 +37,7 @@ C     == global variables ==
 # include "PTRACERS_SIZE.h"
 # include "PTRACERS_FIELDS.h"
 #endif
-#ifdef ALLOW_AUTODIFF
+#ifdef ALLOW_AUTODIFF_TAMC
 #include "tamc.h"
 #endif
 
@@ -103,7 +103,7 @@ cph       if (xx_gentim2d_weight(iarr).NE.' ') then
         smoothOpNb=1
         do k2 = 1, maxCtrlProc
           if (xx_gentim2d_preproc(k2,iarr).EQ.'smooth') then
-             if (xx_gentim2d_preproc_i(k2,iarr).NE.0) 
+             if (xx_gentim2d_preproc_i(k2,iarr).NE.0)
      &           smoothOpNb=xx_gentim2d_preproc_i(k2,iarr)
           endif
         enddo
@@ -196,4 +196,3 @@ c-- end iarr loop
 
       RETURN
       END
-

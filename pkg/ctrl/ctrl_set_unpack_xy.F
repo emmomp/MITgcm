@@ -49,7 +49,6 @@ c     == local variables ==
       integer ip,jp
       integer i,j,k
       integer ii
-      integer il
       integer irec,nrec_nl
       integer itlo,ithi
       integer jtlo,jthi
@@ -61,11 +60,12 @@ c     == local variables ==
       _RL     globmsk  ( snx,nsx,npx,sny,nsy,npy,nr )
       _RL     globfld3d( snx,nsx,npx,sny,nsy,npy,nr )
 #ifdef ALLOW_NONDIMENSIONAL_CONTROL_IO
+      integer il
       _RL     weightfld2d( snx,nsx,npx,sny,nsy,npy )
+      character*( 80) weightname
 #endif
       real*4  cbuff    ( snx*nsx*npx*sny*nsy*npy )
 
-      character*( 80) weightname
 
       integer reclen,irectrue
       integer cunit2, cunit3
@@ -431,7 +431,6 @@ c     == local variables ==
 
       real*4 cbuff      ( snx*nsx*npx*sny*nsy*npy )
 
-      character*(80) weightname
       _RL delZnorm
       character*(80) cfile2, cfile3
       _RL dummy
@@ -623,4 +622,3 @@ c-- 2.4:
 
       return
       end
-

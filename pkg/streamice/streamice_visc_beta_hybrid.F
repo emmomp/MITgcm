@@ -47,7 +47,18 @@ C     LOCAL VARIABLES
 #ifdef STREAMICE_FLOWLINE_BUTTRESS
       _RL buttr_param, pwr
 #endif
-
+#ifdef STREAMICE_COULOMB_SLIDING
+      _RL effective_stress, hf
+      _RL ETA_GL_STREAMICE
+      EXTERNAL ETA_GL_STREAMICE
+#endif
+#ifdef ALLOW_AUTODIFF_TAMC
+#ifdef ALLOW_AUTODIFF_TAMC
+      INTEGER act1, act2, act3, act4
+      INTEGER max1, max2, max3
+#endif
+      INTEGER ikey_1
+#endif
       _RL STREAMICE_BSTRESS_EXP
 !       _RL total_vol_out
       external STREAMICE_BSTRESS_EXP

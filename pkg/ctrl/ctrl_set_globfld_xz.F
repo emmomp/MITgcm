@@ -43,12 +43,9 @@ c     == routine arguments ==
 c     == local variables ==
 
       integer bi,bj
-      integer ip,jp
       integer i,j,k
       integer itlo,ithi
       integer jtlo,jthi
-      integer jmin,jmax
-      integer imin,imax
       integer irec,nrec_nl
 
       _RL globfld3d(1-oLx:sNx+oLx,1-oLy:sNy+oLy,nr,nSx,nSy)
@@ -58,34 +55,29 @@ c     == external ==
 
 c     == end of interface ==
 
-      jtlo = 1
-      jthi = nsy
-      itlo = 1
-      ithi = nsx
-      jmin = 1-oLy
-      jmax = sny+oLy
-      imin = 1-oLx
-      imax = snx+oLx
+      jtlo = myByLo(myThid)
+      jthi = myByHi(myThid)
+      itlo = myBxLo(myThid)
+      ithi = myBxHi(myThid)
 
 c     Initialise temporary file
       do bj = jtlo,jthi
-         do bi = itlo,ithi
-            do k = 1,nr
-               do i = imin,imax
-                  globfldxz(i,k,bi,bj) = 0. _d 0
-               enddo
-            enddo
-         enddo
+        do bi = itlo,ithi
+           do k = 1,nr
+             do i = 1-OLx,sNx+OLx
+                globfldxz(i,k,bi,bj) = 0. _d 0
+             enddo
+           enddo
+        enddo
       enddo
 c     Initialise temporary file
       do bj = jtlo,jthi
-         do bi = itlo,ithi
-            do k = 1,nr
-               do j = jmin,jmax
-                  do i = imin,imax
-                     globfld3d(i,j,k,bi,bj) = 0. _d 0
-                  enddo
-               enddo
+        do bi = itlo,ithi
+          do k = 1,nr
+            do j = 1-OLy,sNy+OLy
+              do i = 1-OLx,sNx+OLx
+                globfld3d(i,j,k,bi,bj) = 0. _d 0
+              enddo
             enddo
          enddo
       enddo

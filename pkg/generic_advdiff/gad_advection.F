@@ -45,8 +45,10 @@ C !USES: ===============================================================
 #include "GRID.h"
 #include "GAD.h"
 #ifdef ALLOW_AUTODIFF
-# include "tamc.h"
-# include "tamc_keys.h"
+# include "AUTODIFF_PARAMS.h"
+# ifdef ALLOW_AUTODIFF_TAMC
+#  include "tamc.h"
+# endif
 # ifdef ALLOW_PTRACERS
 #  include "PTRACERS_SIZE.h"
 # endif
@@ -159,6 +161,9 @@ c     _RS maskUp  (1-OLx:sNx+OLx,1-OLy:sNy+OLy)
 #ifdef ALLOW_AUTODIFF_TAMC
 C     msgBuf     :: Informational/error message buffer
       CHARACTER*(MAX_LEN_MBUF) msgBuf
+      INTEGER act0, act1, act2, act3, act4
+      INTEGER max0, max1, max2, max3
+      INTEGER kkey, passkey, igadkey
 #endif
 #ifdef ALLOW_EXCH2
       INTEGER myTile
@@ -171,27 +176,44 @@ C     msgBuf     :: Informational/error message buffer
 CEOP
 
 #ifdef ALLOW_AUTODIFF_TAMC
-          act0 = trIdentity
-          max0 = maxpass
-          act1 = bi - myBxLo(myThid)
-          max1 = myBxHi(myThid) - myBxLo(myThid) + 1
-          act2 = bj - myByLo(myThid)
-          max2 = myByHi(myThid) - myByLo(myThid) + 1
-          act3 = myThid - 1
-          max3 = nTx*nTy
-          act4 = ikey_dynamics - 1
-          igadkey = act0
-     &                      + act1*max0
-     &                      + act2*max0*max1
-     &                      + act3*max0*max1*max2
-     &                      + act4*max0*max1*max2*max3
-          IF (trIdentity.GT.maxpass) THEN
-           WRITE(msgBuf,'(A,2I3)')
+      act0 = trIdentity
+      max0 = maxpass
+      act1 = bi - myBxLo(myThid)
+      max1 = myBxHi(myThid) - myBxLo(myThid) + 1
+      act2 = bj - myByLo(myThid)
+      max2 = myByHi(myThid) - myByLo(myThid) + 1
+      act3 = myThid - 1
+      max3 = nTx*nTy
+      act4 = ikey_dynamics - 1
+      igadkey = act0 + act1*max0
+     &               + act2*max0*max1
+     &               + act3*max0*max1*max2
+     &               + act4*max0*max1*max2*max3
+      IF (trIdentity.GT.maxpass) THEN
+       WRITE(msgBuf,'(A,2I3)')
      &      'GAD_ADVECTION: maxpass < trIdentity ',
      &      maxpass, trIdentity
+<<<<<<< HEAD
            CALL PRINT_ERROR( msgBuf, myThid )
            STOP 'ABNORMAL END: S/R GAD_ADVECTION'
           ENDIF
+=======
+       CALL PRINT_ERROR( msgBuf, myThid )
+       STOP 'ABNORMAL END: S/R GAD_ADVECTION'
+      ENDIF
+C
+      IF ( inAdMode .AND. useApproxAdvectionInAdMode ) THEN
+C     In AD-mode, we change non-linear, potentially unstable AD advection
+C     schemes to linear schemes with more stability. So far only DST3 with
+C     flux limiting is replaced by DST3 without flux limiting, but any
+C     combination is possible.
+       IF ( advectionSchArg.EQ.ENUM_DST3_FLUX_LIMIT )
+     &      advectionScheme = ENUM_DST3
+       IF ( vertAdvecSchArg.EQ.ENUM_DST3_FLUX_LIMIT )
+     &      vertAdvecScheme = ENUM_DST3
+C     here is room for more advection schemes as this becomes necessary
+      ENDIF
+>>>>>>> 7c50f0793 (ctrl/autodiff cleanup  (#471))
 #endif /* ALLOW_AUTODIFF_TAMC */
 
 #ifdef ALLOW_DIAGNOSTICS

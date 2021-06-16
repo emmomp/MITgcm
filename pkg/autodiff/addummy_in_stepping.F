@@ -88,6 +88,8 @@ C     msgBuf  :: Error message buffer
       _RL foo3D (1-OLx:sNx+OLx,1-OLy:sNy+OLy,Nr,nSx,nSy)
       _RS dumRS(1)
       _RL dumRL(1)
+      LOGICAL doExch
+      LOGICAL doDump
 CEOP
 
       IF (

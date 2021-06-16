@@ -42,18 +42,9 @@ c     == local variables ==
       integer i,j,k
       integer itlo,ithi
       integer jtlo,jthi
-      integer jmin,jmax
-      integer imin,imax
-      integer ntmp
-      integer ivarindex
 
       integer iobcs
       integer il
-      integer errio
-      integer startrec
-      integer endrec
-      integer difftime(4)
-      _RL     diffsecs
       _RL     dummy
       _RL     maskyz   (1-oly:sny+oly,nr,nsx,nsy,nobcs)
       _RL     gg       (1-oly:sny+oly,nr,nsx,nsy)
@@ -71,10 +62,6 @@ c     == end of interface ==
       jthi = mybyhi(mythid)
       itlo = mybxlo(mythid)
       ithi = mybxhi(mythid)
-      jmin = 1
-      jmax = sny
-      imin = 1
-      imax = snx
 
       _BEGIN_MASTER( myThid )
 
@@ -97,7 +84,7 @@ c--   mask conventions are adopted from obcs_apply_ts, obcs_apply_uv
         do bj = jtlo,jthi
           do bi = itlo,ithi
             do k = 1,nr
-              do j = jmin,jmax
+              do j = 1,sny
                 i = OB_I(j,bi,bj)
                 if ( i .NE. iNone ) then
 c--               West mask for T, S, U on East/West boundaries.
@@ -130,7 +117,7 @@ c--               South mask for V
         do bj = jtlo,jthi
           do bi = itlo,ithi
             do k = 1,nr
-              do j = jmin,jmax
+              do j = 1,sny
                  gg(j,k,bi,bj) = maskyz(j,k,bi,bj,iobcs)
               enddo
             enddo

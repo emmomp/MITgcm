@@ -41,6 +41,7 @@ C     myThid :: thread number for this instance of the routine.
       INTEGER myIter
       INTEGER myThid
 
+#ifdef ALLOW_GENTIM2D_CONTROL
 C     !LOCAL VARIABLES:
 C     == Local variables ==
       integer bi,bj
@@ -69,7 +70,6 @@ CEOP
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
 
-#ifdef ALLOW_GENTIM2D_CONTROL
 C--   generic - user-defined control vars
       DO iarr = 1, maxCtrlTim2D
 

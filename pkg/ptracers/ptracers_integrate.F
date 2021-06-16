@@ -38,7 +38,6 @@ C !USES: ===============================================================
 #include "GAD.h"
 #ifdef ALLOW_AUTODIFF_TAMC
 # include "tamc.h"
-# include "tamc_keys.h"
 #endif
 
 C !INPUT PARAMETERS: ===================================================
@@ -113,6 +112,11 @@ C  gTr_AB           :: Adams-Bashforth tracer tendency increment
       LOGICAL calcAdvection
       INTEGER iterNb
       _RL dummy(Nr)
+#ifdef ALLOW_AUTODIFF_TAMC
+      INTEGER act0, act1, act2, act3, act4
+      INTEGER max0, max1, max2, max3
+      INTEGER  iptrkey, kkey
+#endif
 #ifdef ALLOW_DIAGNOSTICS
       CHARACTER*8 diagName
       CHARACTER*4 diagSufx

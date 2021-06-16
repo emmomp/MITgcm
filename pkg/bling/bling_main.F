@@ -88,21 +88,13 @@ C     runoff_bgc           :: tendency due to river runoff
       _RL  G_FE (1-OLx:sNx+OLx,1-OLy:sNy+OLy,Nr)
       _RL  G_O2 (1-OLx:sNx+OLx,1-OLy:sNy+OLy,Nr)
       _RL  G_DON(1-OLx:sNx+OLx,1-OLy:sNy+OLy,Nr)
-      _RL  G_DOP(1-OLx:sNx+OLx,1-OLy:sNy+OLy,Nr)
-      _RL  G_CaCO3(1-OLx:sNx+OLx,1-OLy:sNy+OLy,Nr)
-      _RL  NCP(1-OLx:sNx+OLx,1-OLy:sNy+OLy,Nr)
-      _RL  bio_DIC(1-OLx:sNx+OLx,1-OLy:sNy+OLy,Nr)
-      _RL  bio_ALK(1-OLx:sNx+OLx,1-OLy:sNy+OLy,Nr)
-      _RL  bio_O2(1-OLx:sNx+OLx,1-OLy:sNy+OLy,Nr)
-      _RL  bio_NO3(1-OLx:sNx+OLx,1-OLy:sNy+OLy,Nr)
-      _RL  bio_PO4(1-OLx:sNx+OLx,1-OLy:sNy+OLy,Nr)
-      _RL  bio_Fe(1-OLx:sNx+OLx,1-OLy:sNy+OLy,Nr)
-      _RL  surf_DIC(1-OLx:sNx+OLx,1-OLy:sNy+OLy)
-      _RL  surf_O2(1-OLx:sNx+OLx,1-OLy:sNy+OLy)
-      _RL  surf_Fe(1-OLx:sNx+OLx,1-OLy:sNy+OLy)
-      _RL  FluxO2(1-OLx:sNx+OLx,1-OLy:sNy+OLy)
-      _RL  irr_eff(1-OLx:sNx+OLx,1-OLy:sNy+OLy,Nr)
-      _RL  runoff_bgc(1-OLx:sNx+OLx,1-OLy:sNy+OLy,8)
+#ifdef USE_SIBLING
+      _RL  G_SI (1-OLx:sNx+OLx,1-OLy:sNy+OLy,Nr)
+#endif
+#endif
+#ifdef ALLOW_AUTODIFF_TAMC
+      INTEGER itdkey
+#endif
 CEOP
 
 c-----------------------------------------------------------
@@ -175,6 +167,7 @@ C-----------------------------------------------------------
 C  Calculate river runoff source
 C  Tracers are already diluted by freswater input, P-E+R
 C  This accounts for tracer concentration in river runoff
+C  no input south of 60S (it is ice melt)
 
 c      DO k=1,8
 c       DO j=jmin,jmax

@@ -146,6 +146,9 @@ C     local copies of global variables
       _RL ALB_SNOW   (1:sNx,1:sNy)
 C     iceOrNot :: this is HICE_ACTUAL.GT.0.
       LOGICAL iceOrNot(1:sNx,1:sNy)
+#ifdef ALLOW_AUTODIFF_TAMC
+      INTEGER iicekey
+#endif
 #ifdef SEAICE_DEBUG
 C     F_io_net :: upward conductive heat flux through seaice+snow
 C     F_ia_net :: net heat flux divergence at the sea ice/snow surface:
