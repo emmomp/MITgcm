@@ -1,7 +1,8 @@
+C $Header: /u/gcmpack/MITgcm/pkg/streamice/adstreamice_invert_surf_forthick.F,v 1.6 2016/11/29 14:19:37 dgoldberg Exp $
+C $Name:  $
+
+#include "CPP_OPTIONS.h"
 #include "STREAMICE_OPTIONS.h"
-#ifdef ALLOW_AUTODIFF
-# include "AUTODIFF_OPTIONS.h"
-#endif
 
 
       SUBROUTINE ADSTRMICE_H_INV (
@@ -30,9 +31,9 @@
 #ifdef ALLOW_STREAMICE
 #ifdef ALLOW_AUTODIFF
 
-      _RL fp, hf
+      _RL resid, f, fp, hf, htmp
       _RL rhoi, rhow, i_r, delta
-      INTEGER i, j, bi, bj
+      INTEGER ITER, i, j, bi, bj
       _RL ETA_GL_STREAMICE
       EXTERNAL ETA_GL_STREAMICE
       _RL ETA_GL_PRIME_STREAMICE

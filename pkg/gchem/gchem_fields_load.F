@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/gchem/gchem_fields_load.F,v 1.10 2016/05/27 23:35:45 mmazloff Exp $
+C $Name:  $
+
 #include "GCHEM_OPTIONS.h"
 
 CBOP
@@ -38,7 +41,7 @@ cccccccccccccccccccccccccc
 
 #ifdef ALLOW_BLING
       IF ( useBLING ) THEN
-       CALL BLING_FIELDS_LOAD( myTime, myIter, myThid )
+       CALL BLING_FIELDS_LOAD (myIter,myTime,myThid)
       ENDIF
 #endif
 

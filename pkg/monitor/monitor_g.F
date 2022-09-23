@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/monitor/monitor_g.F,v 1.9 2014/04/04 21:21:53 jmc Exp $
+C $Name:  $
+
 #include "MONITOR_OPTIONS.h"
 #ifdef ALLOW_AUTODIFF
 # include "AUTODIFF_OPTIONS.h"
@@ -52,11 +55,11 @@ C     === Functions ====
 
 C     !LOCAL VARIABLES:
       CHARACTER*(MAX_LEN_MBUF) msgBuf
-c     _RL dT
+      _RL dT
       _RL dummyRL(6)
       INTEGER k
 
-      IF ( DIFFERENT_MULTIPLE(adjMonitorFreq,myTime,deltaTClock) ) THEN
+      IF ( DIFFERENT_MULTIPLE(adjmonitorFreq,myTime,deltaTClock) ) THEN
 
         IF ( MASTER_CPU_IO(myThid) ) THEN
 C--   only the master thread is allowed to switch On/Off mon_write_stdout
@@ -90,7 +93,7 @@ C       Dynamics field monitor start
      &             '============================='
             CALL PRINT_MESSAGE( msgBuf, mon_ioUnit, SQUEEZE_RIGHT , 1)
             WRITE(msgBuf,'(A)')
-     &             '// Begin TL_MONITOR dynamic field statistics'
+     &             '// Begin MONITOR dynamic field statistics'
             CALL PRINT_MESSAGE( msgBuf, mon_ioUnit, SQUEEZE_RIGHT , 1)
             WRITE(msgBuf,'(2A)') '// ==========================',
      &             '============================='
@@ -131,7 +134,7 @@ C-      print stats only if nSx=nSy=1 since otherwise stats are wrong
         ENDIF
 
 C       Print the basic statistics of external forcing
-        IF ( monitorSelect.GE.4 ) THEN
+c       IF ( monitorSelect.GE.3 ) THEN
          CALL MON_SET_PREF('g__forcing',myThid)
          CALL MON_WRITESTATS_RS( 1, g_Qnet, '_g_qnet',
      &            maskInC, maskInC, rA , drF, dummyRL, myThid )
@@ -145,16 +148,16 @@ C       Print the basic statistics of external forcing
      &            maskInW, maskInW, rAw, drF, dummyRL, myThid )
          CALL MON_WRITESTATS_RS( 1, g_fv ,  '_g_fv',
      &            maskInS, maskInS, rAs, drF, dummyRL, myThid )
-        ENDIF
+c       ENDIF
 
 C       Print the numerical stablility parameters for current state
-c       CALL MON_SET_PREF('g__g_vcfl',myThid)
-c       dT = MAX(dTtracerLev(1),deltaTMom)
-c       CALL MON_ADVCFL( '_g_uvel', g_uVel,recip_dxC,dT,myThid )
-c       CALL MON_ADVCFL( '_g_vvel', g_vVel,recip_dyC,dT,myThid )
-c       CALL MON_ADVCFLW( '_g_wvel',g_wVel,recip_drC,dT,myThid )
-c       CALL MON_ADVCFLW2('_g_W_hf',g_wVel,recip_hFacC,
-c    &                                     recip_drF,dT,myThid )
+        CALL MON_SET_PREF('g__g_vcfl',myThid)
+        dT = MAX(dTtracerLev(1),deltaTMom)
+        CALL MON_ADVCFL( '_g_uvel', g_uVel,recip_dxC,dT,myThid )
+        CALL MON_ADVCFL( '_g_vvel', g_vVel,recip_dyC,dT,myThid )
+        CALL MON_ADVCFLW( '_g_wvel',g_wVel,recip_drC,dT,myThid )
+        CALL MON_ADVCFLW2('_g_W_hf',g_wVel,recip_hFacC,
+     &                                     recip_drF,dT,myThid )
 
 C       Dynamics field monitor finish
         IF ( MASTER_CPU_IO(myThid) ) THEN
@@ -166,7 +169,7 @@ C     & mon_write_mnc (since it is the only thread that uses those flags):
      &             '============================='
             CALL PRINT_MESSAGE( msgBuf, mon_ioUnit, SQUEEZE_RIGHT , 1)
             WRITE(msgBuf,'(A)')
-     &             '// End TL_MONITOR dynamic field statistics'
+     &             '// End MONITOR dynamic field statistics'
             CALL PRINT_MESSAGE( msgBuf, mon_ioUnit, SQUEEZE_RIGHT , 1)
             WRITE(msgBuf,'(2A)') '// ==========================',
      &             '============================='

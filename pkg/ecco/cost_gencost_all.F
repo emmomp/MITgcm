@@ -1,4 +1,7 @@
+C $Header: /u/gcmpack/MITgcm/pkg/ecco/cost_gencost_all.F,v 1.26 2017/04/03 23:16:38 ou.wang Exp $
+C $Name:  $
 #include "ECCO_OPTIONS.h"
+
 
       subroutine cost_gencost_all( myiter, mytime, mythid )
 
@@ -20,9 +23,11 @@ c     == global variables ==
 #include "EEPARAMS.h"
 #include "PARAMS.h"
 #include "GRID.h"
+#ifdef ALLOW_CAL
+# include "cal.h"
+#endif
 #ifdef ALLOW_ECCO
-# include "ECCO_SIZE.h"
-# include "ECCO.h"
+# include "ecco.h"
 #endif
 
 c     == routine arguments ==
@@ -46,8 +51,9 @@ c     == end of interface ==
 
       do k = 1, NGENCOST
 
-         if ( (using_gencost(k)).AND.( gencost_flag(k).EQ.1 )
+         if ( (using_gencost(k)).AND.( gencost_flag(k).EQ.1 ) 
      &   .AND.( .NOT.gencost_is1d(k) ) ) then
+
 
 #ifdef ALLOW_DEBUG
          IF ( debugLevel .GE. debLevD ) THEN
@@ -76,7 +82,7 @@ c     == end of interface ==
      &     gencost_spmin(k), gencost_spmax(k), gencost_spzero(k),
      &     gencost_preproc(1,k), gencost_preproc_c(1,k),
      &     gencost_preproc_i(1,k), gencost_preproc_r(1,k),
-     &     gencost_posproc(1,k), gencost_posproc_c(1,k),
+     &     gencost_posproc(1,k), gencost_posproc_c(1,k), 
      &     gencost_posproc_i(1,k), gencost_posproc_r(1,k),
      &     gencost_outputlevel(k), gencost_name(k),
      &     objf_gencost(1,1,k), num_gencost(1,1,k),
@@ -89,7 +95,6 @@ c     == end of interface ==
       call cost_gencost_glbmean( mythid )
       call cost_gencost_boxmean( mythid )
       call cost_gencost_bpv4( mythid )
-      call cost_gencost_moc( mythid )
       IF (using_cost_transp) call cost_gencost_transp( mythid )
       IF (using_cost_altim) call cost_gencost_sshv4( mythid )
       IF (using_cost_sst) call cost_gencost_sstv4( mythid )
@@ -97,5 +102,4 @@ c     == end of interface ==
 
 #endif /* ALLOW_GENCOST_CONTRIBUTION */
 
-      return
       end

@@ -1,16 +1,18 @@
-#include "COST_OPTIONS.h"
-#ifdef ALLOW_STREAMICE
-# include "STREAMICE_OPTIONS.h"
-#endif
+C $Header: /u/gcmpack/MITgcm/verification/halfpipe_streamice/code_ad/cost_test.F,v 1.2 2015/02/19 16:52:03 heimbach Exp $
+C $Name:  $
+
+#include "STREAMICE_OPTIONS.h"
 
       subroutine cost_test( myThid )
-C     *==========================================================*
+C     /==========================================================\
 C     | subroutine cost_test                                     |
 C     | o this routine computes the cost function for the tiles  |
 C     |   of this processor                                      |
-C     *==========================================================*
+C     |==========================================================|
+C     |                                                          |
 C     | Notes                                                    |
-C     *==========================================================*
+C     | =====                                                    |
+C     \==========================================================/
       IMPLICIT NONE
 
 C     == Global variables ===
@@ -19,10 +21,13 @@ C     == Global variables ===
 #include "PARAMS.h"
 #include "DYNVARS.h"
 #include "GRID.h"
-#include "cost.h"
 #ifdef ALLOW_STREAMICE
 # include "STREAMICE.h"
 #endif
+#ifdef ALLOW_COST
+#include "cost.h"
+#endif
+
 
 C     == Routine arguments ==
 C     myThid - Thread number for this instance of the routine.
@@ -31,39 +36,51 @@ C     myThid - Thread number for this instance of the routine.
 
 #ifdef ALLOW_COST_TEST
 C     == Local variables
-      integer i, j
-c      _RL i_numcells
+      _RL thetaRef, HAF
+
+      integer i, j, k
+      integer ig, jg
+      integer itlo,ithi
+      integer jtlo,jthi
+      _RL i_numcells, dCdx, dCdy, dBdx, dBdy, dTdx, dTdy
+      _RL utmp, vtmp, uotmp, votmp, cotmp
       INTEGER  ILNBLNK
       EXTERNAL ILNBLNK
-c      CHARACTER*(MAX_LEN_FNAM) STREAMICExvelOptimFile
-c      CHARACTER*(MAX_LEN_FNAM) STREAMICEyvelOptimFile
-c      _RL U_obs (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
-c      _RL V_obs (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
+      CHARACTER*(MAX_LEN_FNAM) STREAMICExvelOptimFile
+      CHARACTER*(MAX_LEN_FNAM) STREAMICEyvelOptimFile
+      _RL U_obs (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
+      _RL V_obs (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
 
-c      i_numcells = 1.0/(Nx*Ny)
+      jtlo = mybylo(mythid)
+      jthi = mybyhi(mythid)
+      itlo = mybxlo(mythid)
+      ithi = mybxhi(mythid)
 
-c      STREAMICExvelOptimFile=
-c     & STREAMICEvelOptimFile(1:
-c     & ILNBLNK(STREAMICEvelOptimFile))//"u.bin"
-c      STREAMICEyvelOptimFile=
-c     & STREAMICEvelOptimFile(1:
-c     & ILNBLNK(STREAMICEvelOptimFile))//"v.bin"
+      i_numcells = 1.0/(Nx*Ny)
 
-c      _BARRIER
+!      STREAMICExvelOptimFile=
+!     & STREAMICEvelOptimFile(1:
+!     & ILNBLNK(STREAMICEvelOptimFile))//"u.bin"
+!      STREAMICEyvelOptimFile=
+!     & STREAMICEvelOptimFile(1:
+!     & ILNBLNK(STREAMICEvelOptimFile))//"v.bin"
 
-c      CALL READ_FLD_XY_RS( STREAMICExvelOptimFile, ' ',
-c     &      U_obs, 0, myThid )
-c      CALL READ_FLD_XY_RS( STREAMICEyvelOptimFile, ' ',
-c     &      V_obs, 0, myThid )
+!      _BARRIER
+
+!      CALL READ_FLD_XY_RS( STREAMICExvelOptimFile, ' ', 
+!     &      U_obs, 0, myThid )
+!      CALL READ_FLD_XY_RS( STREAMICEyvelOptimFile, ' ', 
+!     &      V_obs, 0, myThid )
 
 C--   Calculate mask for tracer cells  (0 => land, 1 => water)
-c       k=1
+!       k=1
 
 C--   Calculate cost function on tile of this instance
-      do bj = myByLo(myThid),myByHi(myThid)
-        do bi = myBxLo(myThid),myBxHi(myThid)
+      do bj = jtlo,jthi
+        do bi = itlo,ithi
           do j=1,sNy
             do i=1,sNx
+
 
             if (streamice_hmask(i,j,bi,bj).eq.1.0) then
              objf_test (bi,bj) = objf_test (bi,bj) +
@@ -71,12 +88,13 @@ C--   Calculate cost function on tile of this instance
      &       h_streamice(i,j,bi,bj)**2
             endif
 
-            enddo
-          enddo
-        enddo
-      enddo
 
-#endif /* ALLOW_COST_TEST */
+            end do
+          end do
+        end do
+      end do
+
+#endif
 
       RETURN
       END

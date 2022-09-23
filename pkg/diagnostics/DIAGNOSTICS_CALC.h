@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/diagnostics/DIAGNOSTICS_CALC.h,v 1.4 2014/11/18 23:53:04 jmc Exp $
+C $Name:  $
+
 CBOP
 C     !ROUTINE: DIAGNOSTICS_CALC.h
 C     !INTERFACE:

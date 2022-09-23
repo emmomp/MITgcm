@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/offline/OFFLINE.h,v 1.13 2015/07/16 21:21:18 jmc Exp $
+C $Name:  $
+
 #ifdef  ALLOW_OFFLINE
 C     !ROUTINE: OFFLINE.h
 C -------------------------------

@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/mom_common/mom_v_sidedrag.F,v 1.13 2014/02/09 18:56:19 jmc Exp $
+C $Name:  $
+
 #include "MOM_COMMON_OPTIONS.h"
 
 CBOP

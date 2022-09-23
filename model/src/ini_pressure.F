@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/model/src/ini_pressure.F,v 1.16 2016/02/15 18:00:26 jmc Exp $
+C $Name:  $
+
 #include "PACKAGES_CONFIG.h"
 #include "CPP_OPTIONS.h"
 
@@ -29,16 +32,17 @@ C     == Global variables ==
 #include "DYNVARS.h"
 
 C     !INPUT/OUTPUT PARAMETERS:
-C     myThid     :: my Thread Id number
+C     == Routine arguments ==
+C     myThid -  Number of this instance of INI_PRESSURE
       INTEGER myThid
 
 C     !LOCAL VARIABLES:
+C     == Local variables ==
 C     dPhiHydX,Y :: Gradient (X & Y directions) of Hyd. Potential
 C     bi,bj      :: tile indices
 C     i,j,k      :: Loop counters
       INTEGER bi, bj
       INTEGER  i,  j, k
-#ifndef ALLOW_AUTODIFF
       INTEGER  iMin, iMax, jMin, jMax, npiter
       _RL PhiHydF (1-OLx:sNx+OLx,1-OLy:sNy+OLy)
       _RL PhiHydC (1-OLx:sNx+OLx,1-OLy:sNy+OLy)
@@ -47,10 +51,13 @@ C     i,j,k      :: Loop counters
       _RL oldPhi  (1-OLx:sNx+OLx,1-OLy:sNy+OLy)
       _RL count, rmspp, rmsppold
       _RL sumTile, rmsTile
-#endif
 
       CHARACTER*(MAX_LEN_MBUF) msgBuf
 CEOP
+      iMin = 1-OLx
+      iMax = sNx+OLx
+      jMin = 1-OLy
+      jMax = sNy+OLy
 
       _BEGIN_MASTER( myThid )
       WRITE(msgBuf,'(a)')
@@ -77,11 +84,6 @@ CEOP
 cph-- deal with this iterative loop for AD once it will
 cph-- really be needed;
 cph-- would need storing of totPhiHyd for each npiter
-
-       iMin = 1-OLx
-       iMax = sNx+OLx
-       jMin = 1-OLy
-       jMax = sNy+OLy
 
        rmspp    = 1. _d 0
        rmsppold = 0. _d 0
@@ -111,6 +113,7 @@ C     for each level save old pressure and compute new pressure
             ENDDO
             CALL CALC_PHI_HYD(
      I           bi, bj, iMin, iMax, jMin, jMax, k,
+     I           theta, salt,
      U           phiHydF,
      O           phiHydC, dPhiHydX, dPhiHydY,
      I           startTime, -1, myThid )

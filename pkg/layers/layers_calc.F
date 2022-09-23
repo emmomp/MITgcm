@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/layers/layers_calc.F,v 1.32 2017/03/24 23:38:56 jmc Exp $
+C $Name:  $
+
 #include "LAYERS_OPTIONS.h"
 #ifdef ALLOW_GMREDI
 #include "GMREDI_OPTIONS.h"
@@ -71,14 +74,10 @@ C      layers_V   :: mean meridional velocity in layer (only if layer exists) (m
       _RL layers_V  (1-OLx:sNx+OLx,1-OLy:sNy+OLy,Nlayers,nSx,nSy)
 # endif /* LAYERS_THICKNESS */
 #endif /* LAYERS_VFLUX */
-#if (defined LAYERS_PRHO_REF) || (defined LAYERS_MSE)
-      _RL prho(1-OLx:sNx+OLx,1-OLy:sNy+OLy,Nr,nSx,nSy)
-#endif
 #ifdef LAYERS_PRHO_REF
+      _RL prho(1-OLx:sNx+OLx,1-OLy:sNy+OLy,Nr,nSx,nSy)
       _RL rhoShift
-#endif
-#ifdef LAYERS_MSE
-      _RL conv_theta2T
+      INTEGER i, j, k
 #endif
 C --  other local variables:
 C     bi, bj   :: tile indices
@@ -88,7 +87,6 @@ C     k        :: vertical index for model grid
       INTEGER bi, bj, iLa
       CHARACTER*(10) sufx
       CHARACTER*(13) suff
-      INTEGER i, j, k
 
 #ifdef LAYERS_THERMODYNAMICS
       INTEGER iTracer
@@ -223,30 +221,6 @@ C    but to multiply the fluxes in place here
      &              myThid)
 #endif
 #endif /* LAYERS_PRHO_REF */
-       ELSEIF ( layers_num(iLa) .EQ. 4 ) THEN
-#ifdef LAYERS_MSE
-C     For layers_num(iLa) = 4, calculate the absolute temperature referenced to 1000 mb
-        DO bj=myByLo(myThid),myByHi(myThid)
-         DO bi=myBxLo(myThid),myBxHi(myThid)
-          DO k = 1,Nr
-           conv_theta2T = (rC(k)/atm_Po)**atm_kappa
-           DO j = 1-OLy,sNy+OLy
-            DO i = 1-OLx,sNx+OLx
-             prho(i,j,k,bi,bj) = atm_Cp*conv_theta2T*theta(i,j,k,bi,bj)
-     &                         +  totPhiHyd(i,j,k,bi,bj) +  phiRef(2*k)
-     &                         +  2501. _d 0 * salt(i,j,k,bi,bj)
-            ENDDO
-           ENDDO
-          ENDDO
-         ENDDO
-        ENDDO
-        CALL LAYERS_FLUXCALC( uVel,vVel, prho, iLa,
-     &              layers_UH, layers_VH,
-     &              layers_Hw, layers_Hs,
-     &              layers_PIw,layers_PIs,
-     &              layers_U,  layers_V,
-     &              myThid )
-#endif /* LAYERS_MSE */
        ENDIF
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|

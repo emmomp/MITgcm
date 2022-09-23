@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/cd_code/cd_code_init_fixed.F,v 1.2 2006/02/26 19:51:54 jmc Exp $
+C $Name:  $
+
 #include "CD_CODE_OPTIONS.h"
 
       SUBROUTINE CD_CODE_INIT_FIXED( myThid )

@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/mypackage/mypackage_write_pickup.F,v 1.5 2013/01/13 22:46:38 jmc Exp $
+C $Name:  $
+
 #include "MYPACKAGE_OPTIONS.h"
 
 CBOP
@@ -12,7 +15,6 @@ C     Writes current state of passive tracers to a pickup file
 
 C !USES: ===============================================================
       IMPLICIT NONE
-C     == Global variables ===
 #include "SIZE.h"
 #include "EEPARAMS.h"
 #include "PARAMS.h"
@@ -33,6 +35,7 @@ C     myThid          :: thread number
 C !OUTPUT PARAMETERS: ==================================================
 C  none
 
+#ifdef ALLOW_MYPACKAGE
 #if (defined MYPACKAGE_3D_STATE) || (defined MYPACKAGE_2D_STATE)
 
 C     === Functions ====
@@ -140,6 +143,7 @@ C     uses this specific S/R to write (with more informations) only meta files
 C--------------------------
 
 #endif /* MYPACKAGE_3D_STATE or MYPACKAGE_2D_STATE */
+#endif /* ALLOW_MYPACKAGE */
 
       RETURN
       END

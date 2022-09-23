@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/model/src/timestep_wvel.F,v 1.7 2011/05/20 16:20:13 jmc Exp $
+C $Name:  $
+
 #include "CPP_OPTIONS.h"
 
 CBOP

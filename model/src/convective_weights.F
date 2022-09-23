@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/model/src/convective_weights.F,v 1.6 2012/03/05 01:17:42 jmc Exp $
+C $Name:  $
+
 #include "CPP_OPTIONS.h"
 
 CBOP
@@ -43,7 +46,7 @@ C     myThid  :: my Thread Id number
       _RL convectCount(1-OLx:sNx+OLx,1-OLy:sNy+OLy,Nr)
       INTEGER myThid
 
-#if (defined INCLUDE_CONVECT_CALL || defined INCLUDE_CONVECT_INI_CALL)
+#ifdef INCLUDE_CONVECT_CALL
 
 C !LOCAL VARIABLES:
 C     i,j      :: Loop counter
@@ -74,7 +77,7 @@ C      Where statically stable, do nothing
        ENDDO
       ENDDO
 
-#endif /* INCLUDE_CONVECT_CALL or INCLUDE_CONVECT_INI_CALL */
+#endif /* INCLUDE_CONVECT_CALL */
 
       RETURN
       END

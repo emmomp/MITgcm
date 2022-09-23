@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/diagnostics/diagnostics_read_pickup.F,v 1.6 2009/08/27 18:00:01 jmc Exp $
+C $Name:  $
+
 #include "DIAG_OPTIONS.h"
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
@@ -37,7 +40,7 @@ c     INTEGER prec, iChar, lChar, k
       INTEGER  ILNBLNK
       EXTERNAL ILNBLNK
 
-      INTEGER dUnit, ndId, n, m
+      INTEGER dUnit, n, m
 
 #ifdef ALLOW_MNC
       INTEGER i, ii
@@ -50,6 +53,7 @@ c     INTEGER prec, iChar, lChar, k
       CHARACTER*(NLEN) d_cw_name
       CHARACTER*(NLEN) dn_blnk
 #endif /*  ALLOW_MNC  */
+
 
 C     Add pickup capability
       IF (diag_pickup_read) THEN
@@ -147,8 +151,7 @@ C--    jmc: should really write 1 file per tile
           OPEN( dUnit, file=fn )
           DO n = 1,nlists
             DO m = 1,nfields(n)
-              ndId = ABS(jdiag(m,n))
-              READ(dUnit,'(I10)') ndiag(ndId,1,1)
+              READ(dUnit,'(I10)') ndiag(jdiag(m,n),1,1)
             ENDDO
           ENDDO
           CLOSE( dUnit )

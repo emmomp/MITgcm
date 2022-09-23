@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/exf/exf_init_varia.F,v 1.2 2017/02/21 01:11:22 jmc Exp $
+C $Name:  $
+
 #include "EXF_OPTIONS.h"
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
@@ -24,11 +27,9 @@ C     == global variables ==
 #include "SIZE.h"
 #include "GRID.h"
 #include "EXF_PARAM.h"
-#include "EXF_INTERP_SIZE.h"
-#include "EXF_INTERP_PARAM.h"
 #include "EXF_FIELDS.h"
-#include "PARAMS.h"
 #ifdef ALLOW_BULK_OFFLINE
+# include "PARAMS.h"
 # include "DYNVARS.h"
 #endif
 
@@ -37,11 +38,8 @@ C     myThid         :: My Thread Id number
       INTEGER myThid
 
 C !LOCAL VARIABLES:
-      INTEGER i,j,ks,bi,bj
+      INTEGER i,j,bi,bj
 CEOP
-
-      ks = 1
-      IF ( usingPCoords ) ks = Nr
 
 C--   Initialise to zero intermediate fields (in common block)
       DO bj = myByLo(myThid), myByHi(myThid)
@@ -328,19 +326,6 @@ C      will be over-written at first time-step when calling EXF_SET_UV.
      I     myThid )
 #endif /* ATMOSPHERIC_LOADING */
 
-#ifdef EXF_ALLOW_TIDES
-      CALL EXF_INIT_FLD(
-     I     'tidePot', tidePotFile, tidePotMask,
-     I     tidePotPeriod, exf_inscal_tidePot, tidePotconst,
-     O     tidePot, tidePot0, tidePot1,
-#ifdef USE_EXF_INTERPOLATION
-     I     tidePot_lon0, tidePot_lon_inc,
-     I     tidePot_lat0, tidePot_lat_inc,
-     I     tidePot_nlon, tidePot_nlat, xC, yC, tidePot_interpMethod,
-#endif
-     I     myThid )
-#endif /* EXF_ALLOW_TIDES */
-
 #ifdef EXF_SEAICE_FRACTION
       CALL EXF_INIT_FLD(
      I     'areamask', areamaskfile, areamaskmask,
@@ -456,31 +441,31 @@ C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
 # endif
       DO bj=myByLo(myThid),myByHi(myThid)
        DO bi=myBxLo(myThid),myBxHi(myThid)
-         DO j=1-OLy,sNy+OLy
-          DO i=1-OLx,sNx+OLx
+         DO j=1-oLy,sNy+oLy
+          DO i=1-oLx,sNx+oLx
 # ifdef ALLOW_CLIMSST_RELAXATION
            IF ( climsstfile .NE. ' ' .AND.
      &          climsstperiod .EQ. 0. )
-     &          theta(i,j,ks,bi,bj) = climsst(i,j,bi,bj)
+     &          theta(i,j,1,bi,bj) = climsst(i,j,bi,bj)
 # endif
 # ifdef ALLOW_CLIMSSS_RELAXATION
            IF ( climsssfile .NE. ' ' .AND.
      &          climsssperiod .EQ. 0. )
-     &          salt(i,j,ks,bi,bj) = climsss(i,j,bi,bj)
+     &          salt(i,j,1,bi,bj) = climsss(i,j,bi,bj)
 # endif
 # ifdef ALLOW_CLIMSTRESS_RELAXATION
            IF ( climustrfile .NE. ' ' .AND.
      &          climustrperiod .EQ. 0. )
-     &          uVel(i,j,ks,bi,bj) = climustr(i,j,bi,bj)
+     &          uvel(i,j,1,bi,bj) = climustr(i,j,bi,bj)
            IF ( climvstrfile .NE. ' ' .AND.
      &          climvstrperiod .EQ. 0. )
-     &          vVel(i,j,ks,bi,bj) = climvstr(i,j,bi,bj)
+     &          vvel(i,j,1,bi,bj) = climvstr(i,j,bi,bj)
 # endif
-           IF ( maskC(i,j,ks,bi,bj) .NE. 0. .AND.
-     &             theta(i,j,ks,bi,bj) .EQ. 0. ) THEN
-                PRINT *, 'ph-warn-exf-init ', i, j, theta(i,j,ks,bi,bj)
+           IF ( maskC(i,j,1,bi,bj) .NE. 0. .AND.
+     &             theta(i,j,1,bi,bj) .EQ. 0. ) then
+                print *, 'ph-warn-exf-init ', i, j, theta(i,j,1,bi,bj)
 cph                STOP 'in exf_init'
-           ENDIF
+           endif
           ENDDO
          ENDDO
        ENDDO

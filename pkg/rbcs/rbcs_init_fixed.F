@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/rbcs/rbcs_init_fixed.F,v 1.10 2015/12/06 15:33:16 jmc Exp $
+C $Name:  $
+
 #include "RBCS_OPTIONS.h"
 
 C !INTERFACE: ==========================================================
@@ -57,7 +60,7 @@ C     Report RBCS mask setting
 
       IF ( useRBCtemp ) THEN
         irbc = MIN(maskLEN,1)
-        IF ( relaxMaskTrFile(irbc).EQ.' ' ) THEN
+        IF ( relaxMaskFile(irbc).EQ.' ' ) THEN
          WRITE(msgBuf,'(2A,I3,2A)') '** WARNING ** RBCS_INIT_FIXED:',
      &     ' relaxMaskFile(irbc=', irbc, ') unset ==> No relaxation',
      &     ' for Temp'
@@ -69,9 +72,9 @@ C     Report RBCS mask setting
          CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
      &                       SQUEEZE_RIGHT, myThid )
         ELSE
-         iLen = ILNBLNK(relaxMaskTrFile(irbc))
+         iLen = ILNBLNK(relaxMaskFile(irbc))
          WRITE(msgBuf,'(A,I3,3A)') 'Use relaxMaskFile(irbc=', irbc,
-     &     ') = "', relaxMaskTrFile(irbc)(1:iLen), '"'
+     &     ') = "', relaxMaskFile(irbc)(1:iLen), '"'
          CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
      &                       SQUEEZE_RIGHT, myThid )
          WRITE(msgBuf,'(A,1PE21.13)')
@@ -82,7 +85,7 @@ C     Report RBCS mask setting
       ENDIF
       IF ( useRBCsalt ) THEN
         irbc = MIN(maskLEN,2)
-        IF ( relaxMaskTrFile(irbc).EQ.' ' ) THEN
+        IF ( relaxMaskFile(irbc).EQ.' ' ) THEN
          WRITE(msgBuf,'(2A,I3,2A)') '** WARNING ** RBCS_INIT_FIXED:',
      &     ' relaxMaskFile(irbc=', irbc, ') unset ==> No relaxation',
      &     ' for Salt'
@@ -94,9 +97,9 @@ C     Report RBCS mask setting
          CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
      &                       SQUEEZE_RIGHT, myThid )
         ELSE
-         iLen = ILNBLNK(relaxMaskTrFile(irbc))
+         iLen = ILNBLNK(relaxMaskFile(irbc))
          WRITE(msgBuf,'(A,I3,3A)') 'Use relaxMaskFile(irbc=', irbc,
-     &     ') = "', relaxMaskTrFile(irbc)(1:iLen), '"'
+     &     ') = "', relaxMaskFile(irbc)(1:iLen), '"'
          CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
      &                       SQUEEZE_RIGHT, myThid )
          WRITE(msgBuf,'(A,1PE21.13)')
@@ -154,7 +157,7 @@ C     Report RBCS mask setting
        DO iTr=1,PTRACERS_numInUse
         IF ( useRBCpTrNum(iTr) ) THEN
          irbc = MIN(maskLEN,2+iTr)
-         IF ( relaxMaskTrFile(irbc).EQ.' ' ) THEN
+         IF ( relaxMaskFile(irbc).EQ.' ' ) THEN
           WRITE(msgBuf,'(2A,I3,2A,I3)')
      &     '** WARNING ** RBCS_INIT_FIXED:',
      &     ' relaxMaskFile(irbc=', irbc, ') unset ==> No relaxation',
@@ -167,9 +170,9 @@ C     Report RBCS mask setting
           CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
      &                        SQUEEZE_RIGHT, myThid )
          ELSE
-          iLen = ILNBLNK(relaxMaskTrFile(irbc))
+          iLen = ILNBLNK(relaxMaskFile(irbc))
           WRITE(msgBuf,'(A,I3,3A)') 'Use relaxMaskFile(irbc=', irbc,
-     &     ') = "', relaxMaskTrFile(irbc)(1:iLen), '"'
+     &     ') = "', relaxMaskFile(irbc)(1:iLen), '"'
           CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
      &                        SQUEEZE_RIGHT, myThid )
           WRITE(msgBuf,'(A,I3,A,1PE21.13)')
@@ -192,8 +195,8 @@ C     Loop over tiles
       DO bj = myByLo(myThid), myByHi(myThid)
        DO bi = myBxLo(myThid), myBxHi(myThid)
          DO k=1,Nr
-          DO j=1-OLy,sNy+OLy
-           DO i=1-OLx,sNx+OLx
+          DO j=1-Oly,sNy+OLy
+           DO i=1-Olx,sNx+Olx
              RBC_maskU(i,j,k,bi,bj) = 0. _d 0
              RBC_maskV(i,j,k,bi,bj) = 0. _d 0
            ENDDO
@@ -212,8 +215,8 @@ C     Loop over tiles
 
 C        Initialize arrays in common blocks :
            DO k=1,Nr
-            DO j=1-OLy,sNy+OLy
-             DO i=1-OLx,sNx+OLx
+            DO j=1-Oly,sNy+OLy
+             DO i=1-Olx,sNx+Olx
                RBC_mask(i,j,k,bi,bj,irbc) = 0. _d 0
              ENDDO
             ENDDO
@@ -227,16 +230,16 @@ C     end of mask index loop
 
 C read in mask for relaxing
       DO irbc=1,maskLEN
-       IF ( relaxMaskTrFile(irbc).NE. ' ' ) THEN
-         CALL READ_FLD_XYZ_RS( relaxMaskTrFile(irbc), ' ',
-     &                RBC_mask(1-OLx,1-OLy,1,1,1,irbc), 0, myThid )
-         CALL EXCH_XYZ_RS( RBC_mask(1-OLx,1-OLy,1,1,1,irbc), myThid )
+       IF ( relaxMaskFile(irbc).NE. ' ' ) THEN
+         CALL READ_FLD_XYZ_RS(relaxMaskFile(irbc),' ',
+     &                RBC_mask(1-Olx,1-Oly,1,1,1,irbc), 0, myThid)
+         CALL EXCH_XYZ_RS( RBC_mask(1-Olx,1-Oly,1,1,1,irbc), myThid )
 C--   Apply mask:
          DO bj = myByLo(myThid), myByHi(myThid)
           DO bi = myBxLo(myThid), myBxHi(myThid)
            DO k=1,Nr
-            DO j=1-OLy,sNy+OLy
-             DO i=1-OLx,sNx+OLx
+            DO j=1-Oly,sNy+OLy
+             DO i=1-Olx,sNx+Olx
                RBC_mask(i,j,k,bi,bj,irbc) = RBC_mask(i,j,k,bi,bj,irbc)
      &                                    * maskC(i,j,k,bi,bj)
              ENDDO
@@ -247,7 +250,7 @@ C--   Apply mask:
          IF ( debugLevel.GE.debLevC ) THEN
            WRITE(filName,'(A,I3.3)') 'RBC_mask_',irbc
            CALL WRITE_FLD_XYZ_RS( filName,' ',
-     &                RBC_mask(1-OLx,1-OLy,1,1,1,irbc), 0, myThid )
+     &                RBC_mask(1-Olx,1-Oly,1,1,1,irbc), 0, myThid )
          ENDIF
        ENDIF
       ENDDO
@@ -259,8 +262,8 @@ C--   Apply mask:
         DO bj = myByLo(myThid), myByHi(myThid)
          DO bi = myBxLo(myThid), myBxHi(myThid)
            DO k=1,Nr
-            DO j=1-OLy,sNy+OLy
-             DO i=2-OLx,sNx+OLx
+            DO j=1-Oly,sNy+OLy
+             DO i=2-Olx,sNx+Olx
                RBC_maskU(i,j,k,bi,bj) =
      &                  ( RBC_mask(i-1,j,k,bi,bj,1)
      &                  + RBC_mask( i ,j,k,bi,bj,1) )*0.5 _d 0
@@ -276,8 +279,8 @@ C--   Apply mask:
         DO bj = myByLo(myThid), myByHi(myThid)
          DO bi = myBxLo(myThid), myBxHi(myThid)
            DO k=1,Nr
-            DO j=2-OLy,sNy+OLy
-             DO i=1-OLx,sNx+OLx
+            DO j=2-Oly,sNy+OLy
+             DO i=1-Olx,sNx+Olx
                RBC_maskV(i,j,k,bi,bj) =
      &                  ( RBC_mask(i,j-1,k,bi,bj,1)
      &                  + RBC_mask(i, j ,k,bi,bj,1) )*0.5 _d 0
@@ -293,8 +296,8 @@ C--   Apply mask:
          DO bj = myByLo(myThid), myByHi(myThid)
           DO bi = myBxLo(myThid), myBxHi(myThid)
            DO k=1,Nr
-            DO j=1-OLy,sNy+OLy
-             DO i=1-OLx,sNx+OLx
+            DO j=1-Oly,sNy+OLy
+             DO i=1-Olx,sNx+Olx
                RBC_maskU(i,j,k,bi,bj) = RBC_maskU(i,j,k,bi,bj)
      &                                * maskW(i,j,k,bi,bj)
                RBC_maskV(i,j,k,bi,bj) = RBC_maskV(i,j,k,bi,bj)

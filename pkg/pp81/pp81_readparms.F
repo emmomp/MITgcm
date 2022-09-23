@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/pp81/pp81_readparms.F,v 1.4 2014/05/27 23:41:29 jmc Exp $
+C $Name:  $
+
 #include "PP81_OPTIONS.h"
 
 CBOP
@@ -41,7 +44,8 @@ CEOP
      &     PPalpha,
      &     PPdumpFreq,
      &     PPMixingMaps,
-     &     PPwriteState
+     &     PPwriteState,
+     &     PPtaveFreq
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
 
@@ -69,6 +73,7 @@ C Set defaults values for parameters in PP81.h
       PPalpha      = 5. _d 0
       RiLimit      = UNSET_RL
       PPdumpFreq   = dumpFreq
+      PPtaveFreq   = taveFreq
       PPMixingMaps = .FALSE.
       PPwriteState = .FALSE.
 
@@ -88,11 +93,7 @@ C Open and read the data.pp81 file
      &                   SQUEEZE_RIGHT , 1)
 
 C Close the open data file
-#ifdef SINGLE_DISK_IO
       CLOSE(iUnit)
-#else
-      CLOSE(iUnit,STATUS='DELETE')
-#endif /* SINGLE_DISK_IO */
       _END_MASTER(myThid)
 
 C Everyone else must wait for the parameters to be loaded

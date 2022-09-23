@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/salt_plume/salt_plume_tendency_apply_s.F,v 1.11 2014/07/09 17:00:49 jmc Exp $
+C $Name:  $
+
 #include "SALT_PLUME_OPTIONS.h"
 
 CBOP 0

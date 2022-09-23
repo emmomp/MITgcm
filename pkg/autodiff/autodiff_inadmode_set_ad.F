@@ -1,14 +1,16 @@
+C $Header: /u/gcmpack/MITgcm/pkg/autodiff/autodiff_inadmode_set_ad.F,v 1.14 2016/01/22 15:33:21 mlosch Exp $
+C $Name:  $
+
 #include "AUTODIFF_OPTIONS.h"
 #ifdef ALLOW_CTRL
 # include "CTRL_OPTIONS.h"
 #endif
 
-      SUBROUTINE ADAUTODIFF_INADMODE_SET( myTime, myIter, myThid )
+      SUBROUTINE ADAUTODIFF_INADMODE_SET( myThid )
 C     *==========================================================*
 C     | SUBROUTINE ADAUTODIFF_INADMODE_SET
 C     *==========================================================*
 
-C     !USES:
       IMPLICIT NONE
 C     == Global variables ===
 #include "SIZE.h"
@@ -22,39 +24,22 @@ C     == Global variables ===
 #ifdef ALLOW_CTRL
 #include "ctrl.h"
 #endif
-#ifdef ALLOW_AUTODIFF_MONITOR
-# ifdef ALLOW_DIAGNOSTICS
-#  include "DIAGNOSTICS_SIZE.h"
-#  include "DIAGNOSTICS.h"
-# endif
-#endif /* ALLOW_AUTODIFF_MONITOR */
 
-C     !INPUT/OUTPUT PARAMETERS:
-C     myTime    :: Current time in simulation
-C     myIter    :: Current iteration number
-C     myThid    :: my Thread Id number
-      _RL     myTime
-      INTEGER myIter
+C     == Routine arguments ==
+C     myThid :: my Thread Id number
       INTEGER myThid
-
-C     !LOCAL VARIABLES:
       CHARACTER*(MAX_LEN_MBUF) msgBuf
 
-#ifdef ALLOW_AUTODIFF_MONITOR
-# ifdef ALLOW_DIAGNOSTICS
-      IF ( useDiag4AdjOutp ) THEN
-        CALL DIAGNOSTICS_SWITCH_ONOFF( myTime, myIter, myThid )
-      ENDIF
-# endif /* ALLOW_DIAGNOSTICS */
-#endif /* ALLOW_AUTODIFF_MONITOR */
-
-      inAdMode  = .TRUE.
+      inAdMode  = inAdTrue
 
       useKPP    = useKPPinAdMode
       useGMRedi = useGMRediInAdMode
       useSEAICE = useSEAICEinAdMode
       useGGL90  = useGGL90inAdMode
       useSALT_PLUME = useSALT_PLUMEinAdMode
+#if (defined (ALLOW_CTRL) && defined (ECCO_CTRL_DEPRECATED))
+      ctrlSmoothCorrel2D  = useSmoothCorrel2DinAdMode
+#endif
 #ifdef ALLOW_SEAICE
       IF ( SEAICEuseFREEDRIFTswitchInAd ) THEN
         SEAICEuseFREEDRIFT = .NOT.SEAICEuseFREEDRIFTinFwdMode
@@ -64,8 +49,6 @@ C     !LOCAL VARIABLES:
         SEAICEuseDYNAMICS  = .NOT.SEAICEuseDYNAMICSinFwdMode
       ENDIF
       SEAICEadjMODE=SEAICEapproxLevInAd
-C     SIregFacInAd = UNSET_RL by default, so we need to check this here
-      IF ( SIregFacInAd .NE. UNSET_RL ) SINegFac = SIregFacInAd
 #endif /* ALLOW_SEAICE */
       viscFacAdj=viscFacInAd
 
@@ -97,6 +80,14 @@ C     SIregFacInAd = UNSET_RL by default, so we need to check this here
      &      'S/R ADAUTODIFF_INADMODE_SET: viscFacAdj =',viscFacAdj
        CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
      &                     SQUEEZE_RIGHT, myThid )
+
+#if (defined (ALLOW_CTRL) && defined (ECCO_CTRL_DEPRECATED))
+       WRITE(msgBuf,'(A,L5)')
+     &      'S/R ADAUTODIFF_INADMODE_SET: ctrlSmoothCorrel2D    =',
+     &       ctrlSmoothCorrel2D
+       CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
+     &                     SQUEEZE_RIGHT, myThid )
+#endif
 
 #ifdef ALLOW_SEAICE
        IF ( SEAICEuseFREEDRIFTswitchInAd ) THEN

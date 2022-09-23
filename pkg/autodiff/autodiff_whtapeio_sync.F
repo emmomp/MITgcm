@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/autodiff/autodiff_whtapeio_sync.F,v 1.11 2015/07/22 20:54:42 gforget Exp $
+C $Name:  $
+
 #include "AUTODIFF_OPTIONS.h"
 #include "MDSIO_OPTIONS.h"
 #ifdef ALLOW_CTRL
@@ -19,9 +22,7 @@ C     == Global variables ===
 # include "AUTODIFF.h"
 #endif
 #ifdef ALLOW_WHIO_3D
-# ifdef ALLOW_AUTODIFF_TAMC
-#  include "tamc.h"
-# endif
+# include "tamc.h"
 # include "MDSIO_BUFF_WH.h"
 #endif
 

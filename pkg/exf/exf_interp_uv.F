@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/exf/exf_interp_uv.F,v 1.6 2017/03/10 00:16:11 jmc Exp $
+C $Name:  $
+
 #include "EXF_OPTIONS.h"
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
@@ -106,8 +109,7 @@ C     arrVin      :: 2nd  component input field array (loaded from file)
       _RS      xG(1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
       _RS      threeSixtyRS
       _RL      yPole, symSign, poleU, poleV
-      _RL      csdLon, sndLon, pSign
-      _RL      edgeFac, poleFac
+      _RL      csdLon, sndLon
       LOGICAL  calcLonCS
       PARAMETER ( threeSixtyRS = 360. )
       PARAMETER ( yPole = 90. )
@@ -239,8 +241,6 @@ C-    fill-in added column from nearest column
        IF ( l.GE.1 ) j = nyIn+l
        k = MAX(1,MIN(j,nyIn))
        IF ( poleSymmetry .AND. ABS(y_in(j)).GT.yPole ) THEN
-        IF ( nyIn.GE.3 .AND. ABS(y_in(k)).EQ.yPole )
-     &    k = MAX(2,MIN(j,nyIn-1))
 C-    fill-in added row assuming pole-symmetry
         DO i=-1,nxd2
          arrUin(i,j) = symSign*arrUin(i+nxd2,k)
@@ -271,7 +271,6 @@ C     zonal-mean value (poleU,poleV corresponds to Lon=0.E orientation).
         j = l
         IF ( l.GE.2 ) j = nyIn+l-2
         IF ( ABS(y_in(j)).EQ.yPole ) THEN
-          pSign = SIGN( oneRL, y_in(j) )
           IF ( calcLonCS ) THEN
             csLon(-1) = cos(x_in(-1)*deg2rad)
             snLon(-1) = sin(x_in(-1)*deg2rad)
@@ -291,40 +290,18 @@ C     account for local orientation when averaging
           poleU = 0.
           poleV = 0.
           DO i=1,nxIn
-            poleU = poleU
-     &       + ( csLon(i)*arrUin(i,j) - pSign*snLon(i)*arrVin(i,j) )
-            poleV = poleV
-     &       + ( pSign*snLon(i)*arrUin(i,j) + csLon(i)*arrVin(i,j) )
+            poleU = poleU +csLon(i)*arrUin(i,j) -snLon(i)*arrVin(i,j)
+            poleV = poleV +snLon(i)*arrUin(i,j) +csLon(i)*arrVin(i,j)
           ENDDO
           poleU = poleU / nxIn
           poleV = poleV / nxIn
 C     put back zonal-mean value but locally orientated
           DO i=-1,nxIn+2
-           arrUin(i,j) =  csLon(i)*poleU + pSign*snLon(i)*poleV
-           arrVin(i,j) = -pSign*snLon(i)*poleU + csLon(i)*poleV
+           arrUin(i,j) =  csLon(i)*poleU + snLon(i)*poleV
+           arrVin(i,j) = -snLon(i)*poleU + csLon(i)*poleV
           ENDDO
 #ifdef ALLOW_DEBUG
           prtPole(l) = prtPole(l) + 0.1
-#endif
-        ENDIF
-       ENDDO
-C-    change first additional row from simple copy to linear interpolation
-C     between nearest column values and pole value
-       DO l=0,1
-        k = l*(nyIn+3) -1
-        IF ( ABS(y_in(k)).EQ.yPole ) THEN
-         j = l*(nyIn+1)
-         i = l*(nyIn-1) +1
-         edgeFac = (y_in(j) - y_in(k)) / (y_in(i) - y_in(k))
-         poleFac = (y_in(i) - y_in(j)) / (y_in(i) - y_in(k))
-         DO i=-1,nxIn+2
-           arrUin(i,j) = arrUin(i,j) * edgeFac
-     &                 + arrUin(i,k) * poleFac
-           arrVin(i,j) = arrVin(i,j) * edgeFac
-     &                 + arrVin(i,k) * poleFac
-         ENDDO
-#ifdef ALLOW_DEBUG
-         prtPole(3*l) = prtPole(3*l) + 0.3
 #endif
         ENDIF
        ENDDO
@@ -349,11 +326,6 @@ C     prtPole(l)=0 : extended, =1 : changed to pole, =2 : changed to symetric
      &   ' proc=', (prtPole(j),j=2,4), ', yIn=',(y_in(j),j=nyIn,nyIn+2)
         CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
      &                      SQUEEZE_RIGHT, myThid )
-c      IF ( exf_output_interp ) THEN
-c       j = (nxIn+4)*(nyIn+4)
-c       CALL WRITE_GLVEC_RL( inFileU,'_in', arrUin, j, myIter, myThid )
-c       CALL WRITE_GLVEC_RL( inFileV,'_in', arrVin, j, myIter, myThid )
-c      ENDIF
       ENDIF
 #endif /* ALLOW_DEBUG */
 

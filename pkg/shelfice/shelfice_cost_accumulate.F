@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/shelfice/shelfice_cost_accumulate.F,v 1.3 2011/12/28 20:48:17 jmc Exp $
+C $Name:  $
+
 #include "SHELFICE_OPTIONS.h"
 
       subroutine shelfice_cost_accumulate( myThid )
@@ -24,20 +27,36 @@ C     myThid - Thread number for this instance of the routine.
 
 #ifdef ALLOW_COST
 C     == Local variables
+      _RL thetaRef
+      _RL drLoc
+
       integer bi, bj
       integer i, j
+c     integer ig, jg
+      integer itlo,ithi
+      integer jtlo,jthi
+c     integer km1, kp1, klev, k
+
+      jtlo = mybylo(mythid)
+      jthi = mybyhi(mythid)
+      itlo = mybxlo(mythid)
+      ithi = mybxhi(mythid)
 
 C--   Calculate cost function on tile of this instance
-      do bj = myByLo(myThid), myByHi(myThid)
-       do bi = myBxLo(myThid), myBxHi(myThid)
-        do j=1,sNy
-         do i=1,sNx
-          cMeanSHIforT(i,j,bi,bj) = cMeanSHIforT(i,j,bi,bj)
+      do bj = jtlo,jthi
+       do bi = itlo,ithi
+ccc        do klev = 1, Nr
+         do j=1,sNy
+          do i=1,sNx
+c--
+         cMeanSHIforT(i,j,bi,bj) = cMeanSHIforT(i,j,bi,bj)
      &         + shelficeHeatFlux(i,j,bi,bj)*deltaTClock
-          cMeanSHIforS(i,j,bi,bj) = cMeanSHIforS(i,j,bi,bj)
+         cMeanSHIforS(i,j,bi,bj) = cMeanSHIforS(i,j,bi,bj)
      &         + shelficeFreshWaterFlux(i,j,bi,bj)*deltaTClock
+c--
+          enddo
          enddo
-        enddo
+ccc        enddo
        enddo
       enddo
 

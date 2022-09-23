@@ -1,4 +1,6 @@
-#undef USE_OBSOLETE_MDS_RW_SLICE
+C $Header: /u/gcmpack/MITgcm/pkg/mdsio/mdsio_rw_slice.F,v 1.1 2009/09/01 19:19:10 jmc Exp $
+C $Name:  $
+
 #include "MDSIO_OPTIONS.h"
 
 C--  File mdsio_rw_slice.F: old version of MDS_READ/WRITE_SEC_XZ/YZ S/R with
@@ -55,7 +57,7 @@ C Routine arguments
       INTEGER irecord
       INTEGER myThid
 
-#ifdef USE_OBSOLETE_MDS_RW_SLICE
+#ifdef ALLOW_AUTODIFF
 C Local variables
       _RL dummyRL(1)
       _RS dummyRS(1)
@@ -72,9 +74,9 @@ C Local variables
      I                irecord, myThid )
       ENDIF
 
-#else /* USE_OBSOLETE_MDS_RW_SLICE */
+#else /* ALLOW_AUTODIFF */
       STOP 'ABNORMAL END: S/R MDSREADFIELDXZ is retired'
-#endif /* USE_OBSOLETE_MDS_RW_SLICE */
+#endif /* ALLOW_AUTODIFF */
 
       RETURN
       END
@@ -120,7 +122,7 @@ C Routine arguments
       INTEGER irecord
       INTEGER myThid
 
-#ifdef USE_OBSOLETE_MDS_RW_SLICE
+#ifdef ALLOW_AUTODIFF
 C Local variables
       _RL dummyRL(1)
       _RS dummyRS(1)
@@ -137,9 +139,9 @@ C Local variables
      I                irecord, myThid )
       ENDIF
 
-#else /* USE_OBSOLETE_MDS_RW_SLICE */
+#else /* ALLOW_AUTODIFF */
       STOP 'ABNORMAL END: S/R MDSREADFIELDYZ is retired'
-#endif /* USE_OBSOLETE_MDS_RW_SLICE */
+#endif /* ALLOW_AUTODIFF */
 
       RETURN
       END
@@ -185,7 +187,7 @@ C Routine arguments
       INTEGER irecord
       INTEGER myThid
 
-#ifdef USE_OBSOLETE_MDS_RW_SLICE
+#ifdef ALLOW_AUTODIFF
 C Local variables
       _RL dummyRL(1)
       _RS dummyRS(1)
@@ -202,9 +204,9 @@ C Local variables
      I                irecord, myThid )
       ENDIF
 
-#else /* USE_OBSOLETE_MDS_RW_SLICE */
+#else /* ALLOW_AUTODIFF */
       STOP 'ABNORMAL END: S/R MDSREADFIELDXZ_LOC is empty'
-#endif /* USE_OBSOLETE_MDS_RW_SLICE */
+#endif /* ALLOW_AUTODIFF */
 
       RETURN
       END
@@ -250,7 +252,7 @@ C Routine arguments
       INTEGER irecord
       INTEGER myThid
 
-#ifdef USE_OBSOLETE_MDS_RW_SLICE
+#ifdef ALLOW_AUTODIFF
 C Local variables
       _RL dummyRL(1)
       _RS dummyRS(1)
@@ -267,9 +269,9 @@ C Local variables
      I                irecord, myThid )
       ENDIF
 
-#else /* USE_OBSOLETE_MDS_RW_SLICE */
+#else /* ALLOW_AUTODIFF */
       STOP 'ABNORMAL END: S/R MDSREADFIELDYZ_LOC is empty'
-#endif /* USE_OBSOLETE_MDS_RW_SLICE */
+#endif /* ALLOW_AUTODIFF */
 
       RETURN
       END
@@ -300,7 +302,7 @@ C myIter     integer :: time step number
 C myThid     integer :: thread identifier
 C
 C Routine now calls MDS_WRITE_REC_XZ, just a way to add extra arguments
-C to the argument list.
+C to the argument list. 
 C The 1rst new argument (useCurrentDir=.FALSE.) allows to write files to
 C the "mdsioLocalDir" directory (if it is set).
 C The 2nd new argument avoid argument array of undefined type (RL/RS).
@@ -321,7 +323,7 @@ C Routine arguments
       INTEGER myIter
       INTEGER myThid
 
-#ifdef USE_OBSOLETE_MDS_RW_SLICE
+#ifdef ALLOW_AUTODIFF
 C Local variables
       _RL dummyRL(1)
       _RS dummyRS(1)
@@ -338,9 +340,9 @@ C Local variables
      I                 irecord, myIter, myThid )
       ENDIF
 
-#else /* USE_OBSOLETE_MDS_RW_SLICE */
+#else /* ALLOW_AUTODIFF */
       STOP 'ABNORMAL END: S/R MDSWRITEFIELDXZ is retired'
-#endif /* USE_OBSOLETE_MDS_RW_SLICE */
+#endif /* ALLOW_AUTODIFF */
 
       RETURN
       END
@@ -371,7 +373,7 @@ C myIter     integer :: time step number
 C myThid     integer :: thread identifier
 C
 C Routine now calls MDS_WRITE_REC_YZ, just a way to add extra arguments
-C to the argument list.
+C to the argument list. 
 C The 1rst new argument (useCurrentDir=.FALSE.) allows to write files to
 C the "mdsioLocalDir" directory (if it is set).
 C The 2nd new argument avoid argument array of undefined type (RL/RS).
@@ -392,7 +394,7 @@ C Routine arguments
       INTEGER myIter
       INTEGER myThid
 
-#ifdef USE_OBSOLETE_MDS_RW_SLICE
+#ifdef ALLOW_AUTODIFF
 C Local variables
       _RL dummyRL(1)
       _RS dummyRS(1)
@@ -409,9 +411,9 @@ C Local variables
      I                 irecord, myIter, myThid )
       ENDIF
 
-#else /* USE_OBSOLETE_MDS_RW_SLICE */
+#else /* ALLOW_AUTODIFF */
       STOP 'ABNORMAL END: S/R MDSWRITEFIELDYZ is retired'
-#endif /* USE_OBSOLETE_MDS_RW_SLICE */
+#endif /* ALLOW_AUTODIFF */
 
       RETURN
       END
@@ -442,7 +444,7 @@ C myIter     integer :: time step number
 C myThid     integer :: thread identifier
 C
 C Routine now calls MDS_WRITE_REC_XZ, just a way to add extra arguments
-C to the argument list.
+C to the argument list. 
 C The 1rst new argument (useCurrentDir=.TRUE.) forces to ignore the
 C "mdsioLocalDir" parameter and to always write to the current directory.
 C The 2nd new argument avoid argument array of undefined type (RL/RS).
@@ -463,7 +465,7 @@ C Routine arguments
       INTEGER myIter
       INTEGER myThid
 
-#ifdef USE_OBSOLETE_MDS_RW_SLICE
+#ifdef ALLOW_AUTODIFF
 C Local variables
       _RL dummyRL(1)
       _RS dummyRS(1)
@@ -480,9 +482,9 @@ C Local variables
      I                 irecord, myIter, myThid )
       ENDIF
 
-#else /* USE_OBSOLETE_MDS_RW_SLICE */
+#else /* ALLOW_AUTODIFF */
       STOP 'ABNORMAL END: S/R MDSWRITEFIELDXZ_LOC is empty'
-#endif /* USE_OBSOLETE_MDS_RW_SLICE */
+#endif /* ALLOW_AUTODIFF */
 
       RETURN
       END
@@ -513,7 +515,7 @@ C myIter     integer :: time step number
 C myThid     integer :: thread identifier
 C
 C Routine now calls MDS_WRITE_REC_YZ, just a way to add extra arguments
-C to the argument list.
+C to the argument list. 
 C The 1rst new argument (useCurrentDir=.TRUE.) forces to ignore the
 C "mdsioLocalDir" parameter and to always write to the current directory.
 C The 2nd new argument avoid argument array of undefined type (RL/RS).
@@ -534,7 +536,7 @@ C Routine arguments
       INTEGER myIter
       INTEGER myThid
 
-#ifdef USE_OBSOLETE_MDS_RW_SLICE
+#ifdef ALLOW_AUTODIFF
 C Local variables
       _RL dummyRL(1)
       _RS dummyRS(1)
@@ -551,9 +553,9 @@ C Local variables
      I                 irecord, myIter, myThid )
       ENDIF
 
-#else /* USE_OBSOLETE_MDS_RW_SLICE */
+#else /* ALLOW_AUTODIFF */
       STOP 'ABNORMAL END: S/R MDSWRITEFIELDYZ_LOC is empty'
-#endif /* USE_OBSOLETE_MDS_RW_SLICE */
+#endif /* ALLOW_AUTODIFF */
 
       RETURN
       END

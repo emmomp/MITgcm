@@ -1,9 +1,13 @@
+C $Header: /u/gcmpack/MITgcm/pkg/ecco/cost_bp_read.F,v 1.5 2014/09/29 16:47:49 gforget Exp $
+C $Name:  $
+
 #include "ECCO_OPTIONS.h"
 
+
       subroutine cost_bp_read(
-     I localobsfile, localstartdate,
+     I localobsfile, localstartdate, 
      O localobs, localmask,
-     I irec, myThid )
+     I irec,myThid)
 
 c     ==================================================================
 c     SUBROUTINE cost_bp_read
@@ -30,31 +34,38 @@ c     == global variables ==
 # include "cal.h"
 #endif
 #ifdef ALLOW_ECCO
-# include "ECCO_SIZE.h"
-# include "ECCO.h"
+# include "ecco_cost.h"
 #endif
 
 c     == routine arguments ==
+
       character*(MAX_LEN_FNAM) localobsfile
       integer localstartdate(4)
-      _RL localobs   (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
-      _RL localmask  (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
+      _RL localobs   (1-olx:snx+olx,1-oly:sny+oly,nsx,nsy)
+      _RL localmask  (1-olx:snx+olx,1-oly:sny+oly,nsx,nsy)
       integer irec
-      integer myThid
+      integer mythid
 
 #ifdef ALLOW_ECCO
-c     == external functions ==
-      integer  ilnblnk
-      external ilnblnk
 
 c     == local variables ==
+
       integer bi,bj
       integer i,j,k
+      integer itlo,ithi
+      integer jtlo,jthi
       integer jmin,jmax
       integer imin,imax
       integer nobs
+      integer bprec
+      integer beginbp
+      integer beginrun
+
       INTEGER beginlocal, beginmodel, obsrec
+
       _RL spval
+      _RL vartile
+
 cnew(
       integer  il
       integer mody, modm
@@ -63,15 +74,25 @@ cnew(
       logical exst
 cnew)
 
+c     == external functions ==
+
+      integer  ilnblnk
+      external ilnblnk
+
 c     == end of interface ==
 
       parameter (spval = -998. )
 ce    --> there is certainly a better place for this.
 
+      jtlo = mybylo(mythid)
+      jthi = mybyhi(mythid)
+      itlo = mybxlo(mythid)
+      ithi = mybxhi(mythid)
       jmin = 1
-      jmax = sNy
+      jmax = sny
       imin = 1
-      imax = sNx
+      imax = snx
+
 
        beginlocal = localstartdate(1)/10000
        beginmodel = modelstartdate(1)/10000
@@ -95,11 +116,11 @@ ce    --> there is certainly a better place for this.
       endif
 
       if ( (obsrec.GT.0).AND.(imonth.GT.0) ) then
-       CALL READ_REC_3D_RL( fnametmp, cost_iprec, 1,
-     &                      localobs, imonth, 0, myThid )
+        call mdsreadfield( fnametmp, cost_iprec, cost_yftype, 1,
+     &                   localobs, imonth, mythid )
       else
-        do bj = myByLo(myThid), myByHi(myThid)
-         do bi = myBxLo(myThid), myBxHi(myThid)
+        do bj = jtlo,jthi
+         do bi = itlo,ithi
           do j = jmin,jmax
            do i = imin,imax
             localobs(i,j,bi,bj) = spval
@@ -111,8 +132,8 @@ ce    --> there is certainly a better place for this.
 
       nobs = 0
 
-      do bj = myByLo(myThid), myByHi(myThid)
-        do bi = myBxLo(myThid), myBxHi(myThid)
+      do bj = jtlo,jthi
+        do bi = itlo,ithi
           k = 1
           do j = jmin,jmax
             do i = imin,imax
@@ -136,5 +157,6 @@ c              endif
 
 #endif
 
-      RETURN
-      END
+      return
+      end
+

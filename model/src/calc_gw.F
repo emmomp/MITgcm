@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/model/src/calc_gw.F,v 1.55 2014/12/24 19:09:33 jmc Exp $
+C $Name:  $
+
 #include "PACKAGES_CONFIG.h"
 #include "CPP_OPTIONS.h"
 #ifdef ALLOW_MOM_COMMON

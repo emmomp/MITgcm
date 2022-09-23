@@ -1,3 +1,7 @@
+C $Header: /u/gcmpack/MITgcm/verification/halfpipe_streamice/code/DIAGNOSTICS_SIZE.h,v 1.1 2013/06/12 21:52:30 dgoldberg Exp $
+C $Name:  $
+
+
 C     Diagnostics Array Dimension
 C     ---------------------------
 C     ndiagMax   :: maximum total number of available diagnostics

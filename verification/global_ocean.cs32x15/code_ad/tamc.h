@@ -1,3 +1,8 @@
+C $Header: /u/gcmpack/MITgcm/verification/global_ocean.cs32x15/code_ad/tamc.h,v 1.8 2011/01/12 00:08:54 gforget Exp $
+C $Name:  $
+
+#include "PACKAGES_CONFIG.h"
+
 c     ================================================================
 c     HEADER TAMC
 c     ================================================================
@@ -55,7 +60,7 @@ c     nthreads_chkpt - Number of threads to be used; nth_chkpt .eq. nTx*nTy
 #ifdef ALLOW_TAMC_CHECKPOINTING
 
       integer    nchklev_1
-      parameter( nchklev_1      =   2 )
+      parameter( nchklev_1      =   1 )
       integer    nchklev_2
       parameter( nchklev_2      =  50 )
       integer    nchklev_3
@@ -96,8 +101,11 @@ c     and writing data.
       integer iloop_daily
 
       INTEGER    isbyte
-C     For smaller tapes replace 8 by 4.
+#ifdef ALLOW_TAMC_SINGLEPREC_COMLEV
+      PARAMETER( isbyte      = 4 )
+#else
       PARAMETER( isbyte      = 8 )
+#endif
 
       INTEGER    maximpl
       PARAMETER( maximpl     = 6 )
@@ -112,14 +120,13 @@ cph      PARAMETER( maxpass     = PTRACERS_num + 2 )
       INTEGER    maxcube
       PARAMETER( maxcube     = 3 )
 
-#ifdef ALLOW_CG2D_NSA
-C     Parameter that is needed for the tape complev_cg2d_iter
-C     cannot be smaller than the allowed number of iterations in cg2d
-C     (numItersMax >= cg2dMaxIters in data-file)
-      INTEGER numItersMax
-      PARAMETER ( numItersMax = 200 )
-#endif
+      INTEGER act0, act1, act2, act3, act4
+      INTEGER max0, max1, max2, max3
+      INTEGER iikey, kkey, passkey, igadkey, 
+     &        itdkey, idynkey, igmkey
 
 c     ================================================================
 c     END OF HEADER TAMC
 c     ================================================================
+
+

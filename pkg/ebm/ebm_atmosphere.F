@@ -1,7 +1,7 @@
+C $Header: /u/gcmpack/MITgcm/pkg/ebm/ebm_atmosphere.F,v 1.10 2011/08/29 19:38:44 jmc Exp $
+C $Name:  $
+
 #include "EBM_OPTIONS.h"
-#ifdef ALLOW_AUTODIFF
-# include "AUTODIFF_OPTIONS.h"
-#endif
 
 CBOP 0
 C !ROUTINE: EBM_ATMOSPHERE
@@ -39,6 +39,7 @@ C     === Global variables ===
 #include "EBM.h"
 #ifdef ALLOW_AUTODIFF_TAMC
 # include "tamc.h"
+# include "tamc_keys.h"
 #endif
 
 C     !INPUT PARAMETERS:
@@ -54,8 +55,6 @@ C     !LOCAL VARIABLES:
       INTEGER i, j, bi, bj
       INTEGER no_so
 #ifdef ALLOW_AUTODIFF_TAMC
-      INTEGER act1, act2, act3, act4
-      INTEGER max1, max2, max3
       INTEGER iebmkey
 #endif /* ALLOW_AUTODIFF_TAMC */
       _RL ReCountX(1-OLy:sNy+OLy,nSy)
@@ -87,20 +86,20 @@ C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
        DO bi=myBxLo(myThid),myBxHi(myThid)
 
 #ifdef ALLOW_AUTODIFF_TAMC
-        act1 = bi - myBxLo(myThid)
-        max1 = myBxHi(myThid) - myBxLo(myThid) + 1
-        act2 = bj - myByLo(myThid)
-        max2 = myByHi(myThid) - myByLo(myThid) + 1
-        act3 = myThid - 1
-        max3 = nTx*nTy
-        act4 = ikey_dynamics - 1
-        iebmkey = (act1 + 1) + act2*max1
-     &                       + act3*max1*max2
-     &                       + act4*max1*max2*max3
+          act1 = bi - myBxLo(myThid)
+          max1 = myBxHi(myThid) - myBxLo(myThid) + 1
+          act2 = bj - myByLo(myThid)
+          max2 = myByHi(myThid) - myByLo(myThid) + 1
+          act3 = myThid - 1
+          max3 = nTx*nTy
+          act4 = ikey_dynamics - 1
+          iebmkey = (act1 + 1) + act2*max1
+     &                      + act3*max1*max2
+     &                      + act4*max1*max2*max3
 #endif /* ALLOW_AUTODIFF_TAMC */
 
-        DO j=1-OLy,sNy+OLy
-         DO i=1-OLx,sNx+OLx
+        DO j=1-oLy,sNy+oLy
+         DO i=1-oLx,sNx+oLx
           S(i,j,bj) = 0.0
           P2(i,j,bj) = 0.0
           P4(i,j,bj) = 0.0
@@ -302,7 +301,7 @@ c     <            /(2*PI*rSphere*rSphere*22.3) )
           ENDIF
 #endif
 c     Freshwater Flux = Div(atmospheric moisture transport)
-c---  conversion of E-P from kg/(s m^2) -> m/s -> g/kg/s: 1e-3*35/delZ(1)
+c---  conversion of E-P from kg/(s m^2) -> m/s -> psu/s: 1e-3*35/delZ(1)
 #ifdef EBM_VERSION_1BASIN
           EmPmR(i,j,bi,bj) = -1. _d -3*Fw35(no_so)
      &    *(-0.8454 _d 5*S(i,j,bj)**14 + 0.5367 _d 5*S(i,j,bj)**13

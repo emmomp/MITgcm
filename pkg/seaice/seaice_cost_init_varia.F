@@ -1,6 +1,9 @@
+C $Header: /u/gcmpack/MITgcm/pkg/seaice/seaice_cost_init_varia.F,v 1.9 2015/03/23 21:04:59 gforget Exp $
+C $Name:  $
+
 #include "SEAICE_OPTIONS.h"
 
-      subroutine seaice_cost_init_varia( myThid )
+      subroutine seaice_cost_init_varia( mythid )
 
 c     ==================================================================
 c     SUBROUTINE seaice_cost_init_varia
@@ -16,6 +19,7 @@ c     ==================================================================
       implicit none
 
 c     == global variables ==
+
 #include "EEPARAMS.h"
 #include "SIZE.h"
 #include "GRID.h"
@@ -26,20 +30,38 @@ c     == global variables ==
 #endif
 
 c     == routine arguments ==
-      integer myThid
+
+      integer mythid
 
 #ifdef ALLOW_COST
 #if (defined(ALLOW_SEAICE_COST_SMR_AREA) || defined(ALLOW_COST_ICE))
 
 c     == local variables ==
+
       integer bi,bj
-      integer i,j
+      integer itlo,ithi
+      integer jtlo,jthi
+      integer imin, imax
+      integer jmin, jmax
+      integer i,j,k
+
+      logical exst
+
+c     == external functions ==
 
 c     == end of interface ==
+      jtlo = myByLo(mythid)
+      jthi = myByHi(mythid)
+      itlo = myBxLo(mythid)
+      ithi = myBxHi(mythid)
+      jmin = 1-OLy
+      jmax = sNy+OLy
+      imin = 1-OLx
+      imax = sNx+OLx
 
 c--   Initialize the tiled cost function contributions.
-      do bj = myByLo(myThid), myByHi(myThid)
-        do bi = myBxLo(myThid), myBxHi(myThid)
+      do bj = jtlo,jthi
+        do bi = itlo,ithi
           objf_ice(bi,bj)     = 0. _d 0
           objf_smrarea(bi,bj) = 0. _d 0
           objf_smrsst(bi,bj)  = 0. _d 0
@@ -53,10 +75,11 @@ c
         enddo
       enddo
 
-      do bj = myByLo(myThid), myByHi(myThid)
-        do bi = myBxLo(myThid), myBxHi(myThid)
-          do j=1-OLy,sNy+OLy
-            do i=1-OLx,sNx+OLx
+      k = 1
+      do bj = jtlo,jthi
+        do bi = itlo,ithi
+          do j = jmin,jmax
+            do i = imin,imax
 #ifdef ALLOW_SEAICE_COST_EXPORT
                uHeffExportCell(i,j,bi,bj) = 0. _d 0
                vHeffExportCell(i,j,bi,bj) = 0. _d 0
@@ -69,7 +92,7 @@ c
       _BARRIER
 
 #endif
-#endif /* ALLOW_COST */
+#endif
 
       return
       end

@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/mypackage/mypackage_tendency_apply.F,v 1.4 2014/07/09 17:00:49 jmc Exp $
+C $Name:  $
+
 #include "MYPACKAGE_OPTIONS.h"
 C--  File mypackage_tendency_apply.F: Routines to apply MYPACKAGE tendencies
 C--   Contents
@@ -7,7 +10,7 @@ C--   o MYPACKAGE_TENDENCY_APPLY_T
 C--   o MYPACKAGE_TENDENCY_APPLY_S
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
-CBOP
+CBOP 0
 C !ROUTINE: MYPACKAGE_TENDENCY_APPLY_U
 
 C !INTERFACE:
@@ -23,7 +26,6 @@ C     on A-grid.
 
 C     !USES:
       IMPLICIT NONE
-C     == Global variables ===
 #include "SIZE.h"
 #include "EEPARAMS.h"
 #include "GRID.h"
@@ -76,7 +78,7 @@ C--   Assume Agrid position:
       END
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
-CBOP
+CBOP 0
 C !ROUTINE: MYPACKAGE_TENDENCY_APPLY_V
 
 C !INTERFACE:
@@ -92,7 +94,6 @@ C     on A-grid.
 
 C     !USES:
       IMPLICIT NONE
-C     == Global variables ===
 #include "SIZE.h"
 #include "EEPARAMS.h"
 #include "GRID.h"
@@ -145,7 +146,7 @@ C--   Assume Agrid position:
       END
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
-CBOP
+CBOP 0
 C !ROUTINE: MYPACKAGE_TENDENCY_APPLY_T
 
 C !INTERFACE:
@@ -160,7 +161,6 @@ C     for one level at a time
 
 C     !USES:
       IMPLICIT NONE
-C     == Global variables ===
 #include "SIZE.h"
 #include "EEPARAMS.h"
 #include "GRID.h"
@@ -203,7 +203,7 @@ C     !LOCAL VARIABLES:
       END
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
-CBOP
+CBOP 0
 C !ROUTINE: MYPACKAGE_TENDENCY_APPLY_S
 
 C !INTERFACE:
@@ -218,7 +218,6 @@ C     level at a time
 
 C     !USES:
       IMPLICIT NONE
-C     == Global variables ===
 #include "SIZE.h"
 #include "EEPARAMS.h"
 #include "GRID.h"

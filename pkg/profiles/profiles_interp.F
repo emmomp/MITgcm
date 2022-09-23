@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/profiles/profiles_interp.F,v 1.16 2017/01/10 15:40:59 gforget Exp $
+C $Name:  $
+
 #include "PROFILES_OPTIONS.h"
 #ifdef ALLOW_ECCO
 # include "ECCO_OPTIONS.h"
@@ -18,7 +21,7 @@ C     o==========================================================o
      I var_cur,
      I itr_cur,
      I file_cur,
-     I myTime,
+     I mytime,
      I bi,
      I bj,
      I myThid
@@ -36,8 +39,7 @@ C ==================== Global Variables ===========================
 # include "cal.h"
 #endif
 #ifdef ALLOW_ECCO
-# include "ECCO_SIZE.h"
-# include "ECCO.h"
+# include "ecco.h"
 #endif
 #ifdef ALLOW_PROFILES
 # include "PROFILES_SIZE.h"
@@ -48,8 +50,8 @@ C ==================== Global Variables ===========================
 #include "PTRACERS_FIELDS.h"
 #endif
 C ==================== Routine Variables ==========================
-      _RL  myTime
-      integer myThid
+      _RL  mytime
+      integer mythid
       integer file_cur, itr_cur
       character*(8) var_cur
 #ifndef ALLOW_PROFILES
@@ -94,11 +96,11 @@ c horizontal interpolation:
 #ifdef ALLOW_ECCO
         elseif (var_cur.EQ.'eta') then
                tab_coeffs1(q)=m_eta(i_cur(q),j_cur(q),bi,bj)
-#endif
         elseif (var_cur.EQ.'UE') then
                tab_coeffs1(q)=m_UE(i_cur(q),j_cur(q),k,bi,bj)
         elseif (var_cur.EQ.'VN') then
                tab_coeffs1(q)=m_VN(i_cur(q),j_cur(q),k,bi,bj)
+#endif
         else
                tab_coeffs1(q)=0. _d 0
         endif

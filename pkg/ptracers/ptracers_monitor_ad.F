@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/ptracers/ptracers_monitor_ad.F,v 1.7 2014/09/11 19:18:52 jmc Exp $
+C $Name:  $
+
 #include "PTRACERS_OPTIONS.h"
 #ifdef ALLOW_AUTODIFF
 # include "AUTODIFF_OPTIONS.h"
@@ -91,7 +94,7 @@ C     & mon_write_mnc (since it is the only thread that uses those flags):
      &             '============================='
             CALL PRINT_MESSAGE( msgBuf, mon_ioUnit, SQUEEZE_RIGHT , 1)
             WRITE(msgBuf,'(A)')
-     &             '// Begin AD_MONITOR ptracer field statistics'
+     &             '// Begin MONITOR adptracer field statistics'
             CALL PRINT_MESSAGE( msgBuf, mon_ioUnit, SQUEEZE_RIGHT , 1)
             WRITE(msgBuf,'(2A)') '// ==========================',
      &             '============================='
@@ -120,7 +123,7 @@ C     & mon_write_mnc (since it is the only thread that uses those flags):
      &        '============================='
          CALL PRINT_MESSAGE( msgBuf, mon_ioUnit, SQUEEZE_RIGHT , 1)
          WRITE(msgBuf,'(A)')
-     &        '// End AD_MONITOR ptracer field statistics'
+     &        '// End MONITOR ptracers field statistics'
          CALL PRINT_MESSAGE( msgBuf, mon_ioUnit, SQUEEZE_RIGHT , 1)
          WRITE(msgBuf,'(2A)') '// ==========================',
      &        '============================='

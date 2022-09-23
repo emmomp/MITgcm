@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/generic_advdiff/gad_diagnostics_init.F,v 1.10 2013/02/06 23:01:24 jmc Exp $
+C $Name:  $
+
 #include "GAD_OPTIONS.h"
 
 CBOP
@@ -186,7 +189,7 @@ C-     add diagnostics of advective & diffusive flux of Salt :
          ENDIF
        ELSE
          locName = 'Salinity    '
-         trUnits = 'g/kg'
+         trUnits = 'psu'
        ENDIF
        diagUnits = DIAGS_MK_UNITS( trUnits//flxUnits, myThid )
        diagSufx = GAD_DIAG_SUFX( GAD_SALINITY, myThid )

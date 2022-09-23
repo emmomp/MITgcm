@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/fizhi/fizhi_read_pickup.F,v 1.15 2009/08/27 18:00:01 jmc Exp $
+C $Name:  $
+
 #include "FIZHI_OPTIONS.h"
 
 CBOP

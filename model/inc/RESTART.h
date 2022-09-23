@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/model/inc/RESTART.h,v 1.2 2009/12/11 13:49:56 jmc Exp $
+C $Name:  $
+
 CBOP
 C     !ROUTINE: RESTART.h
 C     !INTERFACE:
@@ -33,21 +36,18 @@ C     mom_StartAB   :: number of previous gU,gV   time levels which are
 C                      available to start (or restart) Adams-Bashforth.
 C     nHydStartAB   :: number of previous gW      time levels which are
 C                      available to start (or restart) Adams-Bashforth.
-C     qHydStartAB   :: number of previous QH accel. time levels which are
-C                      available to start (or restart) Adams-Bashforth.
 C     dPhiNHstatus  :: status of field dPhiNH: 1= loaded from pickup
 C                      0= not available in pickup
       COMMON / RESTART_I /
      &  nCheckLev,
      &  tempStartAB, saltStartAB,
-     &  mom_StartAB, nHydStartAB, qHydStartAB,
+     &  mom_StartAB, nHydStartAB,
      &  dPhiNHstatus
       INTEGER nCheckLev
       INTEGER tempStartAB
       INTEGER saltStartAB
       INTEGER mom_StartAB
       INTEGER nHydStartAB
-      INTEGER qHydStartAB
       INTEGER dPhiNHstatus
 
 C--   COMMON / RESTART_C / Character valued parameters used for restart

@@ -10,6 +10,9 @@ function [flt,data,header] = read_flt_traj(varargin)
 % >> plot( flts(3).time, flts(3).x/1e3 )
 % >> for k=1:126;plot(flts(k).x/1e3,flts(k).y/1e3);hold on;end;hold off
 
+% $Header: /u/gcmpack/MITgcm/verification/flt_example/input/read_flt_traj.m,v 1.6 2012/02/03 04:08:12 dfer Exp $
+% $Name:  $
+
 fName = varargin{1};
 imax=13;                  % record size
 ieee='b';                 % IEEE big-endian format

@@ -1,3 +1,5 @@
+C $Header: /u/gcmpack/MITgcm/pkg/exf/EXF_CONSTANTS.h,v 1.5 2008/11/17 23:08:29 jmc Exp $
+C $Name:  $
 c
 c
 c     ==================================================================
@@ -107,10 +109,7 @@ C     sstExtrapol  :: extrapolation coeff from 1rst 2 levels up to surface
 C  snow_emissivity :: longwave  snow  emissivity [-] (with pkg thsice/seaice)
 C-- to evaluate turbulent transfert coefficients:
 C     cdrag_[n]    :: n = 1,2,3 coefficients used to evaluate
-C                     drag coefficient,
-C     For Large and Yeager (2009): extra coefficient n = 8 and
-C     cdragMax     :: maximum drag coefficient ...
-C     umax         :: ... at maximum wind
+C                     drag coefficient
 C     cstanton_[n] :: n = 1,2   coefficients used to evaluate
 C                     the Stanton number (stable/unstable cond.)
 C     cdalton      :: coefficient used to evaluate the Dalton number
@@ -142,7 +141,7 @@ C  snow_emissivity :: longwave  snow  emissivity [-] (with pkg thsice/seaice)
       _RL    gamma_blk
       _RL    saltsat
       _RL    sstExtrapol
-      _RL    cdrag_1, cdrag_2, cdrag_3, cdrag_8, cdragMax, umax
+      _RL    cdrag_1,    cdrag_2,     cdrag_3
       _RL    cstanton_1, cstanton_2
       _RL    cdalton
       _RL    zolmin
@@ -173,7 +172,7 @@ C  snow_emissivity :: longwave  snow  emissivity [-] (with pkg thsice/seaice)
      &       gamma_blk,
      &       saltsat,
      &       sstExtrapol,
-     &       cdrag_1, cdrag_2, cdrag_3, cdrag_8, cdragMax, umax,
+     &       cdrag_1,    cdrag_2,    cdrag_3,
      &       cstanton_1, cstanton_2,
      &       cdalton,
      &       zolmin,
@@ -188,3 +187,4 @@ C  snow_emissivity :: longwave  snow  emissivity [-] (with pkg thsice/seaice)
      &       ocean_emissivity,
      &       ice_emissivity,
      &       snow_emissivity
+

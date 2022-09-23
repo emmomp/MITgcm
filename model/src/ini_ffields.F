@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/model/src/ini_ffields.F,v 1.2 2015/01/20 20:46:55 jmc Exp $
+C $Name:  $
+
 #include "CPP_OPTIONS.h"
 
 CBOP
@@ -50,7 +53,6 @@ C-    2-D forcing fields
           saltFlux        (i,j,bi,bj) = 0. _d 0
           SST             (i,j,bi,bj) = 0. _d 0
           SSS             (i,j,bi,bj) = 0. _d 0
-          phiTide2d       (i,j,bi,bj) = 0. _d 0
           pLoad           (i,j,bi,bj) = 0. _d 0
           sIceLoad        (i,j,bi,bj) = 0. _d 0
 #ifdef ALLOW_GEOTHERMAL_FLUX
@@ -75,10 +77,6 @@ C-    Time reccord loaded from file:
 #ifdef SHORTWAVE_HEATING
           Qsw0            (i,j,bi,bj) = 0. _d 0
           Qsw1            (i,j,bi,bj) = 0. _d 0
-#endif
-#ifdef ALLOW_GEOTHERMAL_FLUX
-          geothFlux0      (i,j,bi,bj) = 0. _d 0
-          geothFlux1      (i,j,bi,bj) = 0. _d 0
 #endif
 #ifdef ATMOSPHERIC_LOADING
           pLoad0          (i,j,bi,bj) = 0. _d 0
@@ -128,14 +126,9 @@ C-    Intermediate surface forcing arrays
           surfaceForcingV (i,j,bi,bj) = 0. _d 0
           surfaceForcingT (i,j,bi,bj) = 0. _d 0
           surfaceForcingS (i,j,bi,bj) = 0. _d 0
-          adjustColdSST_diag  (i,j,bi,bj) = 0. _d 0
+          surfaceForcingTice  (i,j,bi,bj) = 0. _d 0
           lambdaThetaClimRelax(i,j,bi,bj) = 0. _d 0
           lambdaSaltClimRelax (i,j,bi,bj) = 0. _d 0
-#ifdef ALLOW_BALANCE_FLUXES
-          weight2BalanceFlx(i,j,bi,bj) = 0. _d 0
-#endif
-          botDragU        (i,j,bi,bj) = 0. _d 0
-          botDragV        (i,j,bi,bj) = 0. _d 0
          ENDDO
         ENDDO
 

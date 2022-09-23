@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/bbl/bbl_diagnostics_init.F,v 1.2 2012/04/03 00:22:16 jmc Exp $
+C $Name:  $
+
 #include "BBL_OPTIONS.h"
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
@@ -49,7 +52,7 @@ C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
 
         diagName  = 'BBLsalt '
         diagTitle = 'Bottom boundary layer salinity'
-        diagUnits = 'g/kg            '
+        diagUnits = 'psu             '
         diagCode  = 'SM      M1      '
         CALL DIAGNOSTICS_ADDTOLIST( diagNum,
      I          diagName, diagCode, diagUnits, diagTitle, 0, myThid )
@@ -70,7 +73,7 @@ C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
 
         diagName  = 'BBLtendS'
         diagTitle = 'Bottom salt tendency due to BBL'
-        diagUnits = 'g/kg/s          '
+        diagUnits = 'psu/s           '
         diagCode  = 'SM      M1      '
         CALL DIAGNOSTICS_ADDTOLIST( diagNum,
      I          diagName, diagCode, diagUnits, diagTitle, 0, myThid )

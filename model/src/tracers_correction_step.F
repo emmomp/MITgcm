@@ -1,10 +1,13 @@
+C $Header: /u/gcmpack/MITgcm/model/src/tracers_correction_step.F,v 1.18 2014/08/07 17:32:03 jmc Exp $
+C $Name:  $
+
 #include "PACKAGES_CONFIG.h"
 #include "CPP_OPTIONS.h"
 
 CBOP
 C     !ROUTINE: TRACERS_CORRECTION_STEP
 C     !INTERFACE:
-      SUBROUTINE TRACERS_CORRECTION_STEP( myTime, myIter, myThid )
+      SUBROUTINE TRACERS_CORRECTION_STEP(myTime, myIter, myThid)
 C     !DESCRIPTION: \bv
 C     *==========================================================*
 C     | SUBROUTINE TRACERS_CORRECTION_STEP
@@ -29,6 +32,7 @@ C     == Global variables ===
 #endif
 
 C     !INPUT/OUTPUT PARAMETERS:
+C     == Routine arguments ==
 C     myTime :: Current time in simulation
 C     myIter :: Current iteration number in simulation
 C     myThid :: my Thread Id number
@@ -38,11 +42,10 @@ C     myThid :: my Thread Id number
 
 #ifdef ALLOW_GENERIC_ADVDIFF
 C     !LOCAL VARIABLES:
-      INTEGER bi, bj
-#ifdef ALLOW_OPPS
+C     == Local variables
       INTEGER iMin,iMax
       INTEGER jMin,jMax
-#endif
+      INTEGER bi, bj
 CEOP
 
 #ifdef ALLOW_NONHYDROSTATIC
@@ -94,23 +97,22 @@ C -- Fill negative tracer values (for now, only if Fizhi is running)
        DO bi=myBxLo(myThid),myBxHi(myThid)
 
 C--     Convectively adjust new fields to be statically stable
+        iMin = 1
+        iMax = sNx
+        jMin = 1
+        jMax = sNy
 #ifdef ALLOW_OPPS
         IF ( useOPPS ) THEN
-         iMin = 1
-         iMax = sNx
-         jMin = 1
-         jMax = sNy
          CALL OPPS_INTERFACE(
      I        bi, bj, iMin, iMax, jMin, jMax,
      I        myTime, myIter, myThid )
-        ENDIF
+        ELSEIF ( cAdjFreq .NE. 0. ) THEN
+#else /* ALLOW_OPPS */
+        IF ( cAdjFreq .NE. 0. ) THEN
 #endif /* ALLOW_OPPS */
-#ifdef INCLUDE_CONVECT_CALL
-        IF ( .NOT. useOPPS .AND. cAdjFreq .NE. 0. ) THEN
          CALL CONVECTIVE_ADJUSTMENT(
      I        bi, bj, myTime, myIter, myThid )
         ENDIF
-#endif /* INCLUDE_CONVECT_CALL */
 
 #ifdef ALLOW_MATRIX
         IF (useMATRIX)

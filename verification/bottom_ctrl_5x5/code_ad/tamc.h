@@ -1,3 +1,8 @@
+C $Header: /u/gcmpack/MITgcm/verification/bottom_ctrl_5x5/code_ad/tamc.h,v 1.2 2009/02/16 15:04:07 jmc Exp $
+C $Name:  $
+
+#include "PACKAGES_CONFIG.h"
+
 c     ================================================================
 c     HEADER TAMC
 c     ================================================================
@@ -100,9 +105,11 @@ c     and writing data.
       integer iloop_daily
 
       INTEGER    isbyte
-C     For smaller tapes replace 8 by 4.
+#ifdef ALLOW_TAMC_SINGLEPREC_COMLEV
+      PARAMETER( isbyte      = 4 )
+#else
       PARAMETER( isbyte      = 8 )
-
+#endif
       INTEGER    maximpl
       PARAMETER( maximpl     = 6 )
 #ifdef ALLOW_PTRACERS
@@ -116,6 +123,11 @@ cph      PARAMETER( maxpass     = PTRACERS_num + 2 )
       INTEGER    maxcube
       PARAMETER( maxcube     = 1 )
 
+      INTEGER act0, act1, act2, act3, act4
+      INTEGER max0, max1, max2, max3
+      INTEGER iikey, kkey, passkey, igadkey, 
+     &        itdkey, idynkey, igmkey
+
 #ifdef ALLOW_DEPTH_CONTROL
 C     Parameter that is needed for the tape complev_cg2d_iter
 C     cannot be smaller than the allowed number of iterations in cg2d
@@ -127,3 +139,5 @@ C     (numItersMax >= cg2dMaxIters in data-file)
 c     ================================================================
 c     END OF HEADER TAMC
 c     ================================================================
+
+

@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/aim_v23/phy_radiat.F,v 1.7 2013/08/11 05:03:39 jmc Exp $
+C $Name:  $
+
 #include "AIM_OPTIONS.h"
 
 C--  File phy_radiat.F:
@@ -156,7 +159,7 @@ C !INTERFACE:
      I                  FSOL, OZONE, OZUPP, ZENIT, STRATZ,
      O                  TAU2, STRATC,
      O                  ICLTOP,CLOUDC,FTOP,FSFC,UPSWG,DFABS,
-     I                  absCO2, kGrd,bi,bj,myThid)
+     I                  kGrd,bi,bj,myThid)
 C !DESCRIPTION: \bv
 C   Purpose: Compute the absorption of shortwave radiation and
 C            initialize arrays for longwave-radiation routines
@@ -171,8 +174,7 @@ C            FTOP   = net downw. flux of sw rad. at the atm. top  (2-dim)
 C            FSFC   = net downw. flux of sw rad. at the surface   (2-dim)
 C            UPSWG  = upward flux of sw rad. at the surface       (2-dim)
 C            DFABS  = flux of sw rad. absorbed by each atm. layer (3-dim)
-C  Input:    absCO2 = LW absorbtion in CO2 band (uniform value)
-C            kGrd   = Ground level index                      (2-dim)
+C  Input:    kGrd   = Ground level index                      (2-dim)
 C            bi,bj  = tile index
 C            myThid = Thread number for this instance of the routine
 
@@ -203,7 +205,6 @@ C !INPUT/OUTPUT PARAMETERS:
       _RL TAU2(NGP,NLEV,NBAND),STRATC(NGP)
 c     _RL FLUX(NGP,4)
 
-      _RL absCO2
       INTEGER  kGrd(NGP)
       INTEGER  bi, bj, myThid
 CEOP
@@ -461,7 +462,7 @@ C          function of layer mass, abs. humidity and cloud cover.
 c_FM    DELTAP=PSA(J)*DSIG(1)
         DELTAP=DSIG(1)*dpFac(J,1)
         TAU2(J,1,1)=EXP(-DELTAP*ABLWIN)
-        TAU2(J,1,2)=EXP(-DELTAP*absCO2)
+        TAU2(J,1,2)=EXP(-DELTAP*ABLCO2)
         TAU2(J,1,3)=1.
         TAU2(J,1,4)=1.
       ENDDO
@@ -479,7 +480,7 @@ c_FM     DELTAP=PSA(J)*DSIG(K)
          ELSE
            TAU2(J,K,1)=EXP(-DELTAP*ABLWIN)
          ENDIF
-         TAU2(J,K,2)=EXP(-DELTAP*absCO2)
+         TAU2(J,K,2)=EXP(-DELTAP*ABLCO2)
          TAU2(J,K,3)=EXP(-DELTAP*ABLWV1*QA(J,K))
          TAU2(J,K,4)=EXP(-DELTAP*ABLWV2*QA(J,K))
        ENDDO

@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/gmredi/gmredi_diagnostics_impl.F,v 1.1 2012/03/20 23:36:59 jmc Exp $
+C $Name:  $
+
 #include "GMREDI_OPTIONS.h"
 
 CBOP
@@ -58,7 +61,7 @@ C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
      &            *(theta(i,j,k,bi,bj)-theta(i,j,k-1,bi,bj))
      &            * maskC(i,j,k,bi,bj)*maskC(i,j,k-1,bi,bj)
                 tmpVar(i,j) = tmpVar(i,j)*Kwz(i,j,k,bi,bj)
-     &                                   *rA(i,j,bi,bj)*deepFac2F(k)
+     &                                   *rA(i,j,bi,bj)
               ENDDO
              ENDDO
              CALL DIAGNOSTICS_FILL( tmpVar, 'GM_KwzTz',

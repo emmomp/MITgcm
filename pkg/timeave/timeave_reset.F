@@ -1,3 +1,5 @@
+C $Header: /u/gcmpack/MITgcm/pkg/timeave/timeave_reset.F,v 1.2 2003/10/09 04:19:20 edhill Exp $
+C $Name:  $
 #include "TIMEAVE_OPTIONS.h"
 
 CStartofinterface

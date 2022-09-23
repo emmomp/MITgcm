@@ -1,7 +1,10 @@
+C $Header: /u/gcmpack/MITgcm/pkg/mypackage/mypackage_init_fixed.F,v 1.2 2006/08/07 21:13:52 edhill Exp $
+C $Name:  $
+
 #include "MYPACKAGE_OPTIONS.h"
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
-CBOP
+CBOP 0
 C !ROUTINE: MYPACKAGE_INIT_FIXED
 
 C !INTERFACE:
@@ -12,7 +15,6 @@ C     Initialize MYPACKAGE variables that are kept fixed during the run.
 
 C     !USES:
       IMPLICIT NONE
-C     == Global variables ===
 #include "EEPARAMS.h"
 #include "SIZE.h"
 #include "PARAMS.h"
@@ -24,6 +26,7 @@ C     myThid ::  my Thread Id number
 CEOP
 
 C     !LOCAL VARIABLES:
+C     === Local variables ===
 
 #ifdef ALLOW_MNC
       IF (useMNC) THEN

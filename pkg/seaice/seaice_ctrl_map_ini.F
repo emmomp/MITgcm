@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/seaice/seaice_ctrl_map_ini.F,v 1.8 2014/10/20 03:20:57 gforget Exp $
+C $Name:  $
+
 #include "SEAICE_OPTIONS.h"
 #ifdef ALLOW_CTRL
 # include "CTRL_OPTIONS.h"
@@ -41,42 +44,52 @@ c     == routine arguments ==
       integer mythid
 
 #ifdef ALLOW_CTRL
+C     !LOCAL VARIABLES:
+c     == local variables ==
+
+      integer bi,bj
+      integer i,j,k
+      integer itlo,ithi
+      integer jtlo,jthi
+      integer jmin,jmax
+      integer imin,imax
+      integer il
+
+      logical equal
+      logical doglobalread
+      logical ladinit
+
+      character*( 80)   fnamegeneric
+
+      _RL     fac
+      _RL tmptest
+
 c     == external ==
       integer  ilnblnk
       external ilnblnk
 
-C     !LOCAL VARIABLES:
-c     == local variables ==
-      integer bi,bj
-      integer i,j
-      integer jmin,jmax
-      integer imin,imax
-      integer il
-      logical doglobalread
-      logical ladinit
-      character*(80) fnamegeneric
-      _RL     tmpfld2d(1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
-
 c     == end of interface ==
 CEOP
 
+      jtlo = mybylo(mythid)
+      jthi = mybyhi(mythid)
+      itlo = mybxlo(mythid)
+      ithi = mybxhi(mythid)
       jmin = 1
-      jmax = sNy
+      jmax = sny
       imin = 1
-      imax = sNx
+      imax = snx
 
       doglobalread = .false.
       ladinit      = .false.
 
-      do bj = myByLo(myThid), myByHi(myThid)
-        do bi = myBxLo(myThid), myBxHi(myThid)
-          do j = 1-OLy,sNy+OLy
-            do i = 1-OLx,sNx+OLx
-              tmpfld2d(i,j,bi,bj) = 0. _d 0
-            enddo
-          enddo
-        enddo
-      enddo
+      equal = .true.
+
+      if ( equal ) then
+        fac = 1. _d 0
+      else
+        fac = 0. _d 0
+      endif
 
 #ifdef ALLOW_SIAREA_CONTROL
 c--   siarea.
@@ -86,8 +99,8 @@ c--   siarea.
       call active_read_xy( fnamegeneric, tmpfld2d, 1,
      &                      doglobalread, ladinit, optimcycle,
      &                      mythid, xx_siarea_dummy )
-      do bj = myByLo(myThid), myByHi(myThid)
-        do bi = myBxLo(myThid), myBxHi(myThid)
+      do bj = jtlo,jthi
+        do bi = itlo,ithi
             do j = jmin,jmax
               do i = imin,imax
                 area(i,j,bi,bj) = area(i,j,bi,bj) +
@@ -106,8 +119,8 @@ c--   siheff.
       call active_read_xy( fnamegeneric, tmpfld2d, 1,
      &                      doglobalread, ladinit, optimcycle,
      &                      mythid, xx_siheff_dummy )
-      do bj = myByLo(myThid), myByHi(myThid)
-        do bi = myBxLo(myThid), myBxHi(myThid)
+      do bj = jtlo,jthi
+        do bi = itlo,ithi
             do j = jmin,jmax
               do i = imin,imax
                 heff(i,j,bi,bj) = heff(i,j,bi,bj) +
@@ -126,8 +139,8 @@ c--   sihsnow.
       call active_read_xy( fnamegeneric, tmpfld2d, 1,
      &                      doglobalread, ladinit, optimcycle,
      &                      mythid, xx_sihsnow_dummy )
-      do bj = myByLo(myThid), myByHi(myThid)
-        do bi = myBxLo(myThid), myBxHi(myThid)
+      do bj = jtlo,jthi
+        do bi = itlo,ithi
             do j = jmin,jmax
               do i = imin,imax
                 hsnow(i,j,bi,bj) = hsnow(i,j,bi,bj) +

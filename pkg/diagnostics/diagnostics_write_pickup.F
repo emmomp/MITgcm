@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/diagnostics/diagnostics_write_pickup.F,v 1.10 2009/08/27 18:00:01 jmc Exp $
+C $Name:  $
+
 #include "DIAG_OPTIONS.h"
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
@@ -48,7 +51,7 @@ c     INTEGER prec, iChar, lChar, k
       INTEGER  ILNBLNK
       EXTERNAL ILNBLNK
 
-      INTEGER dUnit, ndId, n, m
+      INTEGER dUnit, n, m
 
 #ifdef ALLOW_MNC
       INTEGER i, ii
@@ -162,6 +165,7 @@ C         Write the ndiag() array
           CALL MNC_CW_DEL_VNAME(d_cw_name, myThid)
           CALL MNC_CW_DEL_GNAME(d_cw_name, myThid)
 
+
         ENDIF
 #endif
 
@@ -179,12 +183,11 @@ C         Write ndiag()
           _BARRIER
           _BEGIN_MASTER( myThid )
           WRITE(fn,'(a,a)') 'pickup_ndiag.', suff(1:sn)
-          CALL MDSFINDUNIT( dUnit, myThid )
+          CALL MDSFINDUNIT( dUnit, mythid )
           OPEN( dUnit, file=fn )
           DO n = 1,nlists
             DO m = 1,nfields(n)
-              ndId = ABS(jdiag(m,n))
-              WRITE(dUnit,'(I10)') ndiag(ndId,1,1)
+              WRITE(dUnit,'(I10)') ndiag(jdiag(m,n),1,1)
             ENDDO
           ENDDO
           CLOSE( dUnit )

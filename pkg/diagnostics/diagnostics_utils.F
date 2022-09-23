@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/diagnostics/diagnostics_utils.F,v 1.33 2014/07/18 22:04:10 jmc Exp $
+C $Name:  $
+
 #include "DIAG_OPTIONS.h"
 
 C--   File diagnostics_utils.F: General purpose support routines
@@ -9,7 +12,6 @@ C--    o DIAGNOSTICS_SETKLEV
 C--    o DIAGS_GET_PARMS_I (Function)
 C--    o DIAGS_MK_UNITS (Function)
 C--    o DIAGS_MK_TITLE (Function)
-C--    o DIAGS_RENAMED (Function)
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
 
@@ -68,7 +70,7 @@ C     to increment (needs to be a valid & active diagnostic-counter)
         IF ( diagName.EQ.flds(m,n) .AND. idiag(m,n).GT.0 ) THEN
          ipt = idiag(m,n)
          IF (ndiag(ipt,bi,bj).GE.0) THEN
-          ndId = ABS(jdiag(m,n))
+          ndId = jdiag(m,n)
           ipt = ipt + pdiag(n,bi,bj)*kdiag(ndId)
 C-    Increment the counter for the diagnostic
           IF ( biArg.EQ.0 .AND. bjArg.EQ.0 ) THEN
@@ -257,7 +259,7 @@ C-    search for this diag. in the active 2D/3D diagnostics list
            IF ( ip.EQ.0 .AND. diagName.EQ.flds(m,n)
      &                  .AND. idiag(m,n).NE.0 ) THEN
             ip   = ABS(idiag(m,n))
-            ndId = ABS(jdiag(m,n))
+            ndId = jdiag(m,n)
            ENDIF
          ENDDO
         ENDDO
@@ -278,14 +280,14 @@ C-    search for this diag. in the active 2D/3D diagnostics list
            IF ( ip.EQ.0 .AND. diagName.EQ.flds(m,n)
      &                  .AND. idiag(m,n).NE.0 ) THEN
             ip   = ABS(idiag(m,n))
-            ndId = ABS(jdiag(m,n))
+            ndId = jdiag(m,n)
            ENDIF
           ENDDO
          ELSEIF ( ip.EQ.0 ) THEN
           DO m=1,nActive(n)
            IF ( ip.EQ.0 .AND. diagName.EQ.flds(m,n)
      &                  .AND. idiag(m,n).NE.0 ) THEN
-            ndId = ABS(jdiag(m,n))
+            ndId = jdiag(m,n)
            ENDIF
           ENDDO
          ENDIF
@@ -601,71 +603,6 @@ C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
      &   'DIAGS_MK_TITLE: input=', diagTitleInPieces
         CALL PRINT_MESSAGE( msgBuf, errorMessageUnit,
      &       SQUEEZE_RIGHT , myThid)
-      ENDIF
-
-      RETURN
-      END
-
-C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
-
-CBOP 0
-C     !ROUTINE: DIAGS_RENAMED
-
-C     !INTERFACE:
-      CHARACTER*8 FUNCTION DIAGS_RENAMED(
-     I                           diagName, myThid )
-
-C     !DESCRIPTION:
-C     *==========================================================*
-C     | FUNCTION DIAGS_RENAMED
-C     | o In case of an old diagnostics name,
-C     |   provides the corresponding new name
-C     *==========================================================*
-
-C     !USES:
-      IMPLICIT NONE
-#include "EEPARAMS.h"
-#include "SIZE.h"
-#include "PARAMS.h"
-#include "DIAGNOSTICS_SIZE.h"
-#include "DIAGNOSTICS.h"
-
-C     !INPUT PARAMETERS:
-C     diagName  :: name of diagnostic to rename (or not)
-C     myThid    :: my Thread Id number
-      CHARACTER*8 diagName
-      INTEGER myThid
-CEOP
-
-C     !LOCAL VARIABLES:
-      CHARACTER*8 newName
-      CHARACTER*(MAX_LEN_MBUF) msgBuf
-
-C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
-
-      newName = blkName
-
-      IF ( useSEAICE ) THEN
-       IF ( diagName .EQ. 'SIfu    ' ) newName = 'oceTAUX '
-       IF ( diagName .EQ. 'SIfv    ' ) newName = 'oceTAUY '
-       IF ( diagName .EQ. 'SIuwind ' ) newName = 'EXFuwind'
-       IF ( diagName .EQ. 'SIvwind ' ) newName = 'EXFvwind'
-       IF ( diagName .EQ. 'SIsigI  ' ) newName = 'SIsig1  '
-       IF ( diagName .EQ. 'SIsigII ' ) newName = 'SIsig2  '
-      ENDIF
-       IF ( diagName .EQ. 'Um_dPHdx' ) newName = 'Um_dPhiX'
-       IF ( diagName .EQ. 'Vm_dPHdy' ) newName = 'Vm_dPhiY'
-
-      IF ( newName.EQ.blkName ) THEN
-        DIAGS_RENAMED = diagName
-      ELSE
-        DIAGS_RENAMED = newName
-        WRITE(msgBuf,'(6A)') '** WARNING ** (DIAGS_RENAMED):',
-     &    ' diagnostics "', diagName, '" replaced by "', newName, '"'
-        CALL PRINT_MESSAGE( msgBuf, errorMessageUnit,
-     &                      SQUEEZE_RIGHT , myThid )
-        CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
-     &                      SQUEEZE_RIGHT , myThid )
       ENDIF
 
       RETURN

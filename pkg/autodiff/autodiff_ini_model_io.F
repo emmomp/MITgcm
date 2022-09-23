@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/autodiff/autodiff_ini_model_io.F,v 1.32 2017/02/18 16:12:36 gforget Exp $
+C $Name:  $
+
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
 
 #include "AUTODIFF_OPTIONS.h"
@@ -47,21 +50,15 @@ C     !FUNCTIONS
       EXTERNAL ILNBLNK
 
 C     !LOCAL VARIABLES:
-#ifndef HAVE_SYSTEM
       CHARACTER*(MAX_LEN_MBUF) msgBuf
-#endif
       CHARACTER*(MAX_LEN_FNAM) namBuf
-      INTEGER iL, pIL
-#ifdef ALLOW_AUTODIFF_WHTAPEIO
-      INTEGER myLev
-#endif
+      INTEGER iL, pIL, myLev
 CEOP
 
 c     initialize ad dump record number (used only if dumpAdByRec is true)
       dumpAdRecMn=0
       dumpAdRecDy=0
       dumpAdRecSi=0
-      dumpAdRecEt=0
 
       _BEGIN_MASTER( myThid )
 
@@ -142,7 +139,7 @@ C      create directory
      &     'coordinates','XC YC RC iter', myThid)
 
       CALL MNC_CW_ADD_VNAME('adS', 'Cen_xy_Hn__C__t', 4,5, myThid)
-      CALL MNC_CW_ADD_VATTR_TEXT('adS','units','[cost]/[g/kg]', myThid)
+      CALL MNC_CW_ADD_VATTR_TEXT('adS','units','[cost]/[psu]', myThid)
       CALL MNC_CW_ADD_VATTR_TEXT('adS','long_name',
      &     'adjoint salinity', myThid)
       CALL MNC_CW_ADD_VATTR_TEXT('adS',
@@ -207,7 +204,7 @@ C      create directory
 #ifdef ALLOW_SSS0_CONTROL
       CALL MNC_CW_ADD_VNAME(    'adSSS', 'Cen_xy_Hn__-__t', 3,4, myThid)
       CALL MNC_CW_ADD_VATTR_TEXT('adSSS',
-     &     'units','[cost]/[g/kg]', myThid)
+     &     'units','[cost]/[psu]', myThid)
       CALL MNC_CW_ADD_VATTR_TEXT('adSSS','long_name',
      &     'adjoint sea_surface_salinity', myThid)
       CALL MNC_CW_ADD_VATTR_TEXT('adSSS',
@@ -370,7 +367,7 @@ c
 # ifdef ALLOW_CLIMSSS_RELAXATION
       CALL MNC_CW_ADD_VNAME('adclimsss', 'Cen_xy_Hn__-__t', 3,4, myThid)
       CALL MNC_CW_ADD_VATTR_TEXT('adclimsss',
-     &     'units','[cost]/[g/kg]', myThid)
+     &     'units','[cost]/[ppt]', myThid)
       CALL MNC_CW_ADD_VATTR_TEXT('adclimsss','long_name',
      &     'adjoint sea surface salinity', myThid)
       CALL MNC_CW_ADD_VATTR_TEXT('adclimsss',

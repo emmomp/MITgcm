@@ -56,7 +56,6 @@
  nTimeSteps=60,
 #monitorFreq=1.,
 #dumpFreq = 1.,
- adjMonitorFreq= 86400.,
  &
 
 # Gridding parameters

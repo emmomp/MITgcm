@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/eesupp/src/ini_communication_patterns.F,v 1.11 2012/09/01 17:37:30 jmc Exp $
+C $Name:  $
+
 #include "PACKAGES_CONFIG.h"
 #include "CPP_EEOPTIONS.h"
 

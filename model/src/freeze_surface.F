@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/model/src/freeze_surface.F,v 1.7 2006/06/07 01:55:13 heimbach Exp $
+C $Name:  $
+
 #include "PACKAGES_CONFIG.h"
 #include "CPP_OPTIONS.h"
 
@@ -7,9 +10,9 @@ C     !INTERFACE:
       SUBROUTINE FREEZE_SURFACE( myTime, myIter, myThid )
 C     !DESCRIPTION: \bv
 C     *==========================================================*
-C     | S/R FREEZE_SURFACE
-C     | o Check water temperature and limit range of temperature
-C     | appropriately.
+C     | S/R FREEZE_SURFACE                                                
+C     | o Check water temperature and limit range of temperature  
+C     | appropriately.                                            
 C     *==========================================================*
 C     \ev
 
@@ -53,12 +56,12 @@ C     Check for water that should have frozen
         DO j=1-OLy,sNy+OLy
          DO i=1-OLx,sNx+OLx
           IF (theta(i,j,k,bi,bj) .LT. Tfreezing) THEN
-             adjustColdSST_diag(i,j,bi,bj) =
+             surfaceForcingTice(i,j,bi,bj) =
      &            ( Tfreezing - theta(i,j,k,bi,bj) )
      &                    *drF(k)*_hFacC(i,j,k,bi,bj) / dTtracerLev(k)
              theta(i,j,k,bi,bj) = Tfreezing
           ELSE
-             adjustColdSST_diag(i,j,bi,bj) = 0. _d 0
+             surfaceForcingTice(i,j,bi,bj) = 0. _d 0
           ENDIF
          ENDDO
         ENDDO

@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/mdsio/mdsio_facef_read.F,v 1.4 2009/06/28 01:06:39 jmc Exp $
+C $Name:  $
+
 #include "MDSIO_OPTIONS.h"
 
 C--  File mdsio_read_facefile.F:
@@ -75,7 +78,7 @@ C     Figure out offset of tile within face
 
       CALL MDSFINDUNIT( dUnit, myThid )
       length_of_rec = MDS_RECLEN( fPrec, (dNx+1), myThid )
-      OPEN( dUnit, file=fName(1:iLen), status='old', _READONLY_ACTION
+      OPEN( dUnit, file=fName(1:iLen), status='old',
      &             access='direct', recl=length_of_rec )
       j = 0
       jBase=(irec-1)*(dNy+1)
@@ -113,7 +116,7 @@ C     Figure out offset of tile within face
 
       CALL MDSFINDUNIT( dUnit, myThid )
       length_of_rec = MDS_RECLEN( fPrec, (sNx+1)*(sNy+1), myThid )
-      OPEN( dUnit, file=fName(1:iLen), status='old', _READONLY_ACTION
+      OPEN( dUnit, file=fName(1:iLen), status='old',
      &             access='direct', recl=length_of_rec )
       IF ( fPrec.EQ.precFloat32 ) THEN
         READ(dUnit, rec=irec) ioBuf4

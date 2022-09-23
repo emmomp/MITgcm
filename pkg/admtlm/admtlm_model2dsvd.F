@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/admtlm/admtlm_model2dsvd.F,v 1.9 2012/08/12 18:29:25 jmc Exp $
+C $Name:  $
+
 #include "ADMTLM_OPTIONS.h"
 #ifdef ALLOW_CTRL
 # include "CTRL_OPTIONS.h"
@@ -7,14 +10,29 @@
      &     first, preprocev, mythid )
 
 c     ==================================================================
-c     SUBROUTINE admtlm_model2dsvd
+c     SUBROUTINE ctrl_pack
 c     ==================================================================
 c
 c     o Compress the control vector such that only ocean points are
 c       written to file.
 c
+c     started: Christian Eckert eckert@mit.edu  10-Mar=2000
+c
+c     changed: Patrick Heimbach heimbach@mit.edu 06-Jun-2000
+c              - Transferred some filename declarations
+c                from here to namelist in ctrl_init
+c
+c              Patrick Heimbach heimbach@mit.edu 16-Jun-2000
+c              - single file name convention with or without
+c                ALLOW_ECCO_OPTIMIZATION
+c
+c              G. Gebbie, added open boundary control packing,
+c                  gebbie@mit.edu  18 -Mar- 2003
+c
+c              heimbach@mit.edu totally restructured 28-Oct-2003
+c
 c     ==================================================================
-c     SUBROUTINE admtlm_model2dsvd
+c     SUBROUTINE ctrl_pack
 c     ==================================================================
 
       implicit none
@@ -47,6 +65,8 @@ c     == routine arguments ==
 #ifndef EXCLUDE_CTRL_PACK
 c     == local variables ==
 
+      _RL    fcloc
+
       integer i, j, k
       integer ii
       integer il
@@ -72,6 +92,10 @@ c     == external ==
       external ilnblnk
 
 c     == end of interface ==
+
+#ifndef ALLOW_ECCO_OPTIMIZATION
+      fmin       = 0. _d 0
+#endif
 
 c--   Tiled files are used.
       doglobalread = .false.
@@ -134,6 +158,7 @@ c--   Only the master thread will do I/O.
 c     >>> Initialise control vector for optimcycle=0 <<<
           lxxadxx   = .TRUE.
           ictrlgrad = 1
+          fcloc     = fmin
           write(cfile(1:128),'(4a,i4.4)')
      &         ctrlname(1:9),'_',yctrlid(1:10),
      &         yctrlpospack, optimcycle
@@ -142,6 +167,7 @@ c     >>> Initialise control vector for optimcycle=0 <<<
 c     >>> Write gradient vector <<<
           lxxadxx   = .FALSE.
           ictrlgrad = 2
+          fcloc     = fc
           write(cfile(1:128),'(4a,i4.4)')
      &         costname(1:9),'_',yctrlid(1:10),
      &         yctrlpospack, optimcycle

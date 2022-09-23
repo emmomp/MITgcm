@@ -1,8 +1,9 @@
 /*
+ * $Header: /u/gcmpack/MITgcm/eesupp/src/setdir.c,v 1.1 2013/10/25 17:29:58 jmc Exp $
+ * $Name:  $
 */
 
 #include <stdlib.h>
-#include <stdio.h>
 #include <unistd.h>
 /*  Here, we get the definition of the FC_NAMEMANGLE() macro. */
 #include "FC_NAMEMANGLE.h"

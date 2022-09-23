@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/mnc/SIZE.t,v 1.1 2004/01/31 04:13:09 edhill Exp $
+C $Name:  $
+
 C
 CBOP
 C    !ROUTINE: SIZE.h
