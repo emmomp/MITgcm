@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/pkg/dic/bio_export.F,v 1.29 2014/11/04 17:16:33 jmc Exp $
-C $Name:  $
-
 #include "DIC_OPTIONS.h"
 
 CBOP
@@ -11,7 +8,7 @@ C !INTERFACE: ==========================================================
 #ifdef ALLOW_FE
      I           PTR_FE,
 #endif
-     I           bioac,
+     O           bioac,
      I           bi,bj,iMin,iMax,jMin,jMax,
      I           myIter,myTime,myThid)
 
@@ -48,7 +45,7 @@ C  PTR_FE               :: iron tracer field
 C !OUTPUT PARAMETERS: ==================================================
 C  bioac               :: biological productivity (will be split
 C                         between export and dissolved pool)
-      _RL bioac(1-OLx:sNx+OLx,1-OLy:sNy+OLy,nR)
+      _RL bioac(1-OLx:sNx+OLx,1-OLy:sNy+OLy,Nr)
 
 #if (defined ALLOW_PTRACERS && defined DIC_BIOTIC)
 
@@ -64,7 +61,7 @@ C  i,j,k                  :: loop indices
       _RL tmpfe
 #endif
 #ifdef AD_SAFE
-      _RL thx, thy, theps, thaux
+      _RL thx, thy, thaux
 #endif
 CEOP
 
@@ -133,8 +130,6 @@ C     performance drop on vector computers
          thy = tmpfe/(tmpfe+KFE)
 c        thx = PTR_PO4(i,j,k)/(PTR_PO4(i,j,k)+KPO4)
 c        thy = PTR_FE(i,j,k)/(PTR_FE(i,j,k)+KFE)
-c        theps = 1. _d -6
-c        thaux = tanh( (thx-thy)/theps )
          thaux = tanh( (thx-thy)*1. _d 6 )
          nutlimit= ( 1. _d 0 - thaux ) * thx * 0.5 _d 0
      &        +    ( 1. _d 0 + thaux ) * thy * 0.5 _d 0

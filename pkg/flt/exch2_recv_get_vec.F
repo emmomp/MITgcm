@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/pkg/flt/exch2_recv_get_vec.F,v 1.5 2017/02/11 21:07:13 gforget Exp $
-C $Name:  $
-
 #include "PACKAGES_CONFIG.h"
 #include "CPP_EEOPTIONS.h"
 #undef DBUG_EXCH_VEC
@@ -37,9 +34,7 @@ C     == Global variables ==
 #include "W2_EXCH2_SIZE.h"
 #include "W2_EXCH2_TOPOLOGY.h"
 #endif
-#ifdef DEVEL_FLT_EXCH2
-# include "FLT_SIZE.h"
-#endif
+#include "FLT_SIZE.h"
 
 C     !INPUT/OUTPUT PARAMETERS:
 C     arrayE        :: buffer array to collect Eastern Neighbour values
@@ -70,13 +65,11 @@ C     theSize       :: Variables used in message building
       INTEGER theProc, theTag, theType, theSize
       INTEGER wHandle
       INTEGER mpiStatus(MPI_STATUS_SIZE,4), mpiRc
-#ifdef DEVEL_FLT_EXCH2
       INTEGER imax, imax2
       PARAMETER(imax=9)
       PARAMETER(imax2=imax*max_npart_exch)
       INTEGER pi(2), pj(2), oi, oj, ip, itb, jtb, isb, jsb
       _RL itc,jtc, itmp, jtmp
-#endif
 
 C--   Under a "put" scenario we
 C--     i. set completetion signal for buffer we put into.
@@ -119,7 +112,6 @@ C- loop over neighboring tiles
      &                    theProc, theTag, MPI_COMM_MODEL,
      &                    mpiStatus, mpiRc )
 
-#ifdef DEVEL_FLT_EXCH2
 C- apply exch2_pij to rotate or shift indices
            itb = exch2_tBasex(tgT)
            jtb = exch2_tBasey(tgT)
@@ -158,7 +150,6 @@ C- apply exch2_pij to rotate or shift indices
              array(imax*(ip-1)+4,bi,bj,dir) = pj(1)*itc+pj(2)*jtc+oj-jsb
             ENDIF
            ENDDO
-#endif
 
           ENDIF
 #ifdef DBUG_EXCH_VEC

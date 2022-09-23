@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/pkg/thsice/thsice_readparms.F,v 1.22 2014/05/27 23:41:27 jmc Exp $
-C $Name:  $
-
 #include "THSICE_OPTIONS.h"
 
 CBOP
@@ -211,7 +208,11 @@ C--   Read parameters from open data file
 #endif
 
 C--   Close the open data file
+#ifdef SINGLE_DISK_IO
       CLOSE(iUnit)
+#else
+      CLOSE(iUnit,STATUS='DELETE')
+#endif /* SINGLE_DISK_IO */
 
 C-    neutral default:
       IF ( hNewIceMax .EQ. UNSET_RL ) hNewIceMax = hiMax

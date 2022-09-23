@@ -1,5 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/verification/tutorial_global_oce_optim/code_oad/FFIELDS.h,v 1.1 2014/01/17 22:01:16 heimbach Exp $
-C $Name:  $
 CBOP
 C     !ROUTINE: FFIELDS.h
 C     !INTERFACE:
@@ -11,7 +9,7 @@ C     | FFIELDS.h
 C     | o Model forcing fields
 C     *==========================================================*
 C     | More flexible surface forcing configurations are
-C     | available via pkg/exf and pkg/seaice
+C     | available via, e.g., pkg/exf
 C     *==========================================================*
 C     \ev
 CEOP
@@ -57,9 +55,6 @@ C              > 0 for decrease in theta (ocean cooling)
 C              Typical range: -350 < Qsw < 0
 C              Southwest C-grid tracer point
 C
-C     dQdT  :: Thermal relaxation coefficient in W/m^2/degrees
-C              Southwest C-grid tracer point
-C
 C     SST   :: Sea surface temperature in degrees C for relaxation
 C              Southwest C-grid tracer point
 C
@@ -70,13 +65,20 @@ C     lambdaThetaClimRelax :: Inverse time scale for relaxation ( 1/s ).
 C
 C     lambdaSaltClimRelax :: Inverse time scale for relaxation ( 1/s ).
 
+C     phiTide2d :: vertically uniform (2d-map), time-dependent geopotential
+C                  anomaly (e.g., tidal forcing); Units are m^2/s^2
 C     pLoad :: for the ocean:      atmospheric pressure at z=eta
 C                Units are           Pa=N/m^2
 C              for the atmosphere: geopotential of the orography
 C                Units are           meters (converted)
-C  sIceLoad :: sea-ice loading, expressed in Mass of ice+snow / area unit
+C     sIceLoad :: sea-ice loading, expressed in Mass of ice+snow / area unit
 C                Units are           kg/m^2
 C              Note: only used with Sea-Ice & RealFreshWater formulation
+C     addMass  :: source (<0: sink) of fluid in the domain interior
+C                 (generalisation of oceanic real fresh-water flux)
+C                Units are           kg/s  (mass per unit of time)
+C     frictionHeating :: heating caused by friction and momentum dissipation
+C                Units are           in W/m^2 (thickness integrated)
 C     eddyPsiX -Zonal Eddy Streamfunction in m^2/s used in taueddy_external_forcing.F
 C     eddyPsiY -Meridional Streamfunction in m^2/s used in taueddy_external_forcing.F
 C     EfluxY - y-component of Eliassen-Palm flux vector
@@ -86,13 +88,13 @@ C     EfluxP - p-component of Eliassen-Palm flux vector
       COMMON /FFIELDS_fv/ fv
       COMMON /FFIELDS_Qnet/ Qnet
       COMMON /FFIELDS_Qsw/ Qsw
-      COMMON /FFIELDS_dQdT/ dQdT
       COMMON /FFIELDS_EmPmR/ EmPmR
       COMMON /FFIELDS_saltFlux/ saltFlux
       COMMON /FFIELDS_SST/ SST
       COMMON /FFIELDS_SSS/ SSS
       COMMON /FFIELDS_lambdaThetaClimRelax/ lambdaThetaClimRelax
       COMMON /FFIELDS_lambdaSaltClimRelax/ lambdaSaltClimRelax
+      COMMON /FFIELDS_phiTide/ phiTide2d
       COMMON /FFIELDS_pLoad/ pLoad
       COMMON /FFIELDS_sIceLoad/ sIceLoad
 
@@ -100,32 +102,66 @@ C     EfluxP - p-component of Eliassen-Palm flux vector
       _RS  fv       (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
       _RS  Qnet     (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
       _RS  Qsw      (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
-      _RS  dQdT     (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
       _RS  EmPmR    (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
       _RS  saltFlux (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
       _RS  SST      (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
       _RS  SSS      (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
       _RS  lambdaThetaClimRelax(1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
       _RS  lambdaSaltClimRelax(1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
+      _RS  phiTide2d(1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
       _RS  pLoad    (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
       _RS  sIceLoad (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
+
+#ifdef ALLOW_ADDFLUID
+      COMMON /FFIELDS_ADD_FLUID/ addMass
+      _RL addMass(1-OLx:sNx+OLx,1-OLy:sNy+OLy,Nr,nSx,nSy)
+#endif
+#ifdef ALLOW_FRICTION_HEATING
+      COMMON /FFIELDS_frictionHeat/ frictionHeating
+      _RS frictionHeating(1-OLx:sNx+OLx,1-OLy:sNy+OLy,Nr,nSx,nSy)
+#endif
+#ifdef ALLOW_GEOTHERMAL_FLUX
+C  geothermalFlux :: Upward geothermal flux through bottom cell [W/m^2]
+C                    > 0 for increase in theta (ocean warming)
+C                    Typical range: 0 < geothermalFlux < 1.5 W/m^2
+C                    (global mean on the order 0.09 - 0.1 W/m^2)
+      COMMON /FFIELDS_geothermal/ geothermalFlux
+      _RS geothermalFlux(1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
+#endif
 
 #ifdef ALLOW_HFLUXM_CONTROL
       COMMON /Mean_qnet/ Qnetm
       _RS  Qnetm   (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
 #endif
 
-#ifdef ALLOW_EP_FLUX
-      COMMON /efluxFFIELDS/ EfluxY,EfluxP
-      _RL  EfluxY (1-OLx:sNx+OLx,1-OLy:sNy+OLy,Nr,nSx,nSy)
-      _RL  EfluxP (1-OLx:sNx+OLx,1-OLy:sNy+OLy,Nr,nSx,nSy)
-#endif
+C- jmc: commented out until corresponding (ghost-like) code apparition
+C     dQdT  :: Thermal relaxation coefficient in W/m^2/degrees
+C              Southwest C-grid tracer point
+c     COMMON /FFIELDS_dQdT/ dQdT
+c     _RS  dQdT   (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
+c#ifdef ALLOW_EP_FLUX
+c     COMMON /FFIELDS_eflux/ EfluxY,EfluxP
+c     _RL  EfluxY (1-OLx:sNx+OLx,1-OLy:sNy+OLy,Nr,nSx,nSy)
+c     _RL  EfluxP (1-OLx:sNx+OLx,1-OLy:sNy+OLy,Nr,nSx,nSy)
+c#endif
 
 #ifdef ALLOW_EDDYPSI
-      COMMON /eddypsiFFIELDS/ eddyPsiX,eddyPsiY
+C     uEulerMean  :: The Eulerian mean Zonal  velocity (residual less bolus velocity)
+C     vEulerMean  :: The Eulerian mean Merid. velocity (residual less bolus velocity)
+C     tauxEddy    :: The eddy stress used in the momentum equation of a residual model
+C     tauyEddy    :: The eddy stress used in the momentum equation of a residual model
+
+      COMMON /FFIELDS_eddyPsi_RS/ eddyPsiX, eddyPsiY
       _RS  eddyPsiX (1-OLx:sNx+OLx,1-OLy:sNy+OLy,Nr,nSx,nSy)
       _RS  eddyPsiY (1-OLx:sNx+OLx,1-OLy:sNy+OLy,Nr,nSx,nSy)
-#endif
+
+      COMMON /FFIELDS_eddyPsi_RL/
+     &                tauxEddy, tauyEddy, uEulerMean, vEulerMean
+      _RL tauxEddy  (1-OLx:sNx+OLx,1-OLy:sNy+OLy,Nr,nSx,nSy)
+      _RL tauyEddy  (1-OLx:sNx+OLx,1-OLy:sNy+OLy,Nr,nSx,nSy)
+      _RL uEulerMean(1-OLx:sNx+OLx,1-OLy:sNy+OLy,Nr,nSx,nSy)
+      _RL vEulerMean(1-OLx:sNx+OLx,1-OLy:sNy+OLy,Nr,nSx,nSy)
+#endif /* ALLOW_EDDYPSI */
 
 #ifndef EXCLUDE_FFIELDS_LOAD
 C     loadedRec     :: time-record currently loaded (in temp arrays *[1])
@@ -150,6 +186,9 @@ C     [0,1]         :: End points for interpolation
 #ifdef SHORTWAVE_HEATING
      &               , Qsw0, Qsw1
 #endif
+#ifdef ALLOW_GEOTHERMAL_FLUX
+     &               , geothFlux0, geothFlux1
+#endif
 #ifdef ATMOSPHERIC_LOADING
      &               , pLoad0, pLoad1
 #endif
@@ -168,13 +207,17 @@ C     [0,1]         :: End points for interpolation
       _RS  saltFlux1(1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
       _RS  SST1     (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
       _RS  SSS1     (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
+#ifdef SHORTWAVE_HEATING
+      _RS  Qsw0     (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
+      _RS  Qsw1     (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
+#endif
+#ifdef ALLOW_GEOTHERMAL_FLUX
+      _RS  geothFlux0(1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
+      _RS  geothFlux1(1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
+#endif
 #ifdef ATMOSPHERIC_LOADING
       _RS  pLoad0   (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
       _RS  pLoad1   (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
-#endif
-#ifdef SHORTWAVE_HEATING
-      _RS  Qsw1     (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
-      _RS  Qsw0     (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
 #endif
 #endif /* EXCLUDE_FFIELDS_LOAD */
 
@@ -192,26 +235,36 @@ C            - Qnet (+Qsw) plus temp. relaxation*drF(1)
 C                -> calculate        -lambda*(T(model)-T(clim))
 C            Qnet assumed to be net heat flux including ShortWave rad.
 C                -> usage in gT:     gT = gT + surfaceforcingT/drF [K/s]
-C     surfaceForcingTice
-C            - equivalent Temperature flux in the top level that corresponds
-C              to the melting or freezing of sea-ice.
-C              Note that the surface level temperature is modified
-C              directly by the sea-ice model in order to maintain
-C              water temperature under sea-ice at the freezing
-C              point.  But we need to keep track of the
-C              equivalent amount of heat that this surface-level
-C              temperature change implies because it is used by
-C              the KPP package (kpp_calc.F and kpp_transport_t.F).
-C              Units are r_unit.K/s (=Kelvin.m/s if r=z) (>0 for ocean warming).
+C     adjustColdSST_diag :: diagnostic field for how much too cold (below
+C              Tfreezing) SST has been adjusted (with allowFreezing=T).
+C              > 0 for increase of SST (up to Tfreezing).
+C              Units are r_unit.K/s (=Kelvin.m/s if r=z).
+C        Note: 1) allowFreezing option is a crude hack to fix too cold SST that
+C              results from missing seaice component. It should never be used
+C              with any seaice component, neither current seaice pkg (pkg/seaice
+C              or pkg/thsice) nor a seaice component from atmos model when
+C              coupled to it.
+C              2) this diagnostic is currently used by KPP package (kpp_calc.F
+C              and kpp_transport_t.F) although it is not very clear it should.
 
       COMMON /SURFACE_FORCING/
      &                         surfaceForcingU,
      &                         surfaceForcingV,
      &                         surfaceForcingT,
      &                         surfaceForcingS,
-     &                         surfaceForcingTice
+     &                         adjustColdSST_diag
       _RL  surfaceForcingU   (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
       _RL  surfaceForcingV   (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
       _RL  surfaceForcingT   (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
       _RL  surfaceForcingS   (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
-      _RL  surfaceForcingTice(1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
+      _RL  adjustColdSST_diag(1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
+
+C     botDragU :: bottom stress (for diagnostics), Zonal component
+C                Units are N/m^2 ;   > 0 increase uVel @ bottom
+C     botDragV :: bottom stress (for diagnostics), Merid. component
+C                Units are N/m^2 ;   > 0 increase vVel @ bottom
+      COMMON /FFIELDS_bottomStress/ botDragU, botDragV
+      _RS  botDragU (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
+      _RS  botDragV (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
+
+C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|

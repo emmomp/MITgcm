@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/model/src/do_the_model_io.F,v 1.68 2017/04/04 23:22:38 jmc Exp $
-C $Name:  $
-
 #include "PACKAGES_CONFIG.h"
 #include "CPP_OPTIONS.h"
 
@@ -57,6 +54,8 @@ C       |-- GGL90_OUTPUT
 C       |
 C       |-- SBO_CALC
 C       |-- SBO_OUTPUT
+C       |
+C       |-- STERGLOH_OUTPUT
 C       |
 C       |-- SEAICE_OUTPUT
 C       |
@@ -185,11 +184,11 @@ C     Do MY82 diagnostics.
      &     CALL MY82_OUTPUT( myTime, myIter, myThid )
 #endif
 
-#ifdef ALLOW_OPPS
+c#ifdef ALLOW_OPPS
 C--   Do OPPS diagnostics.
-      IF ( useOPPS )
-     & CALL OPPS_OUTPUT( myTime, myIter, myThid )
-#endif
+c     IF ( useOPPS )
+c    & CALL OPPS_OUTPUT( myTime, myIter, myThid )
+c#endif
 
 #ifdef ALLOW_GGL90
 C--   Do GGL90 diagnostics.
@@ -202,6 +201,12 @@ C     Do SBO diagnostics.
       IF ( useSBO ) THEN
         CALL SBO_CALC( myTime, myIter, myThid )
         CALL SBO_OUTPUT( myTime, myIter, myThid )
+      ENDIF
+#endif
+
+#ifdef ALLOW_ECCO
+      IF ( useECCO ) THEN
+        CALL STERGLOH_OUTPUT( myTime, myIter, myThid )
       ENDIF
 #endif
 

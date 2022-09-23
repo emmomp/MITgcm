@@ -1,13 +1,10 @@
-C $Header: /u/gcmpack/MITgcm/eesupp/src/eeset_parms.F,v 1.39 2017/01/10 23:02:51 jmc Exp $
-C $Name:  $
-
 #include "CPP_EEOPTIONS.h"
 
 CBOP
 C     !ROUTINE: EESET_PARMS
 
 C     !INTERFACE:
-      SUBROUTINE EESET_PARMS ( doReport )
+      SUBROUTINE EESET_PARMS ( procId, doReport )
 
 C     !DESCRIPTION:
 C     *==========================================================*
@@ -31,7 +28,9 @@ C     == Global variables ==
 #include "EXCH.h"
 
 C     !INPUT PARAMETERS:
+C     procId   :: this process id. number (either in World or in Model)
 C     doReport :: if false, skip error stop and any report to std-out/err
+      INTEGER  procId
       LOGICAL  doReport
 
 C     !FUNCTIONS:
@@ -52,7 +51,7 @@ C     record :: Temp. for textual I/O
       INTEGER iUnit
       CHARACTER*(MAX_LEN_MBUF) msgBuf
       CHARACTER*(MAX_LEN_PREC) record
-#if defined (TARGET_BGL) || defined (TARGET_CRAYXT) || defined (SINGLE_DISK_IO)
+# if !defined(USE_FORTRAN_SCRATCH_FILES) || defined(SINGLE_DISK_IO)
       CHARACTER*(MAX_LEN_FNAM) scratchFile1
       CHARACTER*(MAX_LEN_FNAM) scratchFile2
 #endif
@@ -60,12 +59,16 @@ C     record :: Temp. for textual I/O
 C     mpiRC  :: Error code reporting variable used with MPI.
       INTEGER mpiRC
 #endif
+#ifdef USE_PDAF
+      INTEGER mpi_task_id
+#endif
 CEOP
 
       NAMELIST /EEPARMS/
      & nTx, nTy, usingMPI,
      & useCubedSphereExchange,
-     & useCoupler, useNEST_PARENT, useNEST_CHILD, useOASIS,
+     & useCoupler, useNEST_PARENT, useNEST_CHILD,
+     & useNest2W_parent, useNest2W_child, useOASIS,
      & useSETRLSTK, useSIGREG,
      & debugMode, printMapIncludesZeros, maxLengthPrt1D
 
@@ -110,6 +113,8 @@ C     which sets the stack size to "unlimited" using setrlimit()
       useCoupler                 = .FALSE.
       useNEST_PARENT             = .FALSE.
       useNEST_CHILD              = .FALSE.
+      useNest2W_parent           = .FALSE.
+      useNest2W_child            = .FALSE.
       useOASIS                   = .FALSE.
       nTx                        = 1
       nTy                        = 1
@@ -140,18 +145,31 @@ C     Stop if called from eeboot_minimal.F before myProcId is set
       WRITE(scratchFile1,'(A)') 'scratch1'
       WRITE(scratchFile2,'(A)') 'scratch2'
       IF( myProcId .EQ. 0 ) THEN
-         OPEN(UNIT=scrUnit1, FILE=scratchFile1, STATUS='UNKNOWN')
-         OPEN(UNIT=scrUnit2, FILE=scratchFile2, STATUS='UNKNOWN')
+       OPEN(UNIT=scrUnit1, FILE=scratchFile1, STATUS='UNKNOWN')
+       OPEN(UNIT=scrUnit2, FILE=scratchFile2, STATUS='UNKNOWN')
       ENDIF
 #else /* ifndef SINGLE_DISK_IO */
-# if defined (TARGET_BGL) || defined (TARGET_CRAYXT)
-      WRITE(scratchFile1,'(A,I4.4)') 'scratch1.', myProcId
-      WRITE(scratchFile2,'(A,I4.4)') 'scratch2.', myProcId
-      OPEN(UNIT=scrUnit1, FILE=scratchFile1, STATUS='UNKNOWN')
-      OPEN(UNIT=scrUnit2, FILE=scratchFile2, STATUS='UNKNOWN')
-# else
+# ifdef USE_FORTRAN_SCRATCH_FILES
+C     this is the old default, which can cause filename conflicts on some
+C     multi-node/multi-processor systems
       OPEN(UNIT=scrUnit1,STATUS='SCRATCH')
       OPEN(UNIT=scrUnit2,STATUS='SCRATCH')
+# else
+C     this definition will go into CPP_EEMACROS.h, once this method is
+C     properly established
+C     After opening regular files here, they are closed with STATUS='DELETE'
+#ifdef USE_PDAF
+      CALL GET_TASKID_PDAF(mpi_task_id)
+      WRITE(scratchFile1,'(A,'//FMT_PROC_ID//',A,'//FMT_TSK_ID//')')
+     &     'scratch1.', procId, '.', mpi_task_id
+      WRITE(scratchFile2,'(A,'//FMT_PROC_ID//',A,'//FMT_TSK_ID//')')
+     &     'scratch2.', procId, '.', mpi_task_id
+#else
+      WRITE(scratchFile1,'(A,'//FMT_PROC_ID//')') 'scratch1.', procId
+      WRITE(scratchFile2,'(A,'//FMT_PROC_ID//')') 'scratch2.', procId
+#endif
+      OPEN(UNIT=scrUnit1, FILE=scratchFile1, STATUS='UNKNOWN')
+      OPEN(UNIT=scrUnit2, FILE=scratchFile2, STATUS='UNKNOWN')
 # endif
 #endif /* SINGLE_DISK_IO */
 
@@ -209,11 +227,10 @@ C--   Report contents of parameter file
         CALL PRINT_MESSAGE(msgBuf,standardMessageUnit, SQUEEZE_RIGHT, 1)
         GOTO 2000
  2001  CONTINUE
-
        WRITE(msgBuf,'(A)') ' '
        CALL PRINT_MESSAGE(msgBuf,standardMessageUnit, SQUEEZE_RIGHT, 1)
       ENDIF
-      CLOSE(iUnit)
+      CLOSE(iUnit,STATUS='DELETE')
 
 #ifdef SINGLE_DISK_IO
       CALL FLUSH(scrUnit1)
@@ -250,7 +267,11 @@ C--   Read namelist
    4  CONTINUE
 
 C--   Execution Environment parameter file read
+#ifdef SINGLE_DISK_IO
       CLOSE(iUnit)
+#else
+      CLOSE(iUnit,STATUS='DELETE')
+#endif /* SINGLE_DISK_IO */
 
 #ifdef ALLOW_USE_MPI
 #ifdef ALWAYS_USE_MPI

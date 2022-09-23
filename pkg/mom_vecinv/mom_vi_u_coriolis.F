@@ -1,13 +1,11 @@
-C $Header: /u/gcmpack/MITgcm/pkg/mom_vecinv/mom_vi_u_coriolis.F,v 1.13 2008/05/05 22:45:00 jmc Exp $
-C $Name:  $
-
 #include "MOM_VECINV_OPTIONS.h"
 
 CBOP
 C     !ROUTINE: MOM_VI_U_CORIOLIS
 C     !INTERFACE:
       SUBROUTINE MOM_VI_U_CORIOLIS(
-     I                     bi, bj, k,
+     I                     bi, bj, k, 
+     I                     selectVortScheme, useJamartMomAdv,
      I                     vFld, omega3, hFacZ, r_hFacZ,
      O                     uCoriolisTerm,
      I                     myThid )
@@ -27,7 +25,6 @@ C     == Global variables ==
 #include "SIZE.h"
 #include "EEPARAMS.h"
 #include "GRID.h"
-#include "PARAMS.h"
 
 C     !INPUT/OUTPUT PARAMETERS:
 C     == Routine arguments ==
@@ -37,6 +34,8 @@ C     == Routine arguments ==
       _RS     hFacZ    (1-OLx:sNx+OLx,1-OLy:sNy+OLy)
       _RS     r_hFacZ  (1-OLx:sNx+OLx,1-OLy:sNy+OLy)
       _RL uCoriolisTerm(1-OLx:sNx+OLx,1-OLy:sNy+OLy)
+      INTEGER selectVortScheme
+      LOGICAL useJamartMomAdv
       INTEGER myThid
 CEOP
 

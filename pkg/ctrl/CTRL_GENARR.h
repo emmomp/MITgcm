@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/pkg/ctrl/CTRL_GENARR.h,v 1.18 2015/06/12 17:43:32 gforget Exp $
-C $Name:  $
-
 C     ==================================================================
 C     CTRL_GENARR.h
 C     ==================================================================
@@ -18,13 +15,13 @@ C     ==================================================================
       CHARACTER*(MAX_LEN_FNAM) xx_genarr3d_file(maxCtrlArr3D)
       CHARACTER*(MAX_LEN_FNAM) xx_genarr2d_weight(maxCtrlArr2D)
       CHARACTER*(MAX_LEN_FNAM) xx_genarr3d_weight(maxCtrlArr3D)
-      CHARACTER*(MAX_LEN_FNAM) 
+      CHARACTER*(MAX_LEN_FNAM)
      &         xx_genarr2d_preproc(maxCtrlProc,maxCtrlArr2D)
-      CHARACTER*(MAX_LEN_FNAM) 
+      CHARACTER*(MAX_LEN_FNAM)
      &         xx_genarr3d_preproc(maxCtrlProc,maxCtrlArr3D)
-      CHARACTER*(MAX_LEN_FNAM) 
+      CHARACTER*(MAX_LEN_FNAM)
      &         xx_genarr2d_preproc_c(maxCtrlProc,maxCtrlArr2D)
-      CHARACTER*(MAX_LEN_FNAM) 
+      CHARACTER*(MAX_LEN_FNAM)
      &         xx_genarr3d_preproc_c(maxCtrlProc,maxCtrlArr3D)
 
       COMMON /CONTROLFILES_RARR/
@@ -121,9 +118,9 @@ C     ==================================================================
      &                      xx_gentim2d1,
      &                      xx_gentim2d,
      &                      wgentim2d
-      _RL 
+      _RL
      & xx_gentim2d0(1-olx:snx+olx,1-oly:sny+oly,nsx,nsy,maxCtrlTim2D)
-      _RL 
+      _RL
      & xx_gentim2d1(1-olx:snx+olx,1-oly:sny+oly,nsx,nsy,maxCtrlTim2D)
       _RL
      & xx_gentim2d(1-olx:snx+olx,1-oly:sny+oly,nsx,nsy,maxCtrlTim2D)

@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/pkg/ecco/cost_gencost_assignperiod.F,v 1.13 2015/06/14 14:17:20 gforget Exp $
-C $Name:  $
-
 #include "ECCO_OPTIONS.h"
 
       subroutine cost_gencost_assignperiod(
@@ -23,7 +20,8 @@ c     == global variables ==
 #include "SIZE.h"
 #include "PARAMS.h"
 #ifdef ALLOW_ECCO
-# include "ecco.h"
+# include "ECCO_SIZE.h"
+# include "ECCO.h"
 #endif
 
 c     == routine arguments ==

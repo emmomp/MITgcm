@@ -1,6 +1,3 @@
-C$Header: /u/gcmpack/MITgcm/pkg/openad/seawater.F,v 1.3 2015/02/24 20:01:10 mlosch Exp $
-C$Name:  $
-
 #include "CPP_OPTIONS.h"
 
 C--  File seawater.F: routines that compute quantities related to seawater.
@@ -36,7 +33,7 @@ C     === Global variables ===
 
 C     !INPUT/OUTPUT PARAMETERS:
 C     === Routine arguments ===
-C     S  :: salinity    [psu      (PSS-78) ]
+C     S  :: salinity    [         (PSS-78) ]
 C     T  :: temperature [degree C (IPTS-68)]
 C     P  :: pressure    [db]
 C     PR :: Reference pressure  [db]

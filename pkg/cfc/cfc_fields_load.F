@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/pkg/cfc/cfc_fields_load.F,v 1.21 2013/06/10 02:58:12 jmc Exp $
-C $Name:  $
-
 #include "GCHEM_OPTIONS.h"
 #ifdef ALLOW_SEAICE
 # include "SEAICE_OPTIONS.h"
@@ -8,6 +5,9 @@ C $Name:  $
 #ifdef ALLOW_THSICE
 # include "THSICE_OPTIONS.h"
 #endif /* ALLOW_THSICE */
+#ifdef ALLOW_AUTODIFF
+# include "AUTODIFF_OPTIONS.h"
+#endif
 
 CBOP
 C     !ROUTINE: CFC12_FORCING
@@ -77,7 +77,7 @@ C--   Now calculate whether it is time to update the forcing arrays
        CALL GET_PERIODIC_INTERVAL(
      O                   intimeP, intime0, intime1, bWght, aWght,
      I                   CFC_forcingCycle, CFC_forcingPeriod,
-     I                   deltaTclock, myTime, myThid )
+     I                   deltaTClock, myTime, myThid )
 
        bi = myBxLo(myThid)
        bj = myByLo(myThid)
@@ -222,7 +222,7 @@ c following Wannikof (1992)
 #ifdef ALLOW_THSICE
           DO j=1-OLy,sNy+OLy
            DO i=1-OLx,sNx+OLx
-             FIce(I,J,bi,bj) = iceMask(i,j,bi,bj)
+             FIce(i,j,bi,bj) = iceMask(i,j,bi,bj)
            ENDDO
           ENDDO
 #endif /* ALLOW_THSICE */
@@ -230,7 +230,7 @@ c following Wannikof (1992)
 #ifdef ALLOW_SEAICE
           DO j=1-OLy,sNy+OLy
            DO i=1-OLx,sNx+OLx
-             FIce(I,J,bi,bj) = AREA(I,J,bi,bj)
+             FIce(i,j,bi,bj) = AREA(i,j,bi,bj)
            ENDDO
           ENDDO
 #endif /* ALLOW_SEAICE */

@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/pkg/ocn_compon_interf/ocn_import_atmconfig.F,v 1.4 2015/11/12 00:53:46 jmc Exp $
-C $Name:  $
-
 #include "OCN_CPL_OPTIONS.h"
 
 CBOP 0
@@ -40,7 +37,7 @@ C     i,j,bi,bj :: Loop counters
 
 C-    Initialise land-mask
       DO bj=myByLo(myThid),myByHi(myThid)
-       DO bi=myBxLo(myThid),myByLo(myThid)
+       DO bi=myBxLo(myThid),myBxHi(myThid)
         DO j=1-OLy,sNy+OLy
          DO i=1-OLx,sNx+OLx
           landMask(i,j,bi,bj) = 0.

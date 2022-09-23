@@ -1,15 +1,12 @@
-C $Header: /u/gcmpack/MITgcm/pkg/seaice/seaice_mnc_init.F,v 1.7 2012/11/09 22:15:18 heimbach Exp $
-C $Name:  $
-
 #include "SEAICE_OPTIONS.h"
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
 CBOP
 C     !ROUTINE: SEAICE_MNC_INIT
-      
+
 C     !INTERFACE:
       SUBROUTINE SEAICE_MNC_INIT( myThid )
-      
+
 C     !DESCRIPTION:
 C     Initialize SEAICE variables within MNC
 

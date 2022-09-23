@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/model/src/ini_curvilinear_grid.F,v 1.54 2017/04/04 23:22:38 jmc Exp $
-C $Name:  $
-
 #include "PACKAGES_CONFIG.h"
 #include "CPP_OPTIONS.h"
 
@@ -60,6 +57,10 @@ C     == Local variables ==
       CHARACTER*(MAX_LEN_MBUF) tmpBuf
       INTEGER  ILNBLNK
       EXTERNAL ILNBLNK
+#endif
+#ifdef ALLOW_EXCH2
+      CHARACTER*(6) fmtStr
+      INTEGER iTmp
 #endif
 CEOP
 
@@ -263,7 +264,9 @@ C--   Only do I/O if I am the master thread
 C-    Use face number:
         jG = W2_myTileList(bi,bj)
         iG = exch2_myface(jG)
-        WRITE(tmpBuf,'(A,I4)') 'tile:',jG
+        iTmp = MAX(4,1 + INT(LOG10(DFLOAT(W2_maxNbTiles))))
+        WRITE(fmtStr,'(A,I1,A)') '(A,I',iTmp,')'
+        WRITE(tmpBuf,fmtStr) 'tile:',jG
 #else
 C-    Tile Id number = Bi + (Bj-1)*(nSx*nPx)  with tile global-indices Bi,Bj
         iG = bi+(myXGlobalLo-1)/sNx
@@ -416,11 +419,11 @@ C     geographical north when they have not been read from a file
 C--   Exchange Angle (either loaded from file or computed)
       CALL EXCH_UV_AGRID_3D_RS(angleSinC,angleCosC,.TRUE., 1, myThid)
 
-c     CALL WRITE_FULLARRAY_RL('dxV',dxV,1,0,0,1,0,myThid)
-c     CALL WRITE_FULLARRAY_RL('dyU',dyU,1,0,0,1,0,myThid)
-c     CALL WRITE_FULLARRAY_RL('rAz',rAz,1,0,0,1,0,myThid)
-c     CALL WRITE_FULLARRAY_RL('xG' ,xG ,1,0,0,1,0,myThid)
-c     CALL WRITE_FULLARRAY_RL('yG' ,yG ,1,0,0,1,0,myThid)
+c     CALL WRITE_FULLARRAY_RS('dxV',dxV,1,0,0,1,0,myThid)
+c     CALL WRITE_FULLARRAY_RS('dyU',dyU,1,0,0,1,0,myThid)
+c     CALL WRITE_FULLARRAY_RS('rAz',rAz,1,0,0,1,0,myThid)
+c     CALL WRITE_FULLARRAY_RS('xG' ,xG ,1,0,0,1,0,myThid)
+c     CALL WRITE_FULLARRAY_RS('yG' ,yG ,1,0,0,1,0,myThid)
 
 C--   Now let us look at all these beasts
       IF ( plotLevel.GE.debLevC ) THEN

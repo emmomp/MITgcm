@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/pkg/atm_compon_interf/atm_apply_import.F,v 1.4 2016/01/06 00:48:36 jmc Exp $
-C $Name:  $
-
 #include "ATM_CPL_OPTIONS.h"
 
 CBOP
@@ -135,7 +132,9 @@ C--   supply imported fields to Atm_Phys pkg:
        IF ( useImportSST ) THEN
         DO j=1,sNy
          DO i=1,sNx
+          IF ( ocMxlD(i,j,bi,bj) .GT. 0. ) THEN
             atmSST(i,j) = SSTocn(i,j,bi,bj)+celsius2K
+          ENDIF
          ENDDO
         ENDDO
        ENDIF

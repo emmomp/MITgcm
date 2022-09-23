@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/pkg/obcs/obcs_init_variables.F,v 1.44 2012/11/15 20:46:52 dimitri Exp $
-C $Name:  $
-
 #include "OBCS_OPTIONS.h"
 
 CBOP
@@ -425,6 +422,9 @@ C--   Load/compute OBCS values (initial conditions only)
 #endif
        CALL OBCS_CALC( startTime, nIter0,
      &              uVel, vVel, wVel, theta, salt, myThid )
+C     S/R OBCS_CALC is split between computing the boundary conditions
+C     and adjusting them to balance the flow (and apply tides)
+       CALL OBCS_ADJUST( startTime, nIter0, myThid )
 
 C--   Apply OBCS values to initial conditions for consistency
 C      (but initial conditions only)

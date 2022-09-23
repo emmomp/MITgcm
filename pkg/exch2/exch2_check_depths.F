@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/pkg/exch2/exch2_check_depths.F,v 1.7 2011/10/28 21:21:00 jmc Exp $
-C $Name:  $
-
 #include "PACKAGES_CONFIG.h"
 #include "CPP_OPTIONS.h"
 #include "W2_OPTIONS.h"
@@ -107,7 +104,7 @@ C- West :
          ENDDO
 
          IF ( errN+errS+errW+errE .GE. 1 ) THEN
-          WRITE(msgBuf,'(2A,I6,A,2(I4,A))')
+          WRITE(msgBuf,'(2A,I8,A,2(I4,A))')
      &        '** WARNING ** EXCH2_CHECK_DEPTHS: ',
      &        'tile #', tId, ' (bi,bj=', bi, ',', bj, ' ):'
           CALL PRINT_MESSAGE( msgBuf, errorMessageUnit,

@@ -1,9 +1,12 @@
-C $Header: /u/gcmpack/MITgcm/pkg/seaice/seaice.flow,v 1.1 2013/08/09 01:22:32 jmc Exp $
-C $Name:  $
-
 C----------------------------------------
 C FUNCTION  SEAICE_DIAG_SUFX
 C----------------------------------------
 CADJ FUNCTION SEAICE_DIAG_SUFX INPUT  = 1,2
 CADJ FUNCTION SEAICE_DIAG_SUFX OUTPUT =
+
+C----------------------------------------
+C SUBROUTINE  SEAICE_CHECK_PICKUP
+C----------------------------------------
+CADJ SUBROUTINE SEAICE_CHECK_PICKUP INPUT  = 1,2,3,4,5
+CADJ SUBROUTINE SEAICE_CHECK_PICKUP OUTPUT =
 

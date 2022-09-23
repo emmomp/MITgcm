@@ -1,12 +1,12 @@
-C $Header: /u/gcmpack/MITgcm/pkg/exf/exf_ad_check_lev1_dir.h,v 1.26 2017/02/21 04:01:03 jmc Exp $
-C $Name:  $
-
 c
 c     store directives for checkpoint level 1
 c
 c     created: heimbach@mit.edu 10-Jan-2002
 c
 #ifdef ALLOW_EXF
+C     most of these fields are here for safety only, because it should
+C     always be possible to save the field hflux instead of hflux0 and
+C     hflux1 in the innermost checkpoint level
 
 CADJ STORE hflux0    = comlev1, key=ikey_dynamics, kind=isbyte
 CADJ STORE hflux1    = comlev1, key=ikey_dynamics, kind=isbyte
@@ -105,6 +105,7 @@ CADJ STORE areamask0     = comlev1, key=ikey_dynamics, kind=isbyte
 CADJ STORE areamask1     = comlev1, key=ikey_dynamics, kind=isbyte
 # endif
 
+# ifdef ECCO_CTRL_DEPRECATED
 # ifdef ALLOW_HFLUX_CONTROL
 CADJ STORE xx_hflux0     = comlev1, key=ikey_dynamics, kind=isbyte
 CADJ STORE xx_hflux1     = comlev1, key=ikey_dynamics, kind=isbyte
@@ -181,5 +182,6 @@ CADJ STORE xx_sst1       = comlev1, key=ikey_dynamics, kind=isbyte
 CADJ STORE xx_sss0       = comlev1, key=ikey_dynamics, kind=isbyte
 CADJ STORE xx_sss1       = comlev1, key=ikey_dynamics, kind=isbyte
 # endif
+# endif /* ECCO_CTRL_DEPRECATED */
 
 #endif /* ALLOW_EXF */

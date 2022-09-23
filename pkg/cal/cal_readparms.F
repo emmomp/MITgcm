@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/pkg/cal/cal_readparms.F,v 1.15 2014/05/27 23:41:30 jmc Exp $
-C $Name:  $
-
 #include "CAL_OPTIONS.h"
 
       SUBROUTINE CAL_READPARMS( myThid )
@@ -102,7 +99,11 @@ C       Next, read the calendar data file.
      &     'CAL_READPARMS: finished reading data.cal'
         CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
      &                SQUEEZE_RIGHT , 1)
-        CLOSE( iUnit )
+#ifdef SINGLE_DISK_IO
+        CLOSE(iUnit)
+#else
+        CLOSE(iUnit,STATUS='DELETE')
+#endif /* SINGLE_DISK_IO */
 
       _END_MASTER(myThid)
 

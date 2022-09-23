@@ -1,12 +1,9 @@
-C $Header: /u/gcmpack/MITgcm/pkg/grdchk/grdchk_readparms.F,v 1.17 2014/05/28 00:16:28 jmc Exp $
-C $Name:  $
-
 #include "GRDCHK_OPTIONS.h"
 #ifdef ALLOW_CTRL
 # include "CTRL_OPTIONS.h"
 #endif
 
-      SUBROUTINE GRDCHK_READPARMS( mythid )
+      SUBROUTINE GRDCHK_READPARMS( myThid )
 
 c     ==================================================================
 c     SUBROUTINE grdchk_readparms
@@ -21,7 +18,7 @@ c     ==================================================================
 c     SUBROUTINE grdchk_readparms
 c     ==================================================================
 
-      implicit none
+      IMPLICIT NONE
 
 c     == global variables ==
 
@@ -33,31 +30,13 @@ c     == global variables ==
 #include "grdchk.h"
 
 c     == routine arguments ==
-
-      integer mythid
+      INTEGER myThid
 
 #ifdef ALLOW_GRDCHK
 c     == local variables ==
-
       INTEGER iGloTile, jGloTile
-c     integer i,j,k
-c     integer bi,bj
-c     integer itlo,ithi
-c     integer jtlo,jthi
-c     integer jmin,jmax
-c     integer imin,imax
-
-      integer errio
-      integer il
-      integer iUnit
-
-      character*(max_len_mbuf) msgbuf
-      character*(max_len_prec) record
-
-c     == external ==
-
-      integer  ilnblnk
-      external ilnblnk
+      INTEGER iUnit
+      CHARACTER*(MAX_LEN_MBUF) msgBuf
 
 c     == end of interface ==
 
@@ -92,16 +71,7 @@ C     print a (weak) warning if data.grdchk is found
         RETURN
       ENDIF
 
-c     jtlo = mybylo(mythid)
-c     jthi = mybyhi(mythid)
-c     itlo = mybxlo(mythid)
-c     ithi = mybxhi(mythid)
-c     jmin = 1-oly
-c     jmax = sny+oly
-c     imin = 1-olx
-c     imax = snx+olx
-
-      _BEGIN_MASTER( mythid )
+      _BEGIN_MASTER( myThid )
 
 c--     Set default values.
         grdchk_eps      = 1. _d 0
@@ -137,7 +107,11 @@ c       Next, read the calendar data file.
         CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
      &                SQUEEZE_RIGHT , 1)
 
-        CLOSE( iUnit )
+#ifdef SINGLE_DISK_IO
+        CLOSE(iUnit)
+#else
+        CLOSE(iUnit,STATUS='DELETE')
+#endif /* SINGLE_DISK_IO */
 
         IF ( iGloPos .GT. sNx .OR. jGloPos .GT. sNy ) THEN
            WRITE(msgBuf,'(A)') 'i/j GloPos must be <= sNx/y'
@@ -165,9 +139,9 @@ C--    From Tile Global-Indices, set Tile Local-Indices and proc. number
         ENDIF
 
 c--     Summarize the gradient check setup.
-        call grdchk_Summary( mythid )
+        call grdchk_Summary( myThid )
 
-      _END_MASTER( mythid )
+      _END_MASTER( myThid )
       _BARRIER
 
 #endif /* ALLOW_GRDCHK */

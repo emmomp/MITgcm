@@ -1,6 +1,3 @@
-! $Header: /u/gcmpack/MITgcm/pkg/atm_phys/dargan_bettsmiller_mod.F90,v 1.2 2014/05/14 21:39:18 jmc Exp $
-! $Name:  $
-
 module dargan_bettsmiller_mod
 
 ! modified by pog:
@@ -36,7 +33,7 @@ private
 !-----------------------------------------------------------------------
 !   ---- version number ----
 
- character(len=128) :: version = '$Id: dargan_bettsmiller_mod.F90,v 1.2 2014/05/14 21:39:18 jmc Exp $'
+ character(len=128) :: version = '$Id: dargan_bettsmiller_mod.F90,v 1.3 2017/08/11 20:48:50 jmc Exp $'
  character(len=128) :: tag = '$Name:  $'
 
 !-----------------------------------------------------------------------
@@ -763,15 +760,15 @@ contains
       if (value.lt.-23.0) then
           CALL PRINT_ERROR( 'In: dargan_bettsmiller '//  &
                             'lcltable: value too low', myThid)
-          WRITE(errorMessageUnit,'(A,3I4,I6,1PE14.6)')   &
-            'i,j,bj,myIter,value=',i,j,bj,myIter,value
+          WRITE(errorMessageUnit,'(A,4I4,I6,1PE14.6)')   &
+            'i,j,bi,bj,myIter,value=',i,j,bi,bj,myIter,value
 !         STOP 'ABNORMAL END: S/R LCLTABL (dargan_bettsmiller_mod)'
       endif
       if (value.gt.-10.4) then
           CALL PRINT_ERROR( 'In: dargan_bettsmiller '//  &
                             'lcltable: value too high', myThid)
-          WRITE(errorMessageUnit,'(A,3I4,I6,1PE14.6)')   &
-            'i,j,bj,myIter,value=',i,j,bj,myIter,value
+          WRITE(errorMessageUnit,'(A,4I4,I6,1PE14.6)')   &
+            'i,j,bi,bj,myIter,value=',i,j,bi,bj,myIter,value
 !         STOP 'ABNORMAL END: S/R LCLTABL (dargan_bettsmiller_mod)'
       endif
       ival = floor(10.*(v1 + 23.0))
@@ -839,7 +836,11 @@ CHARACTER*(gcm_LEN_MBUF) :: msgBuf
           'DARGAB_BETTSMILLER_INIT: finished reading data.atm_gray'
      CALL PRINT_MESSAGE( msgBuf, gcm_stdMsgUnit, gcm_SQZ_R, myThid )
 !    Close the open data file
+#ifdef SINGLE_DISK_IO
      CLOSE(iUnit)
+#else
+     CLOSE(iUnit,STATUS='DELETE')
+#endif /* SINGLE_DISK_IO */
 
      ENDIF
      CALL BARRIER(myThid)

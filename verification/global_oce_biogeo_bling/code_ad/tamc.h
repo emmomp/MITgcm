@@ -108,7 +108,8 @@ c     and writing data.
       PARAMETER( maxpass     = 3 )
 #endif
       INTEGER    maxcube
-      PARAMETER( maxcube     = 2 )
+      PARAMETER( maxcube     = 3 )
+
 
 c     ================================================================
 c     END OF HEADER TAMC

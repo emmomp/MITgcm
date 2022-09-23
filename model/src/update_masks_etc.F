@@ -1,10 +1,10 @@
-C $Header: /u/gcmpack/MITgcm/model/src/update_masks_etc.F,v 1.11 2017/04/04 23:22:38 jmc Exp $
-C $Name:  $
-
 #include "PACKAGES_CONFIG.h"
 #include "CPP_OPTIONS.h"
 #ifdef ALLOW_AUTODIFF
 # include "AUTODIFF_OPTIONS.h"
+#endif
+#ifdef ALLOW_CTRL
+# include "CTRL_OPTIONS.h"
 #endif
 
 C--  File update_masks_etc.F:
@@ -72,7 +72,8 @@ C     tmpfld  :: Temporary array used to compute & write Total Depth
       CHARACTER*(MAX_LEN_MBUF) suff
 Cml(
       INTEGER Im1, Jm1
-      _RL hFacCtmp, hFacCtmp2
+      _RL hFacCtmp
+Cml   _RL hFacCtmp2
       _RL hFacMnSz
 Cml)
 CEOP
@@ -86,11 +87,7 @@ C    taking into account the lower_R Boundary (Bathymetrie / Top of Atmos)
          DO J=1-OLy,sNy+OLy
           DO I=1-OLx,sNx+OLx
 C      o Non-dimensional distance between grid bound. and domain lower_R bound.
-#ifdef ALLOW_DEPTH_CONTROL
-           hFacCtmp = (rF(K)-xx_r_low(I,J,bi,bj))*recip_drF(K)
-#else
-           hFacCtmp = (rF(K)-R_low(I,J,bi,bj))*recip_drF(K)
-#endif /* ALLOW_DEPTH_CONTROL */
+           hFacCtmp = ( rF(K) - xx_r_low(I,J,bi,bj) )*recip_drF(K)
 Cml           IF ( hFacCtmp .LE. 0. _d 0 ) THEN
 CmlC           IF ( hFacCtmp .LT. 0.5*hfacMnSz ) THEN
 Cml            hFacCtmp2 = 0. _d 0
@@ -242,9 +239,7 @@ C     We should really supply a flag for doing this.
         ENDDO
        ENDDO
       ENDDO
-#if ( defined (ALLOW_AUTODIFF) && \
-      defined (ALLOW_AUTODIFF_MONITOR) && \
-      defined (ALLOW_DEPTH_CONTROL) )
+#if ( defined ALLOW_AUTODIFF && defined ALLOW_AUTODIFF_MONITOR )
 C     Include call to a dummy routine. Its adjoint will be called at the proper
 C     place in the adjoint code. The adjoint routine will print out adjoint
 C     values if requested. The location of the call is important, it has to be
@@ -253,9 +248,7 @@ Cml      CALL DUMMY_IN_HFAC( 'W', 0, myThid )
 Cml      CALL DUMMY_IN_HFAC( 'S', 0, myThid )
 #endif
       CALL EXCH_UV_XYZ_RS(hFacW,hFacS,.FALSE.,myThid)
-#if ( defined (ALLOW_AUTODIFF) && \
-      defined (ALLOW_AUTODIFF_MONITOR) && \
-      defined (ALLOW_DEPTH_CONTROL) )
+#if ( defined ALLOW_AUTODIFF && defined ALLOW_AUTODIFF_MONITOR )
 C     Include call to a dummy routine. Its adjoint will be called at the proper
 C     place in the adjoint code. The adjoint routine will print out adjoint
 C     values if requested. The location of the call is important, it has to be

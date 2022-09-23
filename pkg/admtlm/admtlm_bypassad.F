@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/pkg/admtlm/admtlm_bypassad.F,v 1.4 2012/08/12 18:29:25 jmc Exp $
-C $Name:  $
-
 #include "ADMTLM_OPTIONS.h"
 
       subroutine admtlm_bypassad( myThid )
@@ -43,6 +40,9 @@ C     ========= Local variables =========================
       logical equal
       double precision fac
       character*(80) fnamegeneric
+
+      _RL tmpfld2d (1-olx:snx+olx,1-oly:sny+oly,   nsx,nsy)
+      _RL tmpfld3d (1-olx:snx+olx,1-oly:sny+oly,nr,nsx,nsy)
 
 C     ==============================================
 C     declare external procedures and functions

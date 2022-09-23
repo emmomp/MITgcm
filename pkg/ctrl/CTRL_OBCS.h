@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/pkg/ctrl/CTRL_OBCS.h,v 1.1 2014/10/09 00:49:26 gforget Exp $
-C $Name:  $
-
 c     ==================================================================
 c     HEADER AVERAGES
 c     ==================================================================
@@ -82,10 +79,6 @@ c     ==================================================================
       integer xx_obcssstartdate(4)
       integer xx_obcswstartdate(4)
       integer xx_obcsestartdate(4)
-      character*( 80)   fname_obcsn(3)
-      character*( 80)   fname_obcss(3)
-      character*( 80)   fname_obcsw(3)
-      character*( 80)   fname_obcse(3)
       common /controlvars_i_obcsn/
      &                       nwetobcsn,
      &                       nwetobcsnglo
@@ -154,4 +147,3 @@ c     ==================================================================
       _RL xx_obcse0 (1-Oly:sNy+Oly,Nr,nSx,nSy,nobcs)
       _RL xx_obcse1 (1-Oly:sNy+Oly,Nr,nSx,nSy,nobcs)
 #endif
-

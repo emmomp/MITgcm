@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/model/src/apply_forcing.F,v 1.8 2016/02/14 00:08:49 jmc Exp $
-C $Name:  $
-
 #include "PACKAGES_CONFIG.h"
 #include "CPP_OPTIONS.h"
 
@@ -125,6 +122,18 @@ C--   Forcing term
      I                       iMin,iMax,jMin,jMax, k, bi,bj,
      I                       myTime, myIter, myThid )
 #endif /* ALLOW_FIZHI */
+
+C     Add Tidal momentum forcing from 2-d geopotential anomaly
+      IF ( momTidalForcing ) THEN
+       DO j=0,sNy+1
+        DO i=1,sNx+1
+          gU_arr(i,j) = gU_arr(i,j)
+     &      - recip_dxC(i,j,bi,bj)*recip_deepFacC(k)
+     &      * ( phiTide2d(i,j,bi,bj) - phiTide2d(i-1,j,bi,bj) )
+     &      *_maskW(i,j,k,bi,bj)
+        ENDDO
+       ENDDO
+      ENDIF
 
 C     Ocean: Add momentum surface forcing (e.g., wind-stress) in surface level
       IF ( k .EQ. kSurface ) THEN
@@ -304,6 +313,18 @@ C--   Forcing term
      I                       myTime, myIter, myThid )
 #endif /* ALLOW_FIZHI */
 
+C     Add Tidal momentum forcing from 2-d geopotential anomaly
+      IF ( momTidalForcing ) THEN
+       DO j=1,sNy+1
+        DO i=0,sNx+1
+          gV_arr(i,j) = gV_arr(i,j)
+     &      - recip_dyC(i,j,bi,bj)*recip_deepFacC(k)
+     &      *( phiTide2d(i,j,bi,bj) - phiTide2d(i,j-1,bi,bj) )
+     &      *_maskS(i,j,k,bi,bj)
+        ENDDO
+       ENDDO
+      ENDIF
+
 C     Ocean: Add momentum surface forcing (e.g., wind-stress) in surface level
       IF ( k .EQ. kSurface ) THEN
        DO j=1,sNy+1
@@ -422,10 +443,7 @@ C     kSurface  :: index of surface level
       _RL tmpFac, delPI
       _RL recip_Cp
 #ifdef SHORTWAVE_HEATING
-      _RL minusone
-      PARAMETER (minusOne=-1.)
       _RL swfracb(2)
-      INTEGER kp1
 #endif
 #endif /* USE_OLD_EXTERNAL_FORCING */
 CEOP
@@ -623,10 +641,10 @@ C     Ocean: Add temperature surface forcing (e.g., heat-flux) in surface level
       IF (linFSConserveTr) THEN
        DO j=0,sNy+1
         DO i=0,sNx+1
-          IF (k .EQ. kSurfC(i,j,bi,bj)) THEN
-            gT_arr(i,j) = gT_arr(i,j)
+         IF (k .EQ. kSurfC(i,j,bi,bj)) THEN
+          gT_arr(i,j) = gT_arr(i,j)
      &        +TsurfCor*recip_drF(k)*_recip_hFacC(i,j,k,bi,bj)
-          ENDIF
+         ENDIF
         ENDDO
        ENDDO
       ENDIF
@@ -643,34 +661,57 @@ C     Ocean: Add temperature surface forcing (e.g., heat-flux) in surface level
          ENDIF
         ENDDO
        ENDDO
+      ELSEIF ( kSurface .EQ. Nr ) THEN
+C     this is oceanic pressure coordinate case
+C     where the flux at the bottom is applied as kSurfC
+       DO j=0,sNy+1
+        DO i=0,sNx+1
+         IF ( k.EQ.kSurfC(i,j,bi,bj) ) THEN
+          gT_arr(i,j)=gT_arr(i,j)
+     &      + geothermalFlux(i,j,bi,bj)
+     &        *recip_Cp*mass2rUnit
+     &        *recip_drF(k)*_recip_hFacC(i,j,k,bi,bj)
+         ENDIF
+        ENDDO
+       ENDDO
+      ELSE
+C-    Neither Z-Coords nor kSurface=Nr : not implemented
+       STOP 'ABNORMAL END: S/R APPLY_FORCING_T (geothermal-flux)'
       ENDIF
 #endif /* ALLOW_GEOTHERMAL_FLUX */
 
 #ifdef SHORTWAVE_HEATING
 C Penetrating SW radiation
 c     IF ( usePenetratingSW ) THEN
-       swfracb(1)=abs(rF(k))
-       swfracb(2)=abs(rF(k+1))
-       CALL SWFRAC(
-     I             2, minusOne,
-     U             swfracb,
-     I             myTime, 1, myThid )
-       kp1 = k+1
-       IF (k.EQ.Nr) THEN
-        kp1 = k
-        swfracb(2)=0. _d 0
+C     Put depth of interface above & below current level in swfracb (1 & 2)
+C     and SWFRAC returns fraction of light that crosses these interfaces ;
+C     note: here km is for the mask below current level k
+       IF ( usingZCoords ) THEN
+        swfracb(1) = rF(k)
+        swfracb(2) = rF(k+1)
+        km = MIN(k+1,Nr)
+       ELSE
+C     this is the oceanic pressure coordinate case
+        swfracb(1) = -rF(k+1)*recip_rhoConst*recip_gravity
+        swfracb(2) = -rF(k)*recip_rhoConst*recip_gravity
+        km = MAX(k-1,1)
        ENDIF
+       CALL SWFRAC(
+     I             2, oneRL,
+     U             swfracb,
+     I             myTime, myIter, myThid )
+       IF ( k.EQ.km ) swfracb(2) = 0. _d 0
        DO j=0,sNy+1
         DO i=0,sNx+1
          gT_arr(i,j) = gT_arr(i,j)
-     &   -Qsw(i,j,bi,bj)*(swfracb(1)*maskC(i,j,k,bi,bj)
-     &                   -swfracb(2)*maskC(i,j,kp1, bi,bj))
-     &    *recip_Cp*mass2rUnit
-     &    *recip_drF(k)*_recip_hFacC(i,j,k,bi,bj)
+     &        - Qsw(i,j,bi,bj)*( swfracb(1)*maskC(i,j,k,bi,bj)
+     &                         - swfracb(2)*maskC(i,j,km,bi,bj) )
+     &        *recip_Cp*mass2rUnit
+     &        *recip_drF(k)*_recip_hFacC(i,j,k,bi,bj)
         ENDDO
        ENDDO
 c     ENDIF
-#endif
+#endif /* SHORTWAVE_HEATING */
 
 #ifdef ALLOW_FRAZIL
       IF ( useFRAZIL )
@@ -904,10 +945,10 @@ C     Ocean: Add salinity surface forcing (e.g., fresh-water) in surface level
       IF (linFSConserveTr) THEN
        DO j=0,sNy+1
         DO i=0,sNx+1
-          IF (k .EQ. kSurfC(i,j,bi,bj)) THEN
-            gS_arr(i,j) = gS_arr(i,j)
+         IF (k .EQ. kSurfC(i,j,bi,bj)) THEN
+          gS_arr(i,j) = gS_arr(i,j)
      &        +SsurfCor*recip_drF(k)*_recip_hFacC(i,j,k,bi,bj)
-          ENDIF
+         ENDIF
         ENDDO
        ENDDO
       ENDIF

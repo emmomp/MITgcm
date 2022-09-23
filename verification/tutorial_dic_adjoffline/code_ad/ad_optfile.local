@@ -1,8 +1,5 @@
 #!/bin/bash
 #
-#  $Header: /u/gcmpack/MITgcm/verification/tutorial_dic_adjoffline/code_ad/ad_optfile.local,v 1.4 2016/01/15 18:37:55 jmc Exp $
-#  $Name:  $
-
 #  This AD option-file contains the settings for the adjoint and
 #  tangent-linear compilers to use for this particular setup.
 #  It is similar to the default AD-optfile except
@@ -36,7 +33,7 @@ fi
 
 DIFF_FLAGS="-toplevel 'the_main_loop'    \
             -input 'xx_dic               \
-                    xx_gen2d_dummy'      \
+                    xx_genarr2d_dummy'   \
             -output 'fc' "
 
 AD_TAMC_FLAGS="$AD_TAMC_FLAGS $DIFF_FLAGS"

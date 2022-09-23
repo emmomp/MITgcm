@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/pkg/ctrl/ctrl_bound.F,v 1.5 2012/08/12 19:34:22 jmc Exp $
-C $Name:  $
-
 #include "CTRL_OPTIONS.h"
 C- note: although we just need CPP_EEOPTIONS.h here, prefer to
 C        include the same option-file above as in the AD version.
@@ -16,7 +13,7 @@ C     !ROUTINE: CTRL_BOUND_3D
 C     !INTERFACE:
       SUBROUTINE CTRL_BOUND_3D(
      U                fieldCur,
-     I                maskFld3d, boundsVec, myThid )
+     I                mask3D, boundsVec, myThid )
 C     !DESCRIPTION: \bv
 C     *==========================================================*
 C     | started: Gael Forget gforget@mit.edu 20-Aug-2007
@@ -32,8 +29,8 @@ C     !USES:
 #include "EEPARAMS.h"
 
 C     !INPUT/OUTPUT PARAMETERS:
-      _RL fieldCur (1-Olx:sNx+Olx,1-Oly:sNy+Oly,Nr,nSx,nSy)
-      _RS maskFld3d(1-Olx:sNx+Olx,1-Oly:sNy+Oly,Nr,nSx,nSy)
+      _RL fieldCur(1-OLx:sNx+OLx,1-OLy:sNy+OLy,Nr,nSx,nSy)
+      _RS mask3D  (1-OLx:sNx+OLx,1-OLy:sNy+OLy,Nr,nSx,nSy)
       _RL boundsVec(5)
       INTEGER myThid
 
@@ -49,7 +46,7 @@ CEOP
          DO k = 1,Nr
           DO j = 1,sNy
            DO i = 1,sNx
-             IF (maskFld3d(i,j,k,bi,bj).NE.0.) THEN
+             IF (mask3D(i,j,k,bi,bj).NE.0.) THEN
               IF (fieldCur(i,j,k,bi,bj).GT.boundsVec(4)) THEN
                fieldCur(i,j,k,bi,bj)=boundsVec(4)
               ENDIF
@@ -76,7 +73,7 @@ C     !ROUTINE: CTRL_BOUND_2D
 C     !INTERFACE:
       SUBROUTINE CTRL_BOUND_2D(
      U                fieldCur,
-     I                maskFld3d, boundsVec, myThid )
+     I                mask2D, boundsVec, myThid )
 C     !DESCRIPTION: \bv
 C     *==========================================================*
 C     | started: Gael Forget gforget@mit.edu 20-Aug-2007
@@ -92,8 +89,8 @@ C     !USES:
 #include "EEPARAMS.h"
 
 C     !INPUT/OUTPUT PARAMETERS:
-      _RL fieldCur (1-Olx:sNx+Olx,1-Oly:sNy+Oly,   nSx,nSy)
-      _RS maskFld3d(1-Olx:sNx+Olx,1-Oly:sNy+Oly,Nr,nSx,nSy)
+      _RL fieldCur(1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
+      _RS mask2D  (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
       _RL boundsVec(5)
       INTEGER myThid
 
@@ -108,7 +105,7 @@ CEOP
 
           DO j = 1-OLy,sNy+OLy
            DO i = 1-OLx,sNx+OLx
-             IF (maskFld3d(i,j,1,bi,bj).NE.0.) THEN
+             IF (mask2D(i,j,bi,bj).NE.0.) THEN
               IF (fieldCur(i,j,bi,bj).GT.boundsVec(4)) THEN
                fieldCur(i,j,bi,bj)=boundsVec(4)
               ENDIF

@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/pkg/generic_advdiff/gad_diff_x.F,v 1.4 2006/12/05 05:26:46 jmc Exp $
-C $Name:  $
-
 #include "GAD_OPTIONS.h"
 
 CBOP
@@ -25,6 +22,11 @@ C !USES: ===============================================================
       IMPLICIT NONE
 #include "SIZE.h"
 #include "GRID.h"
+#ifdef ALLOW_SMAG_3D_DIFFUSIVITY
+# include "EEPARAMS.h"
+# include "PARAMS.h"
+# include "DYNVARS.h"
+#endif
 
 C !INPUT PARAMETERS: ===================================================
 C  bi,bj                :: tile indices
@@ -48,15 +50,34 @@ C  i,j                  :: loop indices
       INTEGER i,j
 CEOP
 
-      DO j=1-Oly,sNy+Oly
-       dfx(1-Olx,j)=0.
-       DO i=1-Olx+1,sNx+Olx
-        dfx(i,j) = -diffKh*xA(i,j)
-     &      *_recip_dxC(i,j,bi,bj)*recip_deepFacC(k)
-     &      *(tracer(i,j)-tracer(i-1,j))
-     &      *cosFacU(j,bi,bj)
-       ENDDO
-      ENDDO
+#ifdef ALLOW_SMAG_3D_DIFFUSIVITY
+      IF ( smag3D_diffCoeff.GT.zeroRL ) THEN
+        DO j=1-OLy,sNy+OLy
+         dfx(1-OLx,j) = 0.
+         DO i=1-OLx+1,sNx+OLx
+          dfx(i,j) = -( diffKh
+     &                + halfRL*( smag3D_diffK(i-1,j,k,bi,bj)
+     &                         + smag3D_diffK( i, j,k,bi,bj) )
+     &                )*xA(i,j)
+     &             *_recip_dxC(i,j,bi,bj)*recip_deepFacC(k)
+     &             *( tracer(i,j) - tracer(i-1,j) )
+     &             *cosFacU(j,bi,bj)
+         ENDDO
+        ENDDO
+      ELSE
+#endif /* ALLOW_SMAG_3D_DIFFUSIVITY */
+        DO j=1-OLy,sNy+OLy
+         dfx(1-OLx,j) = 0.
+         DO i=1-OLx+1,sNx+OLx
+          dfx(i,j) = -diffKh*xA(i,j)
+     &             *_recip_dxC(i,j,bi,bj)*recip_deepFacC(k)
+     &             *( tracer(i,j) - tracer(i-1,j) )
+     &             *cosFacU(j,bi,bj)
+         ENDDO
+        ENDDO
+#ifdef ALLOW_SMAG_3D_DIFFUSIVITY
+      ENDIF
+#endif /* ALLOW_SMAG_3D_DIFFUSIVITY */
 
       RETURN
       END
