@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/pkg/down_slope/dwnslp_diagnostics_init.F,v 1.2 2011/11/07 15:48:14 jmc Exp $
-C $Name:  $
-
 #include "DWNSLP_OPTIONS.h"
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
@@ -85,7 +82,7 @@ c    I          diagName, diagCode, diagUnits, diagTitle, 0, myThid )
         diagSufx  = GAD_DIAG_SUFX( GAD_TEMPERATURE, myThid )
 #endif
         diagName  = 'DSLP'//diagSufx
-        diagTitle = ' Pot.Temp. tendency from Down-Slope package'
+        diagTitle = 'Pot.Temp. tendency from Down-Slope package'
         diagUnits = 'K/s             '
         diagCode  = 'SMR     MR      '
         CALL DIAGNOSTICS_ADDTOLIST( diagNum,
@@ -95,8 +92,8 @@ c    I          diagName, diagCode, diagUnits, diagTitle, 0, myThid )
         diagSufx  = GAD_DIAG_SUFX( GAD_SALINITY, myThid )
 #endif
         diagName  = 'DSLP'//diagSufx
-        diagTitle = ' Salinity  tendency from Down-Slope package'
-        diagUnits = 'psu/s           '
+        diagTitle = 'Salinity  tendency from Down-Slope package'
+        diagUnits = 'g/kg/s          '
         diagCode  = 'SMR     MR      '
         CALL DIAGNOSTICS_ADDTOLIST( diagNum,
      I          diagName, diagCode, diagUnits, diagTitle, 0, myThid )

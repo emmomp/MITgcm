@@ -1,12 +1,7 @@
-C $Header: /u/gcmpack/MITgcm/pkg/ctrl/optim_readparms.F,v 1.5 2015/12/25 15:24:51 gforget Exp $
-C $Name:  $
-
 #include "CTRL_OPTIONS.h"
 
-
       subroutine optim_readparms(
-     I                            mythid
-     &                          )
+     I                            mythid )
 
 c     ==================================================================
 c     SUBROUTINE optim_readparms
@@ -25,30 +20,21 @@ c     ==================================================================
       implicit none
 
 c     == global variables ==
-
 #include "EEPARAMS.h"
 #include "SIZE.h"
 #include "PARAMS.h"
-
 #include "optim.h"
 
 c     == routine arguments ==
-
       integer mythid
 
 c     == local variables ==
-
-      integer errio
-      integer il
       integer iUnit
-
-      character*(max_len_prec) record
+c     this is a dummy parameter that is never used; it is introduced here
+c     so that we can have compatible namelists between mitgmcuv_ad and
+c     optim.x compiled from optim_m1qn3
+      _RL dfminFrac
       character*(max_len_mbuf) msgbuf
-
-c     == external ==
-
-      integer  ilnblnk
-      external ilnblnk
 
 c     == end of interface ==
 
@@ -56,7 +42,7 @@ c--   Optimization parameters.
       namelist /optim/
      &                 optimcycle, nvars,
      &                 nondimcontrol,
-     &                 numiter, nfunc, fmin, iprint,
+     &                 numiter, nfunc, fmin, dfminFrac, iprint,
      &                 epsf, epsx, epsg,
      &                 nupdate, eps
 
@@ -65,7 +51,8 @@ C-    pkg CTRL is not used
         _BEGIN_MASTER(myThid)
 C-    Track pkg activation status:
 C     print a (weak) warning if data.optim is found
-         CALL PACKAGES_UNUSED_MSG( 'useCTRL', ' ', ' ' )
+         CALL PACKAGES_UNUSED_MSG( 'useCTRL',
+     I                             'OPTIM_READPARMS', 'optim' )
         _END_MASTER(myThid)
         RETURN
       ENDIF
@@ -79,6 +66,7 @@ c--     Set default values.
         numiter       =   0
         nfunc         =   1
         fmin          =   0.0 _d 0
+        dfminFrac     =   0.0 _d 0
         iprint        =  10
         epsx          =   1.e-6
         epsg          =   1.e-6
@@ -101,12 +89,15 @@ c--     Set default values.
         CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
      &                  SQUEEZE_RIGHT , 1)
 
-        CLOSE( iUnit )
+#ifdef SINGLE_DISK_IO
+        CLOSE(iUnit)
+#else
+        CLOSE(iUnit,STATUS='DELETE')
+#endif /* SINGLE_DISK_IO */
 
       _END_MASTER( mythid )
 
       _BARRIER
 
-      return
-      end
-
+      RETURN
+      END

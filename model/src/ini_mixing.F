@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/model/src/ini_mixing.F,v 1.16 2017/04/03 17:09:01 ou.wang Exp $
-C $Name:  $
-
 #include "PACKAGES_CONFIG.h"
 #include "CPP_OPTIONS.h"
 #ifdef ALLOW_CTRL
@@ -97,8 +94,8 @@ CEOP
 #ifdef ALLOW_CTRL
 #ifdef ALLOW_KAPGM_CONTROL
 #ifdef ALLOW_KAPGM_3DFILE
-       IF ( GM_background_K3dFile .NE. ' ' ) THEN
-          CALL READ_FLD_XYZ_RL(GM_background_K3dFile,' ',KapGM,0,myThid)
+       IF ( useGMRedi.and.GM_background_K3dFile .NE. ' ' ) THEN
+          CALL READ_FLD_XYZ_RL(GM_background_K3dFile,' ',kapGM,0,myThid)
        ENDIF
 #endif
        _EXCH_XYZ_RL( kapGM, myThid )
@@ -106,8 +103,8 @@ CEOP
 #endif
 #ifdef ALLOW_KAPREDI_CONTROL
 #ifdef ALLOW_KAPREDI_3DFILE
-       IF ( GM_isopycK3dFile .NE. ' ' ) THEN
-          CALL READ_FLD_XYZ_RL(GM_isopycK3dFile,' ',KapRedi,0,myThid)
+       IF ( useGMRedi.and.GM_isopycK3dFile .NE. ' ' ) THEN
+          CALL READ_FLD_XYZ_RL(GM_isopycK3dFile,' ',kapRedi,0,myThid)
        ENDIF
 #endif
        _EXCH_XYZ_RL( kapRedi, myThid )

@@ -1,8 +1,5 @@
 #!/bin/bash
 #
-# $Header: /u/gcmpack/MITgcm/tools/build_options/linux_ia64_ifort+mpi_swell,v 1.4 2010/03/21 17:58:17 jmc Exp $
-# $Name:  $
-
 # Build options for Harvard cluster "swell"
 
 FC=mpif90
@@ -10,7 +7,7 @@ F90C=mpif90
 CC=mpicc
 LINK='mpif90'
 
-DEFINES='-DWORDLENGTH=4 -DALLOW_USE_MPI -DALWAYS_USE_MPI'
+DEFINES='-DWORDLENGTH=4 -DALLOW_USE_MPI'
 CPP='cpp  -traditional -P'
 EXTENDED_SRC_FLAG='-132'
 

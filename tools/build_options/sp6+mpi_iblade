@@ -1,7 +1,5 @@
 #!/bin/bash
 #
-#  $Header: /u/gcmpack/MITgcm/tools/build_options/sp6+mpi_iblade,v 1.1 2010/01/16 21:43:53 mlosch Exp $
-#  $Name:  $
 # 
 # tested on iblade1.awi.de
 # uname -a: AIX iblade1 3 5 0007465AD400
@@ -9,7 +7,7 @@
 
 S64='$(TOOLSDIR)/set64bitConst.sh'
 MAKEDEPEND=makedepend
-DEFINES='-DALLOW_USE_MPI -DALWAYS_USE_MPI -DTARGET_AIX -DWORDLENGTH=4 -DNML_TERMINATOR'
+DEFINES='-DALLOW_USE_MPI -DTARGET_AIX -DWORDLENGTH=4 -DNML_TERMINATOR'
 HAVE_CLOC='true'
 HAVE_SETRLSTK='true'
 HAVE_STAT='true'

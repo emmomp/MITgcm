@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/pkg/cost/cost_readparms.F,v 1.16 2012/08/10 19:36:02 jmc Exp $
-C $Name:  $
-
 #include "COST_OPTIONS.h"
 
       subroutine cost_readparms( mythid )
@@ -48,9 +45,9 @@ c--   Read the namelist input.
      &       , mult_depth
 #endif
      &       , lastinterval
-cHFLUXM_CONTROL
-     &                 , mult_temp_tut, mult_hflux_tut
-cHFLUXM_CONTROL
+#ifdef ALLOW_COST_HFLUXM
+     &       , mult_temp_tut, mult_hflux_tut
+#endif
 
       _BEGIN_MASTER( myThid )
 
@@ -69,10 +66,10 @@ c--     Set default values.
 #ifdef ALLOW_COST_DEPTH
         mult_depth            =      0. _d 0
 #endif
-cHFLUXM_CONTROL
+#ifdef ALLOW_COST_HFLUXM
         mult_temp_tut         =      0. _d 0
         mult_hflux_tut        =      0. _d 0
-cHFLUXM_CONTROL
+#endif
 
 c--     30*24*3600 = 2592000 = 1 model month
         lastinterval = 2592000.
@@ -93,7 +90,11 @@ c--     Next, read the cost data file.
         CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
      &                  SQUEEZE_RIGHT , 1)
 
-        CLOSE( iUnit )
+#ifdef SINGLE_DISK_IO
+        CLOSE(iUnit)
+#else
+        CLOSE(iUnit,STATUS='DELETE')
+#endif /* SINGLE_DISK_IO */
 
         IF ( MOD(lastinterval,deltaTclock) .GT. 0. )
      &       lastinterval = MAX(

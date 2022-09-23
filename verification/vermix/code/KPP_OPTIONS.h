@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/verification/vermix/code/KPP_OPTIONS.h,v 1.2 2011/12/24 01:17:56 jmc Exp $
-C $Name:  $
-
 C     *==========================================================*
 C     | KPP_OPTIONS.h
 C     | o CPP options file for KPP package.
@@ -39,7 +36,7 @@ C o When set, smooth vertical diffusivity horizontally
 C o Get rid of vertical resolution dependence of dVsq term by
 C   estimating a surface velocity that is independent of first
 C   level thickness in the model.
-#undef KPP_ESTIMATE_UREF
+#define KPP_ESTIMATE_UREF
 
 C o Include/exclude KPP non/local transport terms
 #define KPP_GHAT

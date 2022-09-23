@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/pkg/exch2/exch2_put_rx1.template,v 1.3 2012/09/15 23:01:07 jmc Exp $
-C $Name:  $
-
 #include "CPP_EEOPTIONS.h"
 #include "W2_OPTIONS.h"
 
@@ -127,7 +124,7 @@ c     ENDIF
       oj  = exch2_oj(nN,thisTile)
 #ifdef W2_E2_DEBUG_ON
       IF ( ABS(W2_printMsg).GE.2 ) THEN
-        WRITE(msgBuf,'(2A,I5,I3,A,I5)') 'EXCH2_PUT_RX1',
+        WRITE(msgBuf,'(2A,I8,I3,A,I8)') 'EXCH2_PUT_RX1',
      &    ' sourceTile,neighb=', thisTile, nN, ' : targetTile=', tgT
         CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
      I                      SQUEEZE_BOTH, myThid )

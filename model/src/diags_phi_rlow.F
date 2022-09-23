@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/model/src/diags_phi_rlow.F,v 1.12 2016/03/10 20:55:56 jmc Exp $
-C $Name:  $
-
 #include "CPP_OPTIONS.h"
 
 CBOP
@@ -8,7 +5,7 @@ C     !ROUTINE: DIAGS_PHI_RLOW
 C     !INTERFACE:
       SUBROUTINE DIAGS_PHI_RLOW(
      I                       k, bi, bj, iMin,iMax, jMin,jMax,
-     I                       phiHydF, phiHydC, alphRho, tFld, sFld,
+     I                       phiHydF, phiHydC, alphRho,
      I                       myTime, myIter, myThid)
 C     !DESCRIPTION: \bv
 C     *==========================================================*
@@ -39,8 +36,6 @@ C                   2 centers k & k+1 (interface k+1)
 C     phiHydC    :: hydrostatic potential anomaly at cell center
 C                  (atmos: =Geopotential ; ocean-z: =Pressure/rho)
 C     alphRho    :: Density (z-coord) or specific volume (p-coord)
-C     tFld       :: Potential temp.
-C     sFld       :: Salinity
 C     myTime     :: Current time
 C     myIter     :: Current iteration number
 C     myThid     :: my Thread Id number
@@ -48,8 +43,6 @@ C     myThid     :: my Thread Id number
       _RL phiHydF(1-OLx:sNx+OLx,1-OLy:sNy+OLy)
       _RL phiHydC(1-OLx:sNx+OLx,1-OLy:sNy+OLy)
       _RL alphRho(1-OLx:sNx+OLx,1-OLy:sNy+OLy)
-      _RL tFld(1-OLx:sNx+OLx,1-OLy:sNy+OLy,Nr,nSx,nSy)
-      _RL sFld(1-OLx:sNx+OLx,1-OLy:sNy+OLy,Nr,nSx,nSy)
       _RL myTime
       INTEGER myIter, myThid
 

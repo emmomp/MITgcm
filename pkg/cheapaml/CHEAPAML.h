@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/pkg/cheapaml/CHEAPAML.h,v 1.12 2013/05/25 18:05:45 jmc Exp $
-C $Name:  $
-
 c #ifdef ALLOW_CHEAPAML
 C     !ROUTINE: CHEAPAML.h
 C -------------------------------
@@ -18,7 +15,6 @@ C     vWind :: meridional wind comp at grid-cell Southern edge (vVel location)
 C     solar :: short wave insolation (+=dw) [W/m2]
 C     ustress :: zonal wind stress component at grid-cell center (A-grid) [N/m2]
 C     vstress :: meridional wind stress comp at grid-cell center (A-grid) [N/m2]
-C     Cheapmask :: open boundary condition relaxation mask
 C     Cheaptracer :: passive tracer
 C     CheaptracerR :: Relaxation profile for passive tracer
 C     gCheaptracerm :: passive tracer tendency
@@ -31,11 +27,11 @@ C     cheapPrecip   :: precipitation (+=dw) [kg/m2/s]
      &       uWind, vWind, solar,
      &       wWind,
      &       ustress, vstress,
-     &       wavesh, wavesp, Cheapmask, CheapHgrid,
+     &       wavesh, wavesp, xrelf, CheapHgrid,
      &       Cheapclouds, Cheapdlongwave,
      &       Cheaptracer, CheaptracerR, gCheaptracerm,
-c    &       Cheapprgrid,
-     &       xgs, xrelf, cheapPrecip
+c    &       cheapPrGrid,
+     &       cheapPrecip
 
       _RL    Tr     (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
       _RL    qr     (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
@@ -51,18 +47,20 @@ c    &       Cheapprgrid,
       _RL    vstress(1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
       _RL    wavesh (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
       _RL    wavesp (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
-      _RL    Cheapmask(1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
-      _RL    xgs     (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
       _RL    xrelf   (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
       _RL    cheapPrecip(1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
       _RL    CheapHgrid (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
-c     _RL    Cheapprgrid(1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
+c     _RL    cheapPrGrid(1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
       _RL    Cheapclouds(1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
       _RL    Cheapdlongwave(1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
       _RL    Cheaptracer(1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
       _RL    CheaptracerR(1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
       _RL    gCheaptracerm(1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
 
+C     cheap_tauRelax    :: main relaxation time-scale (in sec) for atm T & Q
+C                          used with cheapMask (if provided) or over land
+C     cheap_tauRelaxOce :: relaxation time-scale (in sec) for atm T & Q,
+C                          used over ocean if cheapMask is not provided
 C     lath      :: latent heat (J/kg)
 C     xkar      :: von Karman constant
 C     gasR      :: gas constant
@@ -79,8 +77,7 @@ C     cheap_pr2 :: precipitation time constant
       COMMON /CHEAPAML_PARMS_R/
      &       cheapaml_h,
      &       cheapaml_kdiff,
-     &       cheapaml_taurelax,
-     &       cheapaml_taurelaxocean,
+     &       cheap_tauRelax, cheap_tauRelaxOce,
      &       rhoa, cpair, stefan,
      &       lath, xkar, gasR,
      &       dsolms, dsolmn,
@@ -94,8 +91,7 @@ C     cheap_pr2 :: precipitation time constant
      &       cheap_pr1, cheap_pr2
       _RL    cheapaml_h
       _RL    cheapaml_kdiff
-      _RL    cheapaml_taurelax
-      _RL    cheapaml_taurelaxocean
+      _RL    cheap_tauRelax, cheap_tauRelaxOce
       _RL    rhoa, cpair, stefan
       _RL    lath, xkar, gasR
       _RL    dsolms, dsolmn
@@ -126,7 +122,9 @@ C     useStressOption   :: use stress option              (off by default)
 C     useCheapTracer    :: use passive tracer option      (off by default)
 C     useTimeVarBLH     :: use time varying BL height option (off by default)
 C     useClouds         :: use clouds option              (off by default)
-C     useDLongWave      :: use imported downward longwave (off by default)
+C     useDLongWave      :: use imported downward longwave  (off by default)
+C     usePrecip         :: use imported precipitation (off by default)
+C     useRelativeWind   :: use relative wind (off by default)
       COMMON /CHEAPAML_PARMS_L/
      &       cheapamlXperiodic,
      &       cheapamlYperiodic,
@@ -138,7 +136,9 @@ C     useDLongWave      :: use imported downward longwave (off by default)
      &       useCheapTracer,
      &       useTimeVarBLH,
      &       useClouds,
-     &       useDLongWave
+     &       useDLongWave,
+     &       usePrecip,
+     &       useRelativeWind
       LOGICAL cheapamlXperiodic
       LOGICAL cheapamlYperiodic
       LOGICAL useFreshWaterFlux
@@ -150,6 +150,8 @@ C     useDLongWave      :: use imported downward longwave (off by default)
       LOGICAL useTimeVarBLH
       LOGICAL useClouds
       LOGICAL useDLongWave
+      LOGICAL usePrecip
+      LOGICAL useRelativeWind
 
       COMMON /CHEAPAML_PARMS_C/
      &       AirTempFile, AirQFile, SolarFile,

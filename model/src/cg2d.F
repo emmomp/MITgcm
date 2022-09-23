@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/model/src/cg2d.F,v 1.55 2012/05/11 23:28:10 jmc Exp $
-C $Name:  $
-
 #include "CPP_OPTIONS.h"
 #ifdef TARGET_NEC_SX
 C     set a sensible default for the outer loop unrolling parameter that can
@@ -19,28 +16,17 @@ C     !INTERFACE:
      U                numIters, nIterMin,
      I                myThid )
 C     !DESCRIPTION: \bv
-C     *==========================================================*
+C     *================================================================*
 C     | SUBROUTINE CG2D
-C     | o Two-dimensional grid problem conjugate-gradient
-C     |   inverter (with preconditioner).
-C     *==========================================================*
+C     | o Two-dimensional grid problem conjugate-gradient inverter
+C     |   (with preconditioner).
+C     *================================================================*
 C     | Con. grad is an iterative procedure for solving Ax = b.
 C     | It requires the A be symmetric.
-C     | This implementation assumes A is a five-diagonal
-C     | matrix of the form that arises in the discrete
-C     | representation of the del^2 operator in a
-C     | two-dimensional space.
-C     | Notes:
-C     | ======
-C     | This implementation can support shared-memory
-C     | multi-threaded execution. In order to do this COMMON
-C     | blocks are used for many of the arrays - even ones that
-C     | are only used for intermedaite results. This design is
-C     | OK if you want to all the threads to collaborate on
-C     | solving the same problem. On the other hand if you want
-C     | the threads to solve several different problems
-C     | concurrently this implementation will not work.
-C     *==========================================================*
+C     | This implementation assumes A is a five-diagonal matrix
+C     | of the form that arises in the discrete representation of
+C     | the del^2 operator in a two-dimensional space.
+C     *================================================================*
 C     \ev
 
 C     !USES:
@@ -52,7 +38,6 @@ C     === Global data ===
 #include "CG2D.h"
 
 C     !INPUT/OUTPUT PARAMETERS:
-C     === Routine arguments ===
 C     cg2d_b    :: The source term or "right hand side" (output: normalised RHS)
 C     cg2d_x    :: The solution (input: first guess)
 C     firstResidual :: the initial residual before any iterations
@@ -73,7 +58,6 @@ C     myThid    :: Thread on which I am working.
       INTEGER myThid
 
 C     !LOCAL VARIABLES:
-C     === Local variables ====
 C     bi, bj     :: tile index in X and Y.
 C     i, j, it2d :: Loop counters ( it2d counts CG iterations )
 C     actualIts  :: actual CG iteration number
@@ -87,6 +71,10 @@ C                   debugging/trouble shooting diagnostic. For neumann problems
 C                   sumRHS needs to be ~0 or it converge at a non-zero residual.
 C     cg2d_min   :: used to store solution corresponding to lowest residual.
 C     msgBuf     :: Informational/error message buffer
+C--   local working array (used to be in CG2D.h common block:
+C     cg2d_q     :: Intermediate matrix-vector product term
+C     cg2d_r     ::   *same*
+C     cg2d_s     ::   *same*
       INTEGER bi, bj
       INTEGER i, j, it2d
       INTEGER actualIts
@@ -100,6 +88,9 @@ C     msgBuf     :: Informational/error message buffer
       _RL    rhsMax
       _RL    rhsNorm
       _RL    cg2d_min(1:sNx,1:sNy,nSx,nSy)
+      _RL    cg2d_q  (1:sNx,1:sNy,nSx,nSy)
+      _RL    cg2d_r(1-1:sNx+1,1-1:sNy+1,nSx,nSy)
+      _RL    cg2d_s(1-1:sNx+1,1-1:sNy+1,nSx,nSy)
 #ifdef CG2D_SINGLECPU_SUM
       _RL    localBuf(1:sNx,1:sNy,nSx,nSy)
 #endif
@@ -149,18 +140,21 @@ C--   Update overlaps
 C--   Initial residual calculation
       DO bj=myByLo(myThid),myByHi(myThid)
        DO bi=myBxLo(myThid),myBxHi(myThid)
+C-    Initialise local working arrays:
+        DO j=0,sNy+1
+         DO i=0,sNx+1
+          cg2d_r(i,j,bi,bj) = 0. _d 0
+          cg2d_s(i,j,bi,bj) = 0. _d 0
+         ENDDO
+        ENDDO
         IF ( nIterMin.GE.0 ) THEN
+C-    Initialise saved solution
          DO j=1,sNy
           DO i=1,sNx
-            cg2d_min(i,j,bi,bj) = cg2d_x(i,j,bi,bj)
+           cg2d_min(i,j,bi,bj) = cg2d_x(i,j,bi,bj)
           ENDDO
          ENDDO
         ENDIF
-        DO j=0,sNy+1
-         DO i=0,sNx+1
-          cg2d_s(i,j,bi,bj) = 0.
-         ENDDO
-        ENDDO
         sumRHStile(bi,bj) = 0. _d 0
         errTile(bi,bj)    = 0. _d 0
 #ifdef TARGET_NEC_SX
@@ -180,8 +174,8 @@ C--   Initial residual calculation
 #else
           errTile(bi,bj)    = errTile(bi,bj)
      &                      + cg2d_r(i,j,bi,bj)*cg2d_r(i,j,bi,bj)
-          sumRHStile(bi,bj) = sumRHStile(bi,bj) + cg2d_b(i,j,bi,bj)
 #endif
+          sumRHStile(bi,bj) = sumRHStile(bi,bj) + cg2d_b(i,j,bi,bj)
          ENDDO
         ENDDO
        ENDDO
@@ -189,11 +183,10 @@ C--   Initial residual calculation
       CALL EXCH_S3D_RL( cg2d_r, 1, myThid )
 #ifdef CG2D_SINGLECPU_SUM
       CALL GLOBAL_SUM_SINGLECPU_RL(localBuf, err_sq, 0, 0, myThid)
-      CALL GLOBAL_SUM_SINGLECPU_RL(cg2d_b, sumRHS, OLx, OLy, myThid)
 #else
       CALL GLOBAL_SUM_TILE_RL( errTile,    err_sq, myThid )
-      CALL GLOBAL_SUM_TILE_RL( sumRHStile, sumRHS, myThid )
 #endif
+      CALL GLOBAL_SUM_TILE_RL( sumRHStile, sumRHS, myThid )
       actualIts = 0
       firstResidual = SQRT(err_sq)
       IF ( nIterMin.GE.0 ) THEN

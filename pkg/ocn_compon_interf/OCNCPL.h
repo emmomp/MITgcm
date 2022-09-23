@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/pkg/ocn_compon_interf/OCNCPL.h,v 1.7 2016/01/06 01:02:28 jmc Exp $
-C $Name:  $
-
 C     *==========================================================*
 C     | OCNCPL.h
 C     | o Variables shared between coupling layer and ocean
@@ -99,7 +96,7 @@ C     COMMON /OCN_OCN2CPL_R/
 C     ocMxlD2cpl :: Ocean mixed-layer depth exported to coupler (m)
 C     SSTocn2cpl :: Ocean surface temperature map exported to
 C                   coupling layer (oC).
-C     SSSocn2cpl :: Ocean surface salinity exported to coupler (psu)
+C     SSSocn2cpl :: Ocean surface salinity exported to coupler (g/kg)
 C     vSqocn2cpl :: Ocean surface velocity square exported to
 C                   coupler (m2/s2)
 

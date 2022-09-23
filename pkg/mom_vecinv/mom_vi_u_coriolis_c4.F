@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/pkg/mom_vecinv/mom_vi_u_coriolis_c4.F,v 1.14 2017/03/23 01:47:50 jmc Exp $
-C $Name:  $
-
 #include "MOM_VECINV_OPTIONS.h"
 
 CBOP
@@ -8,6 +5,7 @@ C     !ROUTINE: MOM_VI_U_CORIOLIS_C4
 C     !INTERFACE:
       SUBROUTINE MOM_VI_U_CORIOLIS_C4(
      I        bi,bj,k,
+     I        selectVortScheme,highOrderVorticity,upwindVorticity,
      I        vFld,omega3,r_hFacZ,
      O        uCoriolisTerm,
      I        myThid)
@@ -26,7 +24,6 @@ C     !USES:
 C     == Global variables ==
 #include "SIZE.h"
 #include "EEPARAMS.h"
-#include "PARAMS.h"
 #include "GRID.h"
 #ifdef ALLOW_EXCH2
 #include "W2_EXCH2_SIZE.h"
@@ -40,6 +37,8 @@ C     == Routine arguments ==
       _RL omega3(1-OLx:sNx+OLx,1-OLy:sNy+OLy)
       _RS r_hFacZ(1-OLx:sNx+OLx,1-OLy:sNy+OLy)
       _RL uCoriolisTerm(1-OLx:sNx+OLx,1-OLy:sNy+OLy)
+      INTEGER selectVortScheme
+      LOGICAL highOrderVorticity,upwindVorticity
       INTEGER myThid
 CEOP
 

@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/pkg/icefront/icefront_init_fixed.F,v 1.8 2017/02/07 00:18:59 jmc Exp $
-C $Name:  $
-
 #include "ICEFRONT_OPTIONS.h"
 #ifdef ALLOW_EXF
 # include "EXF_OPTIONS.h"
@@ -35,10 +32,13 @@ C     === Local variables ===
 C     I,J,K,bi,bj   :: Loop counters
 C     errCount      :: error counter
       INTEGER I, J, K, bi, bj
-      INTEGER errCount
 #ifdef ALLOW_ICEFRONT_DEBUG
       INTEGER ISinterface
 #endif
+#ifdef ALLOW_EXF
+      INTEGER errCount
+      CHARACTER*(MAX_LEN_MBUF) msgBuf
+#endif /* ALLOW_EXF */
 
 #ifdef ALLOW_EXF
       IF ( useEXF .AND. SGRunOffFile .NE. ' ' ) THEN

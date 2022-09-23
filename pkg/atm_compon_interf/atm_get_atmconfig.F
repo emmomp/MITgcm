@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/pkg/atm_compon_interf/atm_get_atmconfig.F,v 1.2 2015/11/12 01:01:57 jmc Exp $
-C $Name:  $
-
 #include "ATM_CPL_OPTIONS.h"
 #ifdef ALLOW_AIM
 # include "AIM_OPTIONS.h"
@@ -57,6 +54,17 @@ C--   Initialise to zero (no land, full oceanic):
            landMask(i,j,bi,bj) = 0. _d 0
          ENDDO
         ENDDO
+
+        IF ( useAtm_Phys ) THEN
+C-    Since pkg/atm_phys does not currently handle land (but only swamp),
+C     set landMask to an intermediate value (here half) to (by)pass the check
+C     in ATM_CHECK_CPLCONFIG :
+         DO j=1-OLy,sNy+OLy
+          DO i=1-OLx,sNx+OLx
+           landMask(i,j,bi,bj) = 0.5 _d 0
+          ENDDO
+         ENDDO
+        ENDIF
 
 #ifdef ALLOW_AIM
         IF ( useAIM ) THEN

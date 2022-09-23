@@ -1,7 +1,5 @@
-C $Header: /u/gcmpack/MITgcm/pkg/ptracers/ptracers_readparms.F,v 1.49 2016/08/23 18:29:49 jahn Exp $
-C $Name:  $
-
 #include "PTRACERS_OPTIONS.h"
+#include "GAD_OPTIONS.h"
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
 CBOP
@@ -66,6 +64,8 @@ C     tauTr1ClimRelax :: old parameter (will be removed 1 day)
      &     PTRACERS_useGMRedi,
      &     PTRACERS_useDWNSLP,
      &     PTRACERS_useKPP,
+     &     PTRACERS_linFSConserve,
+     &     PTRACERS_stayPositive,
      &     PTRACERS_initialFile,
      &     PTRACERS_names,
      &     PTRACERS_long_names,
@@ -78,8 +78,7 @@ C     tauTr1ClimRelax :: old parameter (will be removed 1 day)
      &     PTRACERS_snapshot_mnc,
      &     PTRACERS_monitor_mnc,
      &     PTRACERS_pickup_write_mnc,
-     &     PTRACERS_pickup_read_mnc,
-     &     PTRACERS_linFSConserve
+     &     PTRACERS_pickup_read_mnc
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
 
@@ -123,8 +122,13 @@ C     Set defaults values for parameters in PTRACERS.h
         PTRACERS_useGMRedi(iTracer)=useGMRedi
         PTRACERS_useDWNSLP(iTracer)=useDOWN_SLOPE
         PTRACERS_useKPP(iTracer)   =useKPP
+        PTRACERS_linFSConserve(iTracer)= .FALSE.
+#ifdef GAD_SMOLARKIEWICZ_HACK
+        PTRACERS_stayPositive(iTracer) = .TRUE.
+#else
+        PTRACERS_stayPositive(iTracer) = .FALSE.
+#endif
         PTRACERS_initialFile(iTracer)=' '
-        PTRACERS_linFSConserve(iTracer)=.FALSE.
         DO ic = 1,MAX_LEN_FNAM
           PTRACERS_names(iTracer)(ic:ic) = ' '
           PTRACERS_long_names(iTracer)(ic:ic) = ' '
@@ -171,7 +175,11 @@ C     Open and read the data.ptracers file
      &                    SQUEEZE_RIGHT , myThid )
 
 C     Close the open data file
+#ifdef SINGLE_DISK_IO
       CLOSE(iUnit)
+#else
+      CLOSE(iUnit,STATUS='DELETE')
+#endif /* SINGLE_DISK_IO */
 
 C     Check for retired parameters:
 C     Tracer 1 climatology relaxation time scale (<- but the code is gone !)

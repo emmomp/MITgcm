@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/pkg/exf/EXF_FIELDS.h,v 1.22 2017/02/12 00:55:12 jmc Exp $
-C $Name:  $
-
 C     ==================================================================
 C     HEADER exf_fields
 C     ==================================================================
@@ -74,6 +71,12 @@ C     aqh       :: Surface (2m) specific humidity in kg/kg
 C                  Typical range: 0 < aqh < 0.02
 C                  Input or input/output field
 C
+C     hs        :: sensible heat flux into ocean in W/m^2
+C                  > 0 for increase in theta (ocean warming)
+C
+C     hl        :: latent   heat flux into ocean in W/m^2
+C                  > 0 for increase in theta (ocean warming)
+C
 C     lwflux    :: Net upward longwave radiation in W/m^2
 C                  lwflux = - ( lwdown - ice and snow absorption - emitted )
 C                  > 0 for decrease in theta (ocean cooling)
@@ -102,11 +105,9 @@ C                  Input or input/output field
 C
 C     runoftemp :: Temperature of runoff in deg C
 C
-C     saltflx   :: Net upward salt flux in psu.kg/m^2/s
+C     saltflx   :: Net upward salt flux in (g/kg).kg/m^2/s = g/m^2/s
 C                  > 0 for decrease in SSS.
 C                  Typical origin: salty sea-ice formation / melting.
-C                  Units: when salinity (unit= psu) is expressed
-C                       in g/kg, saltflx unit becomes g/m^2/s.
 C
 C     swdown    :: Downward shortwave radiation in W/m^2
 C                  > 0 for increase in theta (ocean warming)
@@ -118,17 +119,13 @@ C                  > 0 for increase in theta (ocean warming)
 C                  Typical range: 50 < lwdown < 450
 C                  Input/output field
 C
-C     apressure :: Atmospheric pressure field in N/m^2
-C                  > 0 for ????
-C                  Typical range: ???? < apressure < ????
+C     apressure :: Atmospheric surface pressure field in Pa
+C                  Typical range: 88000 < apressure < 108000
 C                  Input field
 C
-C     hs        :: sensible heat flux into ocean in W/m^2
-C                  > 0 for increase in theta (ocean warming)
-C
-C     hl        :: latent   heat flux into ocean in W/m^2
-C                  > 0 for increase in theta (ocean warming)
-C
+C     tidePot   :: Tidal geopotential forcing in m^2/s^2
+C                  Typical range: -10 < tidePot < +10
+C                  Input field
 
 C     NOTES:
 C     ======
@@ -240,10 +237,10 @@ C     sh        :: wind-speed [m/s] (always larger than uMin)
 #endif
 
 #ifdef ALLOW_DOWNWARD_RADIATION
-      COMMON /exf_rad_down_r/
-     &     swdown, lwdown, swdown0, swdown1, lwdown0, lwdown1
+      COMMON /exf_rad_down_r/ swdown, lwdown
       _RL swdown    (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
       _RL lwdown    (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
+      COMMON /exfl_rad_down_r/ swdown0, swdown1, lwdown0, lwdown1
       _RL swdown0   (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
       _RL swdown1   (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
       _RL lwdown0   (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
@@ -289,17 +286,24 @@ C     zen_fsol_daily     :: incoming solar radiation (daily mean)
 
 #ifdef ALLOW_SALTFLX
       COMMON /exfl_saltflx_r/ saltflx, saltflx0, saltflx1
-      _RL saltflx (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
-      _RL saltflx0(1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
-      _RL saltflx1(1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
+      _RL saltflx   (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
+      _RL saltflx0  (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
+      _RL saltflx1  (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
+#endif
+
+#ifdef EXF_ALLOW_TIDES
+      COMMON /exf_tidePot_r/ tidePot, tidePot0, tidePot1
+      _RL tidePot   (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
+      _RL tidePot0  (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
+      _RL tidePot1  (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
 #endif
 
 #ifdef EXF_SEAICE_FRACTION
       COMMON /exf_ice_areamask_r/ areamask,
      &                        areamask0, areamask1
-      _RL areamask       (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
-      _RL areamask0      (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
-      _RL areamask1      (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
+      _RL areamask  (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
+      _RL areamask0 (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
+      _RL areamask1 (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
       COMMON /exf_iceFraction_r/ exf_iceFraction
       _RS exf_iceFraction(1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
 #endif
@@ -332,4 +336,3 @@ C     zen_fsol_daily     :: incoming solar radiation (daily mean)
       _RL climvstr0      (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
       _RL climvstr1      (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
 #endif
-

@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/verification/tutorial_dic_adjoffline/code_ad/CPP_OPTIONS.h,v 1.2 2012/08/14 03:09:00 jmc Exp $
-C $Name:  $
-
 #ifndef CPP_OPTIONS_H
 #define CPP_OPTIONS_H
 
@@ -122,7 +119,7 @@ C   Although this method, inherited from ECCO setup, has been traditionally
 C   used for all adjoint built, work is in progress to allow to use the
 C   standard method also for adjoint built.
 #ifdef PACKAGES_CONFIG_H
-# include "ECCO_CPPOPTIONS.h"
+c# include "ECCO_CPPOPTIONS.h"
 #endif
 
 #endif /* CPP_OPTIONS_H */

@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/eesupp/src/eeboot_minimal.F,v 1.29 2017/01/28 18:39:06 jmc Exp $
-C $Name:  $
-
 #include "PACKAGES_CONFIG.h"
 #include "CPP_EEOPTIONS.h"
 
@@ -42,25 +39,44 @@ C     myComm     :: Communicator that is passed down from
 C                   upper level driver (if there is one).
       INTEGER myComm
 
+C     !FUNCTIONS:
+c     INTEGER  IFNBLNK
+c     EXTERNAL IFNBLNK
+      INTEGER  ILNBLNK
+      EXTERNAL ILNBLNK
+
 C     !LOCAL VARIABLES:
 C     == Local variables ==
 C     myThid     :: Temp. dummy thread number.
 C     fNam       :: Used to build file name for standard and error output.
 C     msgBuf     :: Used to build messages for printing.
       INTEGER myThid
+#ifdef USE_PDAF
+      CHARACTER*18 fNam
+#else
       CHARACTER*13 fNam
+#endif /* USE_PDAF */
       CHARACTER*(MAX_LEN_MBUF) msgBuf
 #ifdef ALLOW_USE_MPI
 C     mpiRC      :: Error code reporting variable used with MPI.
       INTEGER mpiRC
       INTEGER mpiIsInitialized
       LOGICAL doReport
-#ifdef COMPONENT_MODULE
-      INTEGER mpiMyWid
+#if defined(ALLOW_OASIS) || defined(COMPONENT_MODULE)
+      INTEGER mpiMyWId
+#elif defined(ALLOW_NEST2W_COMMON)
+      INTEGER mpiMyWId
 #endif
 #if defined(ALLOW_NEST_PARENT) || defined(ALLOW_NEST_CHILD)
-      INTEGER mpiMyWid, color
+      INTEGER mpiMyWId, color
 #endif
+#ifdef USE_PDAF
+      INTEGER mpi_task_id
+      CHARACTER*(14) fmtStr
+#else
+      CHARACTER*(6) fmtStr
+#endif /* USE_PDAF */
+      INTEGER iTmp
 #endif /* ALLOW_USE_MPI */
 CEOP
 
@@ -124,10 +140,18 @@ C       down from upper level driver
        ENDIF
 
        doReport = .FALSE.
+#ifdef USE_PDAF
+C     initialize PDAF
+C     for more output increase second parameter from 1 to 2
+       CALL INIT_PARALLEL_PDAF(0, 1, MPI_COMM_MODEL, MPI_COMM_MODEL,
+     &      mpi_task_id)
+#endif /* USE_PDAF */
+
 #ifdef ALLOW_OASIS
 C      add a 1rst preliminary call EESET_PARAMS to set useOASIS
 C      (needed to decide either to call OASIS_INIT or not)
-       CALL EESET_PARMS ( doReport )
+       CALL MPI_COMM_RANK( MPI_COMM_WORLD, mpiMyWId, mpiRC )
+       CALL EESET_PARMS ( mpiMyWId, doReport )
        IF ( useOASIS ) CALL OASIS_INIT(MPI_COMM_MODEL)
 #endif /* ALLOW_OASIS */
 
@@ -139,7 +163,7 @@ C--    Set the running directory
 C- jmc: test:
 C      add a 1rst preliminary call EESET_PARAMS to set useCoupler
 C      (needed to decide either to call CPL_INIT or not)
-       CALL EESET_PARMS ( doReport )
+       CALL EESET_PARMS ( mpiMyWId, doReport )
 C- jmc: test end ; otherwise, uncomment next line:
 c      useCoupler = .TRUE.
 
@@ -157,6 +181,17 @@ C--    Setup Nesting Execution Environment
        CALL NEST_EEINIT( mpiMyWId, color )
 #endif /* ALLOW_NEST_PARENT | ALLOW_NEST_CHILD */
 
+#ifdef ALLOW_NEST2W_COMMON
+C--    Case with 2-Ways Nest(ing)
+C-     Set the running directory
+       CALL MPI_COMM_RANK( MPI_COMM_WORLD, mpiMyWId, mpiRC )
+       CALL SETDIR( mpiMyWId )
+
+C-     Setup Nesting Execution Environment
+       CALL NEST2W_EEINIT( mpiMyWId )
+       IF ( eeBootError ) GOTO 999
+#endif /* ALLOW_NEST2W_COMMON */
+
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
 
 C--    Get my process number
@@ -169,16 +204,25 @@ C--    Get my process number
         GOTO 999
        ENDIF
        myProcId = mpiMyId
-       WRITE(myProcessStr,'(I4.4)') myProcId
+       iTmp = MAX(4,1 + INT(LOG10(DFLOAT(nPx*nPy))))
+#ifdef USE_PDAF
+       WRITE(fmtStr,'(4(A,I1),A)')
+     &      '(I',iTmp,'.',iTmp,',A1,I',iTmp,'.',iTmp,')'
+       WRITE(myProcessStr,fmtStr) mpi_task_id,'.',myProcId
+#else
+       WRITE(fmtStr,'(2(A,I1),A)') '(I',iTmp,'.',iTmp,')'
+       WRITE(myProcessStr,fmtStr) myProcId
+#endif /* USE_PDAF */
+       iTmp = ILNBLNK( myProcessStr )
        mpiPidIo = myProcId
        pidIO    = mpiPidIo
        IF ( mpiPidIo .EQ. myProcId ) THEN
 #ifdef SINGLE_DISK_IO
         IF( myProcId .EQ. 0 ) THEN
 #endif
-         WRITE(fNam,'(A,A)') 'STDERR.', myProcessStr(1:4)
+         WRITE(fNam,'(A,A)') 'STDERR.', myProcessStr(1:iTmp)
          OPEN(errorMessageUnit,FILE=fNam,STATUS='unknown')
-         WRITE(fNam,'(A,A)') 'STDOUT.', myProcessStr(1:4)
+         WRITE(fNam,'(A,A)') 'STDOUT.', myProcessStr(1:iTmp)
          OPEN(standardMessageUnit,FILE=fNam,STATUS='unknown')
 #ifdef SINGLE_DISK_IO
         ELSE

@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/pkg/exch2/w2_set_cs6_facets.F,v 1.5 2012/03/30 18:23:13 jmc Exp $
-C $Name:  $
-
 #include "CPP_EEOPTIONS.h"
 #include "W2_OPTIONS.h"
 
@@ -112,7 +109,7 @@ C-    try to get cube size from number of tiles, assuming a regular Cube
      &     ' facet-dims Unset; assume nRd=nGr=nBl=', nRd
           CALL PRINT_MESSAGE( msgBuf, W2_oUnit,SQUEEZE_RIGHT,myThid )
         ELSE
-          WRITE(msgBuf,'(3(A,I4),A,I10,A,I6,A)')
+          WRITE(msgBuf,'(A,I8,2(A,I4),A,I10,A,I6,A)')
      &     ' nTiles*sNx*sNy=', exch2_nTiles,' x',sNx,' x',sNy,' =',nGr
           CALL PRINT_MESSAGE( msgBuf, W2_oUnit,SQUEEZE_RIGHT,myThid )
           WRITE(msgBuf,'(A,I6,A,I10)')
@@ -128,7 +125,6 @@ C-    try to get cube size from number of tiles, assuming a regular Cube
        CALL ALL_PROC_DIE( 0 )
        STOP 'ABNORMAL END: S/R W2_SET_CS6_FACETS (Dims are missing)'
       ENDIF
-
 
 C--   Set facet dimension : 1rst 3 are known:
       facet_dims(1) = nRd

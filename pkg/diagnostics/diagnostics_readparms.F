@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/pkg/diagnostics/diagnostics_readparms.F,v 1.42 2017/03/25 15:16:46 jmc Exp $
-C $Name:  $
-
 #include "DIAG_OPTIONS.h"
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
@@ -30,6 +27,8 @@ CEOP
 C     !FUNCTIONS:
       INTEGER  ILNBLNK
       EXTERNAL ILNBLNK
+      CHARACTER*(8) DIAGS_RENAMED
+      EXTERNAL DIAGS_RENAMED
 #ifdef ALLOW_FIZHI
       _RL      getcon
       EXTERNAL getcon
@@ -73,9 +72,9 @@ C     stat_fName  :: List of statistics output Filename
       CHARACTER*8 fields(fdimLoc,ldimLoc)
       CHARACTER*8 stat_fields(fdimLoc,ldimLoc)
       CHARACTER*80 fileName(ldimLoc), blkFilName
-      CHARACTER*80 stat_fname(ldimLoc)
+      CHARACTER*80 stat_fName(ldimLoc)
       CHARACTER*8 fileFlags(ldimLoc)
-      CHARACTER*8 blk8c
+      CHARACTER*8 blk8c, diagName
       CHARACTER*(MAX_LEN_MBUF) msgBuf
       CHARACTER*(MAX_LEN_FNAM) namBuf
       CHARACTER*12 suffix
@@ -102,13 +101,14 @@ C--   full level output:
 C--   per level statistics output:
       NAMELIST / DIAG_STATIS_PARMS /
      &     stat_freq, stat_phase, stat_region, stat_fields,
-     &     stat_fname, diagSt_mnc,
+     &     stat_fName, diagSt_mnc,
      &     set_regMask, val_regMask,
      &     diagSt_regMaskFile, nSetRegMskFile
 
       IF ( .NOT.useDiagnostics ) THEN
 C-    pkg DIAGNOSTICS is not used
         _BEGIN_MASTER(myThid)
+         useDiag4AdjOutp = .FALSE.
 C-    Track diagnostics pkg activation status:
          diag_pkgStatus = -1
 C     print a (weak) warning if data.diagnostics is found
@@ -177,7 +177,7 @@ c       missing_value(l)     = UNSET_RL
       DO l = 1,ldimLoc
         stat_freq(l)  = 0.
         stat_phase(l) = UNSET_RL
-        stat_fname(l) = blkFilName
+        stat_fName(l) = blkFilName
         DO k = 1,rdimLoc
           stat_region(k,l) = UNSET_I
         ENDDO
@@ -185,6 +185,8 @@ c       missing_value(l)     = UNSET_RL
           stat_fields(m,l) = blkName
         ENDDO
       ENDDO
+C     useDiag4AdjOutp will be to set to T if ADJ diags are found in namelist
+      useDiag4AdjOutp = .FALSE.
 C-    Track diagnostics pkg activation status:
       diag_pkgStatus = 1
 
@@ -219,7 +221,11 @@ C-    set default for statistics output according to the main flag
       CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
      &                    SQUEEZE_RIGHT , 1)
 
-      CLOSE (ku)
+#ifdef SINGLE_DISK_IO
+      CLOSE(ku)
+#else
+      CLOSE(ku,STATUS='DELETE')
+#endif /* SINGLE_DISK_IO */
 
 C     Initialise DIAG_SELECT common block (except pointers)
       nlists = 0
@@ -340,16 +346,17 @@ C-       will set levels later, once the Nb of levels of each diag is known
          ENDIF
          nfields(n) = 0
          DO m=1,fdimLoc
-           IF ( fields(m,l).NE.blkName .AND.
+           diagName = DIAGS_RENAMED( fields(m,l), myThid )
+           IF ( diagName.NE.blkName .AND.
      &          nfields(n).LT.numperList ) THEN
              nfields(n) = nfields(n) + 1
-             flds(nfields(n),n) = fields(m,l)
-           ELSEIF ( fields(m,l).NE.blkName ) THEN
+             flds(nfields(n),n) = diagName
+           ELSEIF ( diagName.NE.blkName ) THEN
              WRITE(msgBuf,'(2A,I4)') 'DIAGNOSTICS_READPARMS: ',
      &        'Exceed Max.Num. of Fields/list numperList=', numperList
              CALL PRINT_ERROR( msgBuf , myThid )
              WRITE(msgBuf,'(2A,I4,3A,I4,2A)') 'DIAGNOSTICS_READPARMS: ',
-     &        'when trying to add field (m=', m, ' ): ',fields(m,l)
+     &        'when trying to add field (m=', m, ' ): ', diagName
              CALL PRINT_ERROR( msgBuf , myThid )
              WRITE(msgBuf,'(2A,I4,2A)') 'DIAGNOSTICS_READPARMS: ',
      &        ' in list l=', l, ', fileName: ', fileName(l)
@@ -427,7 +434,7 @@ C     for now, simpler just to read it from namelist in data.diagnostics
       ENDIF
 
       DO l = 1,ldimLoc
-       iLen = ILNBLNK(stat_fname(l))
+       iLen = ILNBLNK(stat_fName(l))
 C-     Only lists with non-empty file name (iLen>0) are considered
        IF ( iLen.GE.1 .AND. diagSt_nbLists.LT.numLists)THEN
          n = diagSt_nbLists + 1
@@ -437,7 +444,7 @@ C-     Only lists with non-empty file name (iLen>0) are considered
          ELSEIF ( stat_freq(l) .LT. 0. ) THEN
            diagSt_phase(n) = -0.5 _d 0 * stat_freq(l)
          ENDIF
-         diagSt_Fname(n)  = stat_fname(l)
+         diagSt_Fname(n)  = stat_fName(l)
          regionCount = 0
          DO k=1,rdimLoc
            j = stat_region(k,l)
@@ -448,7 +455,7 @@ C-     Only lists with non-empty file name (iLen>0) are considered
             ELSE
              WRITE(msgBuf,'(2A,I4,2A)')
      &        'DIAGNOSTICS_READPARMS:',
-     &        ' in list l=', l, ', stat_fname: ', stat_fname(l)
+     &        ' in list l=', l, ', stat_fName: ', stat_fName(l)
              CALL PRINT_MESSAGE( msgBuf, errorMessageUnit,
      &                           SQUEEZE_RIGHT , myThid )
              WRITE(msgBuf,'(A,I4,A)')
@@ -460,7 +467,7 @@ C-     Only lists with non-empty file name (iLen>0) are considered
            ELSEIF ( j.NE.UNSET_I ) THEN
              WRITE(msgBuf,'(A,I4,A,I4,2A)')
      &       'DIAGNOSTICS_READPARMS: region=',j,
-     &         ' in list l=', l, ', stat_fname: ', stat_fname(l)
+     &         ' in list l=', l, ', stat_fName: ', stat_fName(l)
              CALL PRINT_ERROR( msgBuf , myThid )
              WRITE(msgBuf,'(2A,I4,A,I4,2A)')
      &       'DIAGNOSTICS_READPARMS: ==> exceed Max.Nb of regions',
@@ -475,20 +482,20 @@ C-       no region selected => default is Global statistics (region Id: 0)
          ENDIF
          diagSt_nbFlds(n) = 0
          DO m=1,fdimLoc
-           IF ( stat_fields(m,l).NE.blkName .AND.
+           diagName = DIAGS_RENAMED( stat_fields(m,l), myThid )
+           IF ( diagName.NE.blkName .AND.
      &          diagSt_nbFlds(n).LT.numperList ) THEN
              diagSt_nbFlds(n) = diagSt_nbFlds(n) + 1
-             diagSt_Flds(diagSt_nbFlds(n),n) = stat_fields(m,l)
-           ELSEIF ( stat_fields(m,l).NE.blkName ) THEN
+             diagSt_Flds(diagSt_nbFlds(n),n) = diagName
+           ELSEIF ( diagName.NE.blkName ) THEN
              WRITE(msgBuf,'(2A,I4)') 'DIAGNOSTICS_READPARMS: ',
      &        'Exceed Max.Num. of Fields/list numperList=', numperList
              CALL PRINT_ERROR( msgBuf , myThid )
              WRITE(msgBuf,'(2A,I4,3A,I4,2A)') 'DIAGNOSTICS_READPARMS: ',
-     &        'when trying to add stat_field (m=', m,
-     &        ' ): ',stat_fields(m,l)
+     &        'when trying to add stat_field (m=', m, ' ): ', diagName
              CALL PRINT_ERROR( msgBuf , myThid )
              WRITE(msgBuf,'(2A,I4,2A)') 'DIAGNOSTICS_READPARMS: ',
-     &        ' in list l=', l, ', stat_fname: ', stat_fname(l)
+     &        ' in list l=', l, ', stat_fName: ', stat_fName(l)
              CALL PRINT_ERROR( msgBuf , myThid )
              STOP 'ABNORMAL END: S/R DIAGNOSTICS_READPARMS'
            ENDIF
@@ -503,7 +510,7 @@ c        write(6,*) 'stat-list summary:',n,diagSt_nbFlds(n),regionCount
      &    'when trying to add stat_list l=', l
          CALL PRINT_ERROR( msgBuf , myThid )
          WRITE(msgBuf,'(2A,F18.6,2A)') 'DIAGNOSTICS_READPARMS: ',
-     &    ' Frq=', stat_freq(l), ', stat_fname: ', stat_fname(l)
+     &    ' Frq=', stat_freq(l), ', stat_fName: ', stat_fName(l)
          CALL PRINT_ERROR( msgBuf , myThid )
          STOP 'ABNORMAL END: S/R DIAGNOSTICS_READPARMS'
        ENDIF

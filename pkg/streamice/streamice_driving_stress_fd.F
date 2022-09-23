@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/pkg/streamice/streamice_driving_stress_fd.F,v 1.2 2016/10/24 14:14:19 dgoldberg Exp $
-C $Name:  $
-
 #include "STREAMICE_OPTIONS.h"
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
@@ -153,8 +150,8 @@ C     LOCAL VARIABLES
        ENDDO
       ENDDO
 
-      _EXCH_XY_RL (dsdy, mythid)
-      _EXCH_XY_RL (dsdx, mythid)
+      _EXCH_XY_RL(dsdy, mythid)
+      _EXCH_XY_RL(dsdx, mythid)
 
       DO bj = myByLo(myThid), myByHi(myThid)
        DO bi = myBxLo(myThid), myBxHi(myThid)

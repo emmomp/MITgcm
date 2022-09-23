@@ -1,11 +1,6 @@
-C $Header: /u/gcmpack/MITgcm/pkg/seaice/seaice_itd_pickup.F,v 1.5 2016/04/29 14:28:38 mlosch Exp $
-C $Name:  $
-
 #include "SEAICE_OPTIONS.h"
-#ifdef ALLOW_AUTODIFF
-# include "AUTODIFF_OPTIONS.h"
-#endif
 
+CBOP
 C !ROUTINE: SEAICE_ITD_PICKUP
 
 C !INTERFACE: ==========================================================
@@ -49,15 +44,10 @@ C     HSNOWITD  :: snow thickness    by category
 C
 #include "SIZE.h"
 #include "EEPARAMS.h"
-#include "PARAMS.h"
-#include "GRID.h"
+c#include "PARAMS.h"
 #include "SEAICE_SIZE.h"
 #include "SEAICE_PARAMS.h"
 #include "SEAICE.h"
-
-#ifdef ALLOW_AUTODIFF_TAMC
-# include "tamc.h"
-#endif
 
 C !INPUT PARAMETERS: ===================================================
 C     === Routine arguments ===
@@ -65,7 +55,7 @@ C     myIter    :: iteration number
 C     myThid    :: Thread no. that called this routine.
       INTEGER myIter
       INTEGER myThid
-CEndOfInterface
+CEOP
 
 #ifdef SEAICE_ITD
 
@@ -75,9 +65,6 @@ C     i,j,bi,bj,k :: Loop counters
 C     nITD        :: number of sea ice thickness categories
 C
       INTEGER i, j, bi, bj, k
-#ifdef ALLOW_AUTODIFF_TAMC
-      INTEGER itmpkey
-#endif /* ALLOW_AUTODIFF_TAMC */
       _RL dummyTime
 
 C     local variables for picking up ITD from single category pickup file

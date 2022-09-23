@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/pkg/kpp/kpp_diagnostics_init.F,v 1.10 2014/05/21 10:45:33 heimbach Exp $
-C $Name:  $
-
 #include "KPP_OPTIONS.h"
 #ifdef ALLOW_SALT_PLUME
 #include "SALT_PLUME_OPTIONS.h"
@@ -55,7 +52,6 @@ c     INTEGER       diagMate
       CHARACTER*4 GAD_DIAG_SUFX
       EXTERNAL    GAD_DIAG_SUFX
 #endif
-
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
 
@@ -144,6 +140,20 @@ C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
         CALL DIAGNOSTICS_ADDTOLIST( diagNum,
      I       diagName, diagCode, diagUnits, diagTitle, 0, myThid )
 
+        diagName  = 'KPPshsq '
+        diagTitle = 'Local shear (V(k-1)-V(k))^2'
+        diagUnits = 'm^2/s^2         '
+        diagCode  = 'SM P    UR      '
+        CALL DIAGNOSTICS_ADDTOLIST( diagNum,
+     I       diagName, diagCode, diagUnits, diagTitle, 0, myThid )
+
+        diagName  = 'KPPdVsq '
+        diagTitle = 'Shear relative to surface (V(ksrf)-V(k))**2'
+        diagUnits = 'm^2/s^2         '
+        diagCode  = 'SM P    UR      '
+        CALL DIAGNOSTICS_ADDTOLIST( diagNum,
+     I       diagName, diagCode, diagUnits, diagTitle, 0, myThid )
+
 #ifndef EXCLUDE_KPP_DOUBLEDIFF
         diagName  = 'KPPnuddt'
         diagTitle = 'Vertical double diffusion coefficient for heat'
@@ -176,7 +186,7 @@ C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
 #endif
         diagName  = 'KPPg'//diagSufx
         diagTitle = 'KPP non-local Flux of Salinity'
-        diagUnits = 'psu.m^3/s       '
+        diagUnits = 'g/kg.m^3/s      '
         diagCode  = 'WM      LR      '
         CALL DIAGNOSTICS_ADDTOLIST( diagNum,
      I          diagName, diagCode, diagUnits, diagTitle, 0, myThid )

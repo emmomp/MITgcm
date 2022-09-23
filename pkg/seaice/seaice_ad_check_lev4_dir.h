@@ -1,8 +1,32 @@
-C $Header: /u/gcmpack/MITgcm/pkg/seaice/seaice_ad_check_lev4_dir.h,v 1.18 2012/10/25 19:43:44 heimbach Exp $
-C $Name:  $
-
-CADJ STORE StoreSEAICE    = tapelev4, key = ilev_4
-CADJ STORE tices      =     tapelev4, key = ilev_4
+#ifdef AUTODIFF_USE_STORE_RESTORE
+CADJ STORE StoreSEAICE       = tapelev4, key = ilev_4
+#else
+CADJ STORE AREA              = tapelev4, key = ilev_4
+CADJ STORE HEFF              = tapelev4, key = ilev_4
+CADJ STORE HSNOW             = tapelev4, key = ilev_4
+CADJ STORE RUNOFF            = tapelev4, key = ilev_4
+CADJ STORE UICE              = tapelev4, key = ilev_4
+CADJ STORE VICE              = tapelev4, key = ilev_4
+CADJ STORE ZETA              = tapelev4, key = ilev_4
+CADJ STORE ETA               = tapelev4, key = ilev_4
+CADJ STORE TICES             = tapelev4, key = ilev_4
+# ifdef SEAICE_CGRID
+CADJ STORE dwatn             = tapelev4, key = ilev_4
+#  ifdef SEAICE_ALLOW_BOTTOMDRAG
+CADJ STORE cbotc             = tapelev4, key = ilev_4
+#  endif /* SEAICE_ALLOW_BOTTOMDRAG */
+CADJ STORE stressDivergenceX = tapelev4, key = ilev_4
+CADJ STORE stressDivergenceY = tapelev4, key = ilev_4
+# ifdef SEAICE_ALLOW_EVP
+CADJ STORE seaice_sigma1     = tapelev4, key = ilev_4
+CADJ STORE seaice_sigma2     = tapelev4, key = ilev_4
+CADJ STORE seaice_sigma12    = tapelev4, key = ilev_4
+# endif /* SEAICE_ALLOW_EVP */
+# endif /* SEAICE_CGRID */
+# ifdef SEAICE_VARIABLE_SALINITY
+CADJ STORE HSALT             = tapelev4, key = ilev_4
+# endif
+#endif /* AUTODIFF_USE_STORE_RESTORE */
 
 #ifdef AUTODIFF_SOMETIMES_NEEDED
 CADJ STORE area  = tapelev4, key = ilev_4
@@ -47,4 +71,3 @@ CADJ STORE sitracer = tapelev4, key = ilev_4
 CADJ STORE sitrarea = tapelev4, key = ilev_4
 CADJ STORE sitrheff = tapelev4, key = ilev_4
 #endif
-

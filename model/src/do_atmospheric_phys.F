@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/model/src/do_atmospheric_phys.F,v 1.13 2014/09/04 22:30:46 jmc Exp $
-C $Name:  $
-
 #include "PACKAGES_CONFIG.h"
 #include "CPP_OPTIONS.h"
 #ifdef ALLOW_AUTODIFF
@@ -43,9 +40,9 @@ C     == Global variables ===
 #include "PARAMS.h"
 #include "GRID.h"
 #include "DYNVARS.h"
-#ifdef ALLOW_AUTODIFF
+#ifdef ALLOW_AUTODIFF_TAMC
 # include "tamc.h"
-#endif /* ALLOW_AUTODIFF */
+#endif /* ALLOW_AUTODIFF_TAMC */
 
 C     !INPUT/OUTPUT PARAMETERS:
 C     == Routine arguments ==

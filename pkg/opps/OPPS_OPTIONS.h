@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/pkg/opps/OPPS_OPTIONS.h,v 1.2 2011/12/24 01:09:39 jmc Exp $
-C $Name:  $
-
 C     *==========================================================*
 C     | OPPS_OPTIONS.h
 C     | o CPP options file for OPPS package.
@@ -16,6 +13,9 @@ C     *==========================================================*
 
 #ifdef ALLOW_OPPS
 C Package-specific Options & Macros go here
+
+C allow snap-shot OPPS output
+#undef ALLOW_OPPS_SNAPSHOT
 
 C allow debugging OPPS_CALC
 #define ALLOW_OPPS_DEBUG

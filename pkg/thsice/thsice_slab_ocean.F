@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/pkg/thsice/thsice_slab_ocean.F,v 1.11 2013/04/04 01:59:57 jmc Exp $
-C $Name:  $
-
 #include "THSICE_OPTIONS.h"
 
 CBOP
@@ -157,11 +154,7 @@ c-- End of IF ( stepFwd_oceMxL ) THEN
 
 C--   Cumulate time-averaged fields and also fill-up flux diagnostics
 C     (if not done in THSICE_DO_ADVECT call)
-#ifdef OLD_THSICE_CALL_SEQUENCE
-      IF ( .TRUE. ) THEN
-#else /* OLD_THSICE_CALL_SEQUENCE */
       IF ( thSIceAdvScheme.LE.0 ) THEN
-#endif /* OLD_THSICE_CALL_SEQUENCE */
          CALL THSICE_AVE(
      I                    bi, bj, myTime, myIter, myThid )
       ENDIF

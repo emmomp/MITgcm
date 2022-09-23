@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/pkg/grdchk/grdchk_init.F,v 1.14 2014/10/09 00:50:54 gforget Exp $
-C $Name:  $
-
 #include "GRDCHK_OPTIONS.h"
 #ifdef ALLOW_CTRL
 # include "CTRL_OPTIONS.h"
@@ -34,23 +31,16 @@ c     == global variables ==
 #include "grdchk.h"
 
 c     == routine arguments ==
-
       integer       mythid
 
 #ifdef ALLOW_GRDCHK
 c     == local variables ==
-
       integer bi,bj
-      integer i,j,k
-      integer irec
+      integer k, iobcs
       integer itlo,ithi
       integer jtlo,jthi
       integer jmin,jmax
       integer imin,imax
-
-      integer itest,iobcs
-      integer icomptest
-
 c     == end of interface ==
 
       jtlo = 1
@@ -109,7 +99,7 @@ c--   control variable on the current tile.
                enddo
             enddo
          enddo
-#ifdef ALLOW_SHIFWFLX_CONTROL
+#ifdef ALLOW_SHELFICE
       else if ( ncvargrd(grdchkvarindex) .eq. 'i' ) then
          do bj = jtlo,jthi
             do bi = itlo,ithi
@@ -118,7 +108,7 @@ c--   control variable on the current tile.
                enddo
             enddo
          enddo
-#endif /* ALLOW_SHIFWFLX_CONTROL */
+#endif /* ALLOW_SHELFICE */
       else if ( ncvargrd(grdchkvarindex) .eq. 'm' ) then
          do bj = jtlo,jthi
             do bi = itlo,ithi

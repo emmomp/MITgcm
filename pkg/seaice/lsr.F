@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/pkg/seaice/lsr.F,v 1.36 2016/01/28 12:54:12 mlosch Exp $
-C $Name:  $
-
 #ifndef SEAICE_LSRBNEW
 C     for an alternative discretization of d/dx[ (zeta-eta) dV/dy]
 C     and d/dy[ (zeta-eta) dU/dx] uncomment this option
@@ -223,18 +220,11 @@ C NOW SET UP NON-LINEAR WATER DRAG, FORCEX, FORCEY
           TEMPVAR=(uIce(I,J,bi,bj)-GWATX(I,J,bi,bj))**2
      &           +(vIce(I,J,bi,bj)-GWATY(I,J,bi,bj))**2
           IF ( YC(I,J,bi,bj) .LT. ZERO ) THEN
-           IF ( TEMPVAR .LE. (QUART/SEAICE_waterDrag_south)**2 ) THEN
-            DWATN(I,J,bi,bj)=QUART
-           ELSE
-            DWATN(I,J,bi,bj)=SEAICE_waterDrag_south*SQRT(TEMPVAR)
-           ENDIF
+           DWATN(I,J,bi,bj) = SEAICE_waterDrag_south*SQRT(TEMPVAR)
           ELSE
-           IF ( TEMPVAR .LE. (QUART/SEAICE_waterDrag)**2 ) THEN
-            DWATN(I,J,bi,bj)=QUART
-           ELSE
-            DWATN(I,J,bi,bj)=SEAICE_waterDrag*SQRT(TEMPVAR)
-           ENDIF
+           DWATN(I,J,bi,bj) = SEAICE_waterDrag*SQRT(TEMPVAR)
           ENDIF
+          DWATN(I,J,bi,bj) = MAX(DWATN(I,J,bi,bj)*rhoConst,QUART)
 C NOW SET UP SYMMETTRIC DRAG
           DRAGS(I,J,bi,bj)=DWATN(I,J,bi,bj)*COSWAT
 C NOW SET UP ANTI SYMMETTRIC DRAG PLUS CORIOLIS

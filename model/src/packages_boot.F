@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/model/src/packages_boot.F,v 1.70 2017/02/13 19:32:22 jmc Exp $
-C $Name:  $
-
 #include "PACKAGES_CONFIG.h"
 #include "CPP_OPTIONS.h"
 
@@ -181,7 +178,11 @@ C--   Read parameters from open data file
      &                    SQUEEZE_RIGHT , myThid )
 
 C--   Close the open data file
+#ifdef SINGLE_DISK_IO
       CLOSE(iUnit)
+#else
+      CLOSE(iUnit,STATUS='DELETE')
+#endif /* SINGLE_DISK_IO */
 
 C--   packages with hard-coded switch
 #ifndef HAVE_NETCDF

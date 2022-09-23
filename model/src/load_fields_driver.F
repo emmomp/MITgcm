@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/model/src/load_fields_driver.F,v 1.20 2015/07/18 21:45:03 jmc Exp $
-C $Name:  $
-
 #include "PACKAGES_CONFIG.h"
 #include "CPP_OPTIONS.h"
 #ifdef ALLOW_AUTODIFF
@@ -55,11 +52,18 @@ C     == Global variables ==
 #include "FFIELDS.h"
 
 #ifdef ALLOW_AUTODIFF
-# include "tamc.h"
-# include "CTRL_SIZE.h"
-# include "ctrl.h"
-# include "ctrl_dummy.h"
-# include "cost.h"
+# ifdef ALLOW_AUTODIFF_TAMC
+#  include "tamc.h"
+# endif
+# ifdef ALLOW_CTRL
+#  include "CTRL_SIZE.h"
+#  include "ctrl.h"
+#  include "CTRL_GENARR.h"
+#  include "ctrl_dummy.h"
+# endif
+# ifdef ALLOW_COST
+#  include "cost.h"
+# endif
 # include "EOS.h"
 # ifdef ALLOW_EXF
 #  include "EXF_FIELDS.h"
@@ -121,6 +125,11 @@ C--   Initialise forcing arrays that may receive multiple contributions
 C--   Map generic time varying controls to xx_gentim2d
 #ifdef ALLOW_CTRL
       if (useCTRL) CALL CTRL_MAP_GENTIM2D( myTime, myIter, myThid )
+# if (defined ALLOW_AUTODIFF_TAMC && defined ALLOW_GENTIM2D_CONTROL)
+C     This store-directive avoids storing xx_gentim2d0/1 and subsequently
+C     calling this routine in the AD-sweep.
+CADJ STORE xx_gentim2d = comlev1, key = ikey_dynamics, kind = isbyte
+# endif
 #endif
 
 #ifdef ALLOW_BULK_FORCE
@@ -157,7 +166,7 @@ C--   Call external CheapAML forcing package
       ENDIF
 #endif /*ALLOW_CHEAPAML */
 
-      IF ( .NOT.useCheapAML ) THEN
+      IF ( fluidIsWater ) THEN
 #ifdef ALLOW_DEBUG
         IF (debugMode) CALL DEBUG_CALL('EXTERNAL_FIELDS_LOAD',myThid)
 #endif

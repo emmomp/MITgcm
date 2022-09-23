@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/pkg/pp81/pp81_calc.F,v 1.8 2015/02/23 21:20:15 jmc Exp $
-C $Name:  $
-
 #include "PP81_OPTIONS.h"
 
 CBOP
@@ -36,7 +33,6 @@ C !USES: ============================================================
 #include "PP81.h"
 c#ifdef ALLOW_AUTODIFF_TAMC
 c#include "tamc.h"
-c#include "tamc_keys.h"
 c#endif /* ALLOW_AUTODIFF_TAMC */
 
 C !INPUT PARAMETERS: ===================================================
@@ -119,6 +115,13 @@ C     Mask land points
        ENDDO
 C     end K-loop
       ENDDO
+
+#ifdef ALLOW_DIAGNOSTICS
+      IF ( useDiagnostics ) THEN
+       CALL DIAGNOSTICS_FILL(PPviscAr,'PPviscAr',0,Nr,1,bi,bj,myThid)
+       CALL DIAGNOSTICS_FILL(PPdiffKr,'PPdiffKr',0,Nr,1,bi,bj,myThid)
+      ENDIF
+#endif /* ALLOW_DIAGNOSTICS */
 
 #endif /* ALLOW_PP81 */
 

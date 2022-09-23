@@ -1,14 +1,11 @@
-C $Header: /u/gcmpack/MITgcm/pkg/seaice/seaice_jacvec.F,v 1.7 2016/04/22 08:50:34 mlosch Exp $
-C $Name:  $
-
 #include "SEAICE_OPTIONS.h"
 
 CBOP
 C     !ROUTINE: SEAICE_JACVEC
 C     !INTERFACE:
-      SUBROUTINE SEAICE_JACVEC( 
+      SUBROUTINE SEAICE_JACVEC(
      I     uIceLoc, vIceLoc, uIceRes, vIceRes,
-     U     duIce, dvIce,  
+     U     duIce, dvIce,
      I     newtonIter, krylovIter, myTime, myIter, myThid )
 
 C     !DESCRIPTION: \bv
@@ -69,11 +66,19 @@ C     i,j,bi,bj :: loop indices
       _RL epsilon, reps
 CEOP
 C     Instructions for using TAF or TAMC to generate exact Jacobian times
-C     vector operations:
+C     vector operations (if SEAICE_ALLOW_MOM_ADVECTION is defined, the
+C     file list also needs to include seaice_mom_advection.f,
+C     mom_calc_hfacz.f, mom_calc_ke.f, mom_calc_relvort3.f,
+C     mom_vi_u_coriolis.f, mom_vi_u_coriolis_c4.f, mom_vi_u_grad_ke.f,
+C     mom_vi_v_coriolis.f, mom_vi_v_coriolis_c4.f, mom_vi_v_grad_ke.f
+C     plus flow information for diagnostics_fill.f:
+CCCCCCCADJ SUBROUTINE DIAGNOSTICS_FILL INPUT  = 1,2,3,4,5,6,7,8
+CCCCCCCADJ SUBROUTINE DIAGNOSTICS_FILL OUTPUT =
+C     )
 C
 C     1. make small_f
 C     2. cat seaice_calc_residual.f seaice_oceandrag_coeffs.f \
-C        seaice_bottomdrag_coeffs.f \
+C        seaice_bottomdrag_coeffs.f seaice_calc_stressdiv.f \
 C        seaice_calc_strainrates.f seaice_calc_viscosities.f \
 C        seaice_calc_rhs.f seaice_calc_lhs.f > taf_input.f
 C     3. staf -v1 -forward -toplevel seaice_calc_residual \
@@ -86,19 +91,19 @@ C     starting with version 2.0):
 C
 C     1. make small_f
 C     2. files="seaice_calc_residual.f seaice_oceandrag_coeffs.f \
-C               seaice_bottomdrag_coeffs.f \
+C               seaice_bottomdrag_coeffs.f seaice_calc_stressdiv.f \
 C               seaice_calc_strainrates.f seaice_calc_viscosities.f \
 C               seaice_calc_rhs.f seaice_calc_lhs.f"
 C     3. staf -forward -toplevel seaice_calc_residual \
 C             -input uIceLoc,viceLoc -output uIceRes,vIceRes $files
-C     4. copy files seaice_*_tl.f to the corresponding seaice_*.f files, 
+C     4. copy files seaice_*_tl.f to the corresponding seaice_*.f files,
 C        e.g. with this bash script:
-C     for file in $files; do 
-C       nfile=`echo $file | awk -F. '{printf "%s_tl.f", $1}'`; 
+C     for file in $files; do
+C       nfile=`echo $file | awk -F. '{printf "%s_tl.f", $1}'`;
 C       \cp -f $nfile $file
 C     done
-C     5. add the following code, change "call g_seaice_calc_residual" 
-C        to "call seaice_calc_residual_tl", and comment out the finite 
+C     5. add the following code, change "call g_seaice_calc_residual"
+C        to "call seaice_calc_residual_tl", and comment out the finite
 C        difference code
 CML      _RL g_duIce(1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
 CML      _RL g_dvIce(1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
@@ -121,12 +126,12 @@ CML        ENDDO
 CML       ENDDO
 CML      ENDDO
 CML
-CML      CALL G_SEAICE_CALC_RESIDUAL( uIce, g_duice, vIce, 
-CML     $g_dvice, uiceresp, g_uiceres, viceresp, g_viceres, newtoniter, 
+CML      CALL G_SEAICE_CALC_RESIDUAL( uIce, g_duice, vIce,
+CML     $g_dvice, uiceresp, g_uiceres, viceresp, g_viceres, newtoniter,
 CML     $kryloviter, mytime, myiter, mythid )
-CMLCML      For staf -v2 replace the above with the below call 
-CMLCML      CALL SEAICE_CALC_RESIDUAL_TL( uIce, g_duice, vIce, 
-CMLCML     $g_dvice, uiceresp, g_uiceres, viceresp, g_viceres, newtoniter, 
+CMLCML      For staf -v2 replace the above with the below call
+CMLCML      CALL SEAICE_CALC_RESIDUAL_TL( uIce, g_duice, vIce,
+CMLCML     $g_dvice, uiceresp, g_uiceres, viceresp, g_viceres, newtoniter,
 CMLCML     $kryloviter, mytime, myiter, mythid )
 CML
 CML      DO bj=myByLo(myThid),myByHi(myThid)
@@ -167,7 +172,7 @@ C     and store in du/vIce
        DO bi = myBxLo(myThid),myBxHi(myThid)
         DO I = 1, sNx
          DO J = 1, sNy
-          duIce(I,J,bi,bj) = 
+          duIce(I,J,bi,bj) =
      &         (uIceResP(I,J,bi,bj)-uIceRes(I,J,bi,bj))*reps
           dvIce(I,J,bi,bj) =
      &         (vIceResP(I,J,bi,bj)-vIceRes(I,J,bi,bj))*reps

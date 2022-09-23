@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/pkg/seaice/seaice_summary.F,v 1.89 2017/04/03 16:09:41 mlosch Exp $
-C $Name:  $
-
 #include "SEAICE_OPTIONS.h"
 
 CBOP
@@ -87,6 +84,8 @@ C--  Time-stepping related param.
 #endif
       CALL WRITE_0D_L ( SEAICEuseBDF2, INDEX_NONE,
      & 'SEAICEuseBDF2  =',' /* use backw. differencing for mom. eq. */')
+      CALL WRITE_0D_L ( SEAICEupdateOceanStress, INDEX_NONE,
+     & 'SEAICEupdateOceanStress=', ' /* update Ocean surf. stress */')
       CALL WRITE_0D_L ( SEAICErestoreUnderIce, INDEX_NONE,
      & 'SEAICErestoreUnderIce  =', ' /* restore T and S under ice */')
 
@@ -142,9 +141,12 @@ C--  Seaice-Dynamics parameters
       CALL WRITE_0D_RL( SEAICE_drag_south       ,INDEX_NONE,
      & 'SEAICE_drag_south      =', ' /* Southern Ocean SEAICE_drag */')
       CALL WRITE_0D_RL( SEAICE_waterDrag  ,INDEX_NONE,
-     & 'SEAICE_waterDrag  =', ' /* water-ice drag * density */')
+     & 'SEAICE_waterDrag  =', ' /* water-ice drag (no units) */')
       CALL WRITE_0D_RL( SEAICE_waterDrag_south  ,INDEX_NONE,
-     & 'SEAICE_waterDrag_south =', ' /* Southern Ocean waterDrag */')
+     & 'SEAICE_waterDrag_south =',
+     & ' /* Southern Ocean waterDrag (no units) */')
+      CALL WRITE_0D_RL( SEAICEdWatMin ,INDEX_NONE, 'SEAICEdWatMin =',
+     & ' /* minimum linear water-ice drag (in m/s) */')
 #ifdef SEAICE_ALLOW_BOTTOMDRAG
       IF ( SEAICEbasalDragK2 .NE. 0. _d 0 ) THEN
        CALL WRITE_0D_RL( SEAICE_cBasalStar ,INDEX_NONE,
@@ -179,6 +181,8 @@ C--  Seaice-Dynamics parameters
      & 'SEAICEpresPow1 =', ' /* exponent for Heff>SEAICEpresH0 */')
        CALL WRITE_0D_I ( SEAICEetaZmethod,  INDEX_NONE,
      & 'SEAICEetaZmethod =', ' /* method computing eta at Z-point */')
+      CALL WRITE_0D_RL( SEAICE_zetaMaxFac  ,INDEX_NONE,
+     & 'SEAICE_zetaMaxFac =', ' /* factor for upper viscosity bound */')
       CALL WRITE_0D_RL( SEAICE_zetaMin  ,INDEX_NONE,
      & 'SEAICE_zetaMin    =', ' /* lower bound for viscosity */')
       CALL WRITE_0D_RL( SEAICE_eccen,INDEX_NONE,'SEAICE_eccen    =',
@@ -193,12 +197,15 @@ C--  Seaice-Dynamics parameters
      & 'SEAICEuseMetricTerms =', ' /* use metric terms */')
       CALL WRITE_0D_L ( SEAICE_no_slip, INDEX_NONE,
      & 'SEAICE_no_slip    =', ' /* no slip boundary conditions */')
+      CALL WRITE_0D_L ( SEAICE_2ndOrderBC, INDEX_NONE,
+     & 'SEAICE_2ndOrderBC =',
+     & ' /* 2nd order no slip boundary conditions */')
       CALL WRITE_0D_L ( SEAICE_clipVelocities, INDEX_NONE,
      & 'SEAICE_clipVeloctities =', ' /* impose max. vels. */')
       CALL WRITE_0D_L ( useHB87stressCoupling, INDEX_NONE,
      & 'useHB87stressCoupling  =', ' /* altern. ice-ocean stress */')
       CALL WRITE_0D_L ( SEAICEscaleSurfStress, INDEX_NONE,
-     & 'SEAICEscaleSurfStress  =', 
+     & 'SEAICEscaleSurfStress  =',
      & ' /* scale atm. and ocean-surface stress with AREA */')
       CALL WRITE_0D_L ( SEAICE_maskRHS, INDEX_NONE,
      & 'SEAICE_maskRHS    =', ' /* mask RHS of solver */')
@@ -224,20 +231,20 @@ C--  Seaice-Dynamics parameters
        CALL WRITE_0D_I ( SEAICE_OLy,  INDEX_NONE,
      & 'SEAICE_OLy =', ' /* overlap for LSR/preconditioner */')
        CALL WRITE_0D_I ( SEAICEnonLinIterMax,  INDEX_NONE,
-     & 'SEAICEnonLinIterMax =', 
+     & 'SEAICEnonLinIterMax =',
      & ' /* max. number of nonlinear solver steps */')
        CALL WRITE_0D_I ( SEAICElinearIterMax,  INDEX_NONE,
-     & 'SEAICElinearIterMax =', 
+     & 'SEAICElinearIterMax =',
      & ' /* max. number of linear solver steps */')
        CALL WRITE_0D_RL( SEAICEnonLinTol  ,INDEX_NONE,
      & 'SEAICEnonLinTol     =', ' /* non-linear solver tolerance */')
 #if (defined SEAICE_ALLOW_JFNK) || (defined SEAICE_ALLOW_KRYLOV)
        IF ( SEAICEuseJFNK.OR.SEAICEuseKrylov ) THEN
         CALL WRITE_0D_I ( SEAICEpreconLinIter,  INDEX_NONE,
-     & 'SEAICEpreconLinIter =', 
+     & 'SEAICEpreconLinIter =',
      & ' /* number of linear preconditioner steps */')
         CALL WRITE_0D_I ( SEAICEpreconNL_Iter,  INDEX_NONE,
-     & 'SEAICEpreconNL_Iter =', 
+     & 'SEAICEpreconNL_Iter =',
      & ' /* number of non-linear preconditioner steps */')
         CALL WRITE_0D_L ( SEAICEuseIMEX, INDEX_NONE,
      &  'SEAICEuseIMEX  =', ' /* IMEX scheme with JFNK-solver */')
@@ -245,6 +252,10 @@ C--  Seaice-Dynamics parameters
        IF ( SEAICEuseJFNK ) THEN
         CALL WRITE_0D_I ( SEAICE_JFNK_lsIter,  INDEX_NONE,
      & 'SEAICE_JFNK_lsIter =', ' /* start of line search */')
+        CALL WRITE_0D_I ( SEAICE_JFNK_lsLmax,  INDEX_NONE,
+     & 'SEAICE_JFNK_lsLmax =', ' /* max. number line search iters */')
+        CALL WRITE_0D_RL( SEAICE_JFNK_lsGamma,  INDEX_NONE,
+     & 'SEAICE_JFNK_lsGamma =', ' /* line search step size param */')
         CALL WRITE_0D_I ( SEAICE_JFNK_tolIter,  INDEX_NONE,
      & 'SEAICE_JFNK_tolIter =', ' /* tol. is relaxed after this */')
         CALL WRITE_0D_RL( JFNKres_t  ,INDEX_NONE,
@@ -309,6 +320,30 @@ C     end if SEAICEuseDYNAMICS bloc
      &                    SQUEEZE_RIGHT, myThid )
       ELSE
 
+      CALL WRITE_0D_L ( SEAICEmomAdvection, INDEX_NONE,
+     & 'SEAICEmomAdvection =', ' /* advect sea ice momentum */')
+#ifdef SEAICE_ALLOW_MOM_ADVECTION
+      IF ( SEAICEmomAdvection ) THEN
+      CALL WRITE_0D_I( SEAICEselectKEscheme, INDEX_NONE,
+     & 'SEAICEselectKEscheme=',
+     &              ' /* V.I Kinetic Energy scheme selector */')
+      CALL WRITE_0D_I( SEAICEselectKEscheme, INDEX_NONE,
+     & 'SEAICEselectVortscheme=',
+     &              ' /* V.I Vorticity scheme selector */')
+      CALL WRITE_0D_L ( SEAICEhighOrderVorticity, INDEX_NONE,
+     & 'SEAICEhighOrderVorticity =',
+     &              ' /* V.I Scheme selector for Vorticity-Term */')
+      CALL WRITE_0D_L ( SEAICEupwindVorticity, INDEX_NONE,
+     & 'SEAICEupwindVorticity =',
+     &             ' /* V.I High order vort. advect. flag */')
+      CALL WRITE_0D_L ( SEAICEuseAbsVorticity, INDEX_NONE,
+     & 'SEAICEuseAbsVorticity =',
+     &              ' /* V.I Works with f+zeta in Coriolis */')
+      CALL WRITE_0D_L ( SEAICEuseJamartMomAdv, INDEX_NONE,
+     & 'SEAICEuseJamartMomAdv =',
+     &              ' /* V.I Non-linear terms Jamart flag */')
+      ENDIF
+#endif
       CALL WRITE_0D_L ( SEAICEadvHeff, INDEX_NONE,
      & 'SEAICEadvHeff =', ' /* advect effective ice thickness */')
       CALL WRITE_0D_L ( SEAICEadvArea, INDEX_NONE,
@@ -353,7 +388,58 @@ C     end if SEAICEuseDYNAMICS bloc
 C     end if useThSIce bloc
       ENDIF
 
-C--  Thermodynamics parameters
+#ifdef SEAICE_ITD
+C--   ITD parameters
+      WRITE(msgBuf,'(A)') ' '
+      CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
+     &                    SQUEEZE_RIGHT, myThid )
+      WRITE(msgBuf,'(A)')
+     &'   Seaice ice thickness distribution configuration   > START <  '
+      CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
+     &                    SQUEEZE_RIGHT, myThid )
+      WRITE(msgBuf,'(A)')
+     &'   -----------------------------------------------------------'
+      CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
+     &                    SQUEEZE_RIGHT, myThid )
+      CALL WRITE_0D_I (SEAICE_multDim,INDEX_NONE,'nITD              ='
+     & , ' /* number of ice thickness categories */')
+      CALL WRITE_1D_RL( Hlimit(1), nITD, INDEX_K, 'Hlimit =',
+     & ' /* seaice thickness category bin limits ( m ), Hlimit(0)=0 */')
+      CALL WRITE_0D_L ( SEAICEuseLinRemapITD, INDEX_NONE,
+     & 'SEAICEuseLinRemapITD  =',
+     & ' /* select linear remapping scheme for ITD */')
+      CALL WRITE_0D_L ( useHibler79IceStrength, INDEX_NONE,
+     & 'useHibler79IceStrength  =',
+     & ' /* select ice strength parameterizationd */')
+      CALL WRITE_0D_L ( SEAICEsimpleRidging, INDEX_NONE,
+     & 'SEAICEsimpleRidging  =',
+     & ' /* select ridging scheme */')
+      CALL WRITE_0D_I (SEAICEpartFunc,INDEX_NONE,
+     &     'SEAICEpartFunc   ='
+     & , ' /* select ridging participation function */')
+      CALL WRITE_0D_I (SEAICEredistFunc,INDEX_NONE,
+     &     'SEAICEredistFunc ='
+     & , ' /* select ridging redistribution function */')
+      CALL WRITE_0D_RL( SEAICE_cf  ,INDEX_NONE,
+     & 'SEAICE_cf  =', ' /* ice strength parameter */')
+      CALL WRITE_0D_RL( SEAICEshearParm  ,INDEX_NONE,
+     & 'SEAICEshearParm  =', ' /* amount of energy lost to shear */')
+      CALL WRITE_0D_RL( SEAICEgStar  ,INDEX_NONE,
+     & 'SEAICEgStar  =', ' /* ridging parameter */')
+      CALL WRITE_0D_RL( SEAICEhStar  ,INDEX_NONE,
+     & 'SEAICEhStar  =', ' /* ridging parameter */')
+      CALL WRITE_0D_RL( SEAICEaStar  ,INDEX_NONE,
+     & 'SEAICEaStar  =', ' /* ridging parameter */')
+      CALL WRITE_0D_RL( SEAICEmuRidging  ,INDEX_NONE,
+     & 'SEAICEmuRidging  =', ' /* ridging parameter */')
+      CALL WRITE_0D_RL( SEAICEmaxRaft  ,INDEX_NONE,
+     & 'SEAICEmaxRaft  =', ' /* ridging parameter */')
+      CALL WRITE_0D_RL( SEAICEsnowFracRidge ,INDEX_NONE,
+     & 'SEAICEsnowFracRidge  =',
+     &     ' /* fraction of snow remaining on ridges */')
+#endif
+
+C--   Thermodynamics parameters
       WRITE(msgBuf,'(A)') ' '
       CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
      &                    SQUEEZE_RIGHT, myThid )
@@ -380,6 +466,16 @@ C- note: air and seaice (+ snow ?) density are used in both dynamics & thermo
       CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
      &                    SQUEEZE_RIGHT, myThid )
       ELSE
+#ifdef SEAICE_USE_GROWTH_ADX
+      WRITE(msgBuf,'(A)')
+     &      'SEAICE_USE_GROWTH_ADX defined, '//
+     &      'using seaice_growth_adx code'
+      CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
+     &     SQUEEZE_RIGHT, myThid )
+      WRITE(msgBuf,'(A)') ' '
+      CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
+     &     SQUEEZE_RIGHT, myThid )
+#endif /* SEAICE_USE_GROWTH_ADX */
 
       CALL WRITE_0D_RL( SEAICE_lhEvap     ,INDEX_NONE,
      & 'SEAICE_lhEvap     =', ' /* latent heat of evaporation */')
@@ -482,42 +578,7 @@ c
       CALL WRITE_0D_L ( SEAICEheatConsFix,  INDEX_NONE,
      & 'SEAICEheatConsFix  =',
      & ' /* accound for ocn<->seaice advect. heat flux */')
-#ifdef SEAICE_ITD
-      CALL WRITE_0D_I (SEAICE_multDim,INDEX_NONE,'nITD              ='
-     & , ' /* number of ice thickness categories */')
-      CALL WRITE_0D_L ( SEAICEuseLinRemapITD, INDEX_NONE,
-     & 'SEAICEuseLinRemapITD  =',
-     & ' /* select linear remapping scheme for ITD */')
-      CALL WRITE_0D_L ( useHibler79IceStrength, INDEX_NONE,
-     & 'useHibler79IceStrength  =',
-     & ' /* select ice strength parameterizationd */')
-      CALL WRITE_0D_L ( SEAICEsimpleRidging, INDEX_NONE,
-     & 'SEAICEsimpleRidging  =',
-     & ' /* select ridging scheme */')
-      CALL WRITE_0D_I (SEAICEpartFunc,INDEX_NONE,
-     &     'SEAICEpartFunc   ='
-     & , ' /* select ridging participation function */')
-      CALL WRITE_0D_I (SEAICEredistFunc,INDEX_NONE,
-     &     'SEAICEredistFunc ='
-     & , ' /* select ridging redistribution function */')
-      CALL WRITE_0D_RL( SEAICE_cf  ,INDEX_NONE,
-     & 'SEAICE_cf  =', ' /* ice strength parameter */')
-      CALL WRITE_0D_RL( SEAICEshearParm  ,INDEX_NONE,
-     & 'SEAICEshearParm  =', ' /* amount of energy lost to shear */')
-      CALL WRITE_0D_RL( SEAICEgStar  ,INDEX_NONE,
-     & 'SEAICEgStar  =', ' /* ridging parameter */')
-      CALL WRITE_0D_RL( SEAICEhStar  ,INDEX_NONE,
-     & 'SEAICEhStar  =', ' /* ridging parameter */')
-      CALL WRITE_0D_RL( SEAICEaStar  ,INDEX_NONE,
-     & 'SEAICEaStar  =', ' /* ridging parameter */')
-      CALL WRITE_0D_RL( SEAICEmuRidging  ,INDEX_NONE,
-     & 'SEAICEmuRidging  =', ' /* ridging parameter */')
-      CALL WRITE_0D_RL( SEAICEmaxRaft  ,INDEX_NONE,
-     & 'SEAICEmaxRaft  =', ' /* ridging parameter */')
-      CALL WRITE_0D_RL( SEAICEsnowFracRidge ,INDEX_NONE,
-     & 'SEAICEsnowFracRidge  =',
-     &     ' /* fraction of snow remaining on ridges */')
-#else
+#ifndef SEAICE_ITD
       CALL WRITE_0D_I (SEAICE_multDim,INDEX_NONE,'SEAICE_multDim    ='
      & , ' /* number of ice categories (1 or 7) */')
 #endif

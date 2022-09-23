@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/pkg/bling/bling_init_fixed.F,v 1.3 2017/03/16 17:03:26 mmazloff Exp $
-C $Name:  $
-
 #include "BLING_OPTIONS.h"
 
 CBOP
@@ -11,8 +8,8 @@ C     | subroutine bling_init_fixed
 C     | o Initialize fixed parameters
 C     ==========================================================
 
-      implicit none
-      
+      IMPLICIT NONE
+
 C     === Global variables ===
 #include "SIZE.h"
 #include "EEPARAMS.h"
@@ -26,9 +23,7 @@ C     myThid       :: my Thread Id number
 CEOP
 
 #ifdef ALLOW_BLING
-      INTEGER k
-      CHARACTER*(MAX_LEN_MBUF) msgBuf
-      INTEGER iUnit
+c     CHARACTER*(MAX_LEN_MBUF) msgBuf
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
 
@@ -61,7 +56,7 @@ C coefficients for determining saturation O2
       oB3= -8.17083 _d -3
       oC0= -4.88682 _d -7
 
-#ifdef USE_EXFCO2
+#ifdef ALLOW_EXF
       apco2mask = 'c'
       IF ( useSEAICE ) THEN
        apco2mask = ' '

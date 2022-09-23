@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/pkg/mdsio/mdsio_write_meta.F,v 1.6 2013/01/13 22:42:26 jmc Exp $
-C $Name:  $
-
 #include "MDSIO_OPTIONS.h"
 
 CBOP
@@ -157,7 +154,7 @@ C-    Record the precision of the file
 C-    Record the current record number
 C     This is a proxy for the actual number of records in the file.
 C     If we could read the file then we could do this properly.
-      WRITE(mUnit,'(1X,A,I5,A)') 'nrecords = [ ',nrecords,' ];'
+      WRITE(mUnit,'(1X,A,I10,A)') 'nrecords = [ ',nrecords,' ];'
 
 C-    Record the file-name for the binary data
 Cveto ii=ILNBLNK( dFileName )

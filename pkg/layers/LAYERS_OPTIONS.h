@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/pkg/layers/LAYERS_OPTIONS.h,v 1.7 2015/06/08 16:26:12 rpa Exp $
-C $Name:  $
-
 C CPP options file for LAYERS package
 C Use this file for selecting options within package "LAYERS"
 
@@ -28,6 +25,9 @@ C The MNC stuff is too complicated
 
 C Allow use of potential density as a layering field.
 #define LAYERS_PRHO_REF
+
+C Allow use of Moist Static Energy as a coordinate (relevant in the atmosphere)
+#undef LAYERS_MSE
 
 #endif /* ALLOW_LAYERS */
 #endif /* LAYERS_OPTIONS_H */

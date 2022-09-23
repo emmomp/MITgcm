@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/pkg/admtlm/admtlm_driver.F,v 1.10 2012/08/12 18:29:25 jmc Exp $
-C $Name:  $
-
 #include "ADMTLM_OPTIONS.h"
 
 CBOP
@@ -27,7 +24,9 @@ C     == Global variables ===
 #include "DYNVARS.h"
 
 #ifdef ALLOW_ADMTLM
-# include "tamc.h"
+# ifdef ALLOW_AUTODIFF_TAMC
+#  include "tamc.h"
+# endif
 # include "ctrl.h"
 # include "optim.h"
 #endif

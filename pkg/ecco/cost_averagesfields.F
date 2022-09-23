@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/pkg/ecco/cost_averagesfields.F,v 1.56 2015/11/24 21:26:31 gforget Exp $
-C $Name:  $
-
 #include "ECCO_OPTIONS.h"
 #ifdef ALLOW_OBCS
 # include "OBCS_OPTIONS.h"
@@ -47,7 +44,8 @@ c     == global variables ==
 #include "CG2D.h"
 
 #ifndef ECCO_CTRL_DEPRECATED
-# include "ecco.h"
+# include "ECCO_SIZE.h"
+# include "ECCO.h"
 #else
 # include "ecco_cost.h"
 # ifdef ALLOW_CTRL
@@ -296,7 +294,7 @@ cph#ifdef ALLOW_SEAICE_COST_AREASST
      &     sstbar, theta(1-Olx,1-Oly,1,1,1), xx_sstbar_mean_dummy,
      &     first, last, startofday, endofday, inday,
      &     sum1day, dayrec, 1, mythid )
-      ENDIF !      IF (using_cost_sst) THEN  
+      ENDIF !      IF (using_cost_sst) THEN
 #endif
 
 #if (defined (ALLOW_SALT_COST_CONTRIBUTION) || \
@@ -455,7 +453,6 @@ c--     Save ubar and vbar.
 
         call active_write_xy( fnametauybar, tauybar, monrec, optimcycle,
      &                         mythid, xx_tauy_mean_dummy)
-
 
       else if ( .not. (first.or. startofmonth) .and.
      &          .not. (last .or. endofmonth)       ) then

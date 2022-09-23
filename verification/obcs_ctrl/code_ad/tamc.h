@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/verification/obcs_ctrl/code_ad/tamc.h,v 1.2 2011/06/23 21:42:39 jmc Exp $
-C $Name:  $
-
 c     ==================================================================
 c     HEADER TAMC
 c     ==================================================================
@@ -102,6 +99,7 @@ c     and writing data.
       integer iloop_daily
 
       INTEGER    isbyte
+C     For more accurate but larger tapes replace 4 by 8.
       PARAMETER( isbyte      = 4 )
       INTEGER    maximpl
       PARAMETER( maximpl     = 6 )
@@ -115,12 +113,6 @@ cmm      PARAMETER( maxpass     = 3 )
       INTEGER    maxcube
       PARAMETER( maxcube     = 1 )
 
-      INTEGER act0, act1, act2, act3, act4
-      INTEGER max0, max1, max2, max3
-      INTEGER iikey, kkey, passkey, igadkey,
-     &        itdkey, idynkey, igmkey, ikppkey
-
 c     ==================================================================
 c     END OF HEADER TAMC
 c     ==================================================================
-

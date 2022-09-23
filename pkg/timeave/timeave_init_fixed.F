@@ -1,5 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/pkg/timeave/timeave_init_fixed.F,v 1.6 2005/09/27 13:31:40 baylor Exp $
-C $Name:  $
 #include "TIMEAVE_OPTIONS.h"
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
@@ -98,17 +96,17 @@ CEOP
      &     'Vert. velocity and potential temp. t-ave product', myThid)
 
       CALL MNC_CW_ADD_VNAME('UStave', 'U_xy_Hn__C__t', 4,5, myThid)
-      CALL MNC_CW_ADD_VATTR_TEXT('UStave','units','psu*m/s', myThid)
+      CALL MNC_CW_ADD_VATTR_TEXT('UStave','units','g/kg*m/s', myThid)
       CALL MNC_CW_ADD_VATTR_TEXT('UStave','description',
      &     'Zonal velocity and Salinity t-ave product', myThid)
 
       CALL MNC_CW_ADD_VNAME('VStave', 'V_xy_Hn__C__t', 4,5, myThid)
-      CALL MNC_CW_ADD_VATTR_TEXT('VStave','units','psu*m/s', myThid)
+      CALL MNC_CW_ADD_VATTR_TEXT('VStave','units','g/kg*m/s', myThid)
       CALL MNC_CW_ADD_VATTR_TEXT('VStave','description',
      &     'Merid velocity and Salinity t-ave product', myThid)
 
       CALL MNC_CW_ADD_VNAME('WStave', 'Cen_xy_Hn__L__t', 4,5, myThid)
-      CALL MNC_CW_ADD_VATTR_TEXT('WStave','units','psu*m/s', myThid)
+      CALL MNC_CW_ADD_VATTR_TEXT('WStave','units','g/kg*m/s', myThid)
       CALL MNC_CW_ADD_VATTR_TEXT('WStave','description',
      &     'Vert velocity and Salinity t-ave product', myThid)
 

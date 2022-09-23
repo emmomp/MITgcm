@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/pkg/atm2d/atm2d_readparms.F,v 1.2 2007/10/08 23:48:28 jmc Exp $
-C $Name:  $
-
 #include "ctrparam.h"
 #include "ATM2D_OPTIONS.h"
 
@@ -104,7 +101,11 @@ c
      &                    SQUEEZE_RIGHT , 1)
 
 C--   Close the open data file
+#ifdef SINGLE_DISK_IO
       CLOSE(iUnit)
+#else
+      CLOSE(iUnit,STATUS='DELETE')
+#endif /* SINGLE_DISK_IO */
 
       IF (tauThetaRelax .NE. 0. _d 0)
      &                  r_tauThetaRelax= 1. _d 0/tauThetaRelax

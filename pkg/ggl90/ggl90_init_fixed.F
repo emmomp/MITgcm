@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/pkg/ggl90/ggl90_init_fixed.F,v 1.7 2015/07/02 04:42:43 heimbach Exp $
-C $Name:  $
-
 #include "GGL90_OPTIONS.h"
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
@@ -54,16 +51,17 @@ C#endif /* ALLOW_MNC */
           mskCor(i,j,bi,bj) = 1. _d 0
          ENDDO
         ENDDO
-# ifdef ALLOW_EXCH2
+C- for now, hide this call from OpenAD:
+# if ( !(defined ALLOW_OPENAD) || (defined ALLOW_EXCH2) )
         IF ( useCubedSphereExchange ) THEN
           CALL FILL_CS_CORNER_TR_RL( 0, .FALSE.,
      U                               mskCor(1-OLx,1-OLy,bi,bj),
-     I                               bi,bj, myThid )
+     I                               bi, bj, myThid )
         ENDIF
 # endif
        ENDDO
       ENDDO
-#endif
+#endif /* ALLOW_GGL90_SMOOTH */
 
       RETURN
       END

@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/pkg/exch2/w2_map_procs.F,v 1.2 2013/11/27 00:34:05 jmc Exp $
-C $Name:  $
-
 #include "CPP_EEOPTIONS.h"
 
 CBOP
@@ -112,7 +109,7 @@ C--   Check tile sizes
         tNx = exch2_tNx(myTileId)
         tNy = exch2_tNy(myTileId)
         IF ( tNx .NE. sNx ) THEN
-         WRITE(msgBuf,'(3(A,I5))')
+         WRITE(msgBuf,'(A,I8,2(A,I5))')
      &   'ERROR: S/R W2_MAP_PROCS Topology for tile', myTileId,
      &   'tNx=', tNx, ' is not equal to subgrid size sNx=', sNx
          CALL PRINT_MESSAGE(msgBuf,
@@ -120,7 +117,7 @@ C--   Check tile sizes
          iErr = iErr+1
         ENDIF
         IF ( tNy .NE. sNy ) THEN
-         WRITE(msgBuf,'(3(A,I5))')
+         WRITE(msgBuf,'(A,I8,2(A,I5))')
      &   'ERROR: S/R W2_MAP_PROCS Topology for tile', myTileId,
      &   'tNy=', tNy, ' is not equal to subgrid size sNy=', sNy
          CALL PRINT_MESSAGE(msgBuf,
@@ -151,14 +148,14 @@ c    &       ' , Nb of Neighbours =', exch2_nNeighbours(myTileId)
          jj = exch2_neighbourId(J,myTileId)
          IF ( W2_tileProc(jj).EQ.thisProc ) commFlag = 'P'
          IF ( commFlag .EQ. 'M' ) THEN
-          WRITE(msgBuf,'(A,I3,A,I5,A,I3,2A,I5,A)')
+          WRITE(msgBuf,'(A,I3,A,I8,A,I3,2A,I8,A)')
      &    '    NEIGHBOUR',J,' = TILE', exch2_neighbourId(J,myTileId),
      &    ' (n=', exch2_opposingSend(J,myTileId), ') Comm = MSG',
      &    ' (PROC=',W2_tileProc(exch2_neighbourId(J,myTileId)),')'
           CALL PRINT_MESSAGE( msgBuf, W2_oUnit, SQUEEZE_RIGHT, myThid )
          ENDIF
          IF ( commFlag .EQ. 'P' ) THEN
-          WRITE(msgBuf,'(A,I3,A,I5,A,I3,2A,I5,A)')
+          WRITE(msgBuf,'(A,I3,A,I8,A,I3,2A,I8,A)')
      &    '    NEIGHBOUR',J,' = TILE', exch2_neighbourId(J,myTileId),
      &    ' (n=', exch2_opposingSend(J,myTileId), ') Comm = PUT',
      &    ' (PROC=',W2_tileProc(exch2_neighbourId(J,myTileId)),')'
