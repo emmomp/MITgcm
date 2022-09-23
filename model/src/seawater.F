@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/model/src/seawater.F,v 1.11 2015/02/26 17:17:56 mlosch Exp $
+C $Name:  $
+
 #include "CPP_OPTIONS.h"
 
 C--  File seawater.F: routines that compute quantities related to seawater.
@@ -27,7 +30,7 @@ C
 C     ==================================================================
 C     SUBROUTINE SW_PTMP
 C     ==================================================================
-C     S  :: salinity    [         (PSS-78) ]
+C     S  :: salinity    [psu      (PSS-78) ]
 C     T  :: temperature [degree C (IPTS-68)]
 C     P  :: pressure    [db]
 C     PR :: Reference pressure  [db]

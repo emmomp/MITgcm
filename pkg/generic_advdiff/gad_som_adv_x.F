@@ -1,7 +1,7 @@
+C $Header: /u/gcmpack/MITgcm/pkg/generic_advdiff/gad_som_adv_x.F,v 1.7 2013/03/02 00:29:20 jmc Exp $
+C $Name:  $
+
 #include "GAD_OPTIONS.h"
-#ifdef ALLOW_AUTODIFF
-# include "AUTODIFF_OPTIONS.h"
-#endif
 
 CBOP
 C !ROUTINE: GAD_SOM_ADV_X
@@ -38,9 +38,6 @@ C !USES: ===============================================================
 #include "SIZE.h"
 #include "EEPARAMS.h"
 #include "GAD.h"
-#ifdef ALLOW_AUTODIFF_TAMC
-# include "tamc.h"
-#endif
 
 C !INPUT PARAMETERS: ===================================================
 C  bi,bj         :: tile indices
@@ -123,9 +120,6 @@ C  nbStrips      :: number of strips (if region to update is splitted)
       _RL  fn_yz(1-OLx:sNx+OLx,1-OLy:sNy+OLy)
 CEOP
 
-#ifdef ALLOW_AUTODIFF_TAMC
-CADJ INIT somtape_x = COMMON, 2
-#endif
       recip_dT = 0.
       IF ( deltaTloc.GT.zeroRL ) recip_dT = 1.0 _d 0 / deltaTloc
 
@@ -158,10 +152,6 @@ C--   start 1rst loop on strip number "ns"
       DO ns=1,nbStrips
 
       IF ( limiter.EQ.1 ) THEN
-#ifdef ALLOW_AUTODIFF_TAMC
-CADJ STORE sm_o,sm_x,sm_xx,sm_xy,sm_xz,sm_y,sm_yy,sm_yz,sm_z,sm_zz
-CADJ &     = somtape_x, key = ns, kind = isbyte
-#endif
        DO j=jMinUpd(ns),jMaxUpd(ns)
         DO i=iMinUpd(1)-1,iMaxUpd(1)+1
 C     If flux-limiting transport is to be applied, place limits on
@@ -180,10 +170,6 @@ C     appropriate moments before transport.
        ENDDO
       ENDIF
 
-#ifdef ALLOW_AUTODIFF_TAMC
-CADJ STORE sm_o,sm_v,sm_x,sm_xx,sm_xy,sm_xz,sm_y,sm_yy,sm_yz,sm_z,sm_zz
-CADJ &     = somtape_x, key = ns, kind = isbyte
-#endif
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
 C---  part.1 : calculate flux for all moments
       DO j=jMinUpd(ns),jMaxUpd(ns)
@@ -235,10 +221,6 @@ C--    Save zero-order flux:
 C--   end 1rst loop on strip number "ns"
 c     ENDDO
 
-#ifdef ALLOW_AUTODIFF_TAMC
-CADJ STORE sm_o,sm_v,sm_x,sm_xx,sm_xy,sm_xz,sm_y,sm_yy,sm_yz,sm_z,sm_zz
-CADJ &     = somtape_x, key = ns, kind = isbyte
-#endif
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
 C--   start 2nd loop on strip number "ns"
 c     DO ns=1,nbStrips

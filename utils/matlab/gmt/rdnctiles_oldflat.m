@@ -16,6 +16,10 @@ function [res] = rdnctiles_oldflat(fall,vit,dlev)
 %
 %
 %  Ed Hill
+%  $Id: rdnctiles_oldflat.m,v 1.3 2005/10/25 15:54:44 edhill Exp $
+
+
+
 fi = 1;
 nc = netcdf(fall{fi},'read');
 allatts = ncnames(att(nc));

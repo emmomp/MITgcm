@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/admtlm/ADMTLM_OPTIONS.h,v 1.1 2012/08/12 18:29:25 jmc Exp $
+C $Name:  $
+
 CBOP
 C !ROUTINE: ADMTLM_OPTIONS.h
 C !INTERFACE:

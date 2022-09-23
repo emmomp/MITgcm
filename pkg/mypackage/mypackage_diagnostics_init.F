@@ -1,7 +1,10 @@
+C $Header: /u/gcmpack/MITgcm/pkg/mypackage/mypackage_diagnostics_init.F,v 1.5 2010/01/15 00:28:14 jmc Exp $
+C $Name:  $
+
 #include "MYPACKAGE_OPTIONS.h"
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
-CBOP
+CBOP 0
 C !ROUTINE: MYPACKAGE_DIAGNOSTICS_INIT
 
 C !INTERFACE:
@@ -12,10 +15,8 @@ C     Initialize list of all available diagnostics
 
 C     !USES:
       IMPLICIT NONE
-C     == Global variables ===
 #include "EEPARAMS.h"
 #include "SIZE.h"
-#include "PARAMS.h"
 #include "MYPACKAGE.h"
 
 C     !INPUT/OUTPUT PARAMETERS:
@@ -25,6 +26,7 @@ CEOP
 
 #ifdef ALLOW_DIAGNOSTICS
 C     !LOCAL VARIABLES:
+C     === Local variables ===
 C     diagNum   :: diagnostics number in the (long) list of available diag.
 C     diagMate  :: diag. mate number in the (long) list of available diag.
 C     diagName  :: local short name (8c) of a diagnostics
@@ -41,7 +43,7 @@ C     diagTitle :: local string (80c): description of field in diagnostic
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
 
-      IF ( useDiagnostics ) THEN
+c     IF ( useDiagnotics ) THEN
 
         diagName  = 'MYPaSta1'
         diagTitle = 'Scalar state variable 1 for package MYPACKAGE'
@@ -98,7 +100,7 @@ C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
 
         diagName  = 'MYPadSdt'
         diagTitle = ' Salinity  tendency from package MYPACKAGE'
-        diagUnits = 'g/kg/s          '
+        diagUnits = 'psu/s           '
         diagCode  = 'SMR     MR      '
         CALL DIAGNOSTICS_ADDTOLIST( diagNum,
      I          diagName, diagCode, diagUnits, diagTitle, 0, myThid )
@@ -130,7 +132,7 @@ C--     an example of how to set "free levels option" diagnostics
      I          diagName, diagCode, diagUnits, diagTitle, 0, myThid )
         CALL DIAGNOSTICS_SETKLEV( diagName, 3, myThid )
 
-      ENDIF
+c     ENDIF
 
 #endif /* ALLOW_DIAGNOSTICS */
 

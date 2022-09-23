@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/verification/offline_exf_seaice/code_ad/SEAICE_SIZE.h,v 1.5 2014/06/25 10:54:27 mlosch Exp $
+C $Name:  $
+
 #ifdef ALLOW_SEAICE
 
 CBOP
@@ -31,6 +34,7 @@ C-    Maximum Number of tracers
       PARAMETER(SItrMaxNum = 3 )
 
 #ifdef ALLOW_AUTODIFF_TAMC
+      INTEGER iicekey
       INTEGER nEVPstepMax
       PARAMETER ( nEVPstepMax=180 )
       INTEGER NMAX_TICE

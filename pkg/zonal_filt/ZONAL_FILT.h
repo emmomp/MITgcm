@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/zonal_filt/ZONAL_FILT.h,v 1.4 2001/12/11 14:47:32 jmc Exp $
+C $Name:  $
+
 #ifdef ALLOW_ZONAL_FILT
 
 C-    Package flag and logical parameters :

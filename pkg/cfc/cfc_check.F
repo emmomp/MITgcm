@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/cfc/cfc_check.F,v 1.1 2013/06/10 02:59:02 jmc Exp $
+C $Name:  $
+
 #include "GCHEM_OPTIONS.h"
 
 CBOP

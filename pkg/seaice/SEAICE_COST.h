@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/seaice/SEAICE_COST.h,v 1.5 2014/04/01 22:02:10 atn Exp $
+C $Name:  $
+
 C     /==========================================================\
 C     | SEAICE_COST.h                                            |
 C     | o Sea ice cost terms.                                    |
@@ -64,7 +67,7 @@ c     objf_ice    - sea-ice volume
 
 c     cost_ice_flag  - cost_ice flag (see cost_ice.F)
 
-      common /ecco_cost_ice_i/
+      common /ecco_cost_ice_i/ 
      &                           cost_ice_flag
       integer cost_ice_flag
 
@@ -77,7 +80,7 @@ c     cost_ice_flag  - cost_ice flag (see cost_ice.F)
       _RL smrsstbar
       _RL smrsssbar
 #endif
-      common /seaice_cost_averages_r/
+      common /seaice_cost_averages_r/ 
      &       smrareabar,
      &       smrsstbar,
      &       smrsssbar
@@ -85,7 +88,7 @@ c     cost_ice_flag  - cost_ice flag (see cost_ice.F)
       _RL wsmrarea(1-olx:snx+olx,1-oly:sny+oly,nsx,nsy)
       _RL wsmrarea0
       _RL wmean_smrarea
-      common /seaice_cost_weights_r/
+      common /seaice_cost_weights_r/ 
      &       wsmrarea
      &     , wsmrarea0
      &     , wmean_smrarea

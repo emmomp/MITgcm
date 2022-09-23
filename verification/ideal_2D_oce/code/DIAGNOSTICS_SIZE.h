@@ -1,3 +1,7 @@
+C $Header: /u/gcmpack/MITgcm/verification/ideal_2D_oce/code/DIAGNOSTICS_SIZE.h,v 1.3 2008/10/21 22:12:54 jmc Exp $
+C $Name:  $
+
+
 C     Diagnostics Array Dimension
 C     ---------------------------
 C     ndiagMax   :: maximum total number of available diagnostics

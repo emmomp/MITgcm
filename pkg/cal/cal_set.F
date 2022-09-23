@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/cal/cal_set.F,v 1.10 2014/06/05 19:38:45 jmc Exp $
+C $Name:  $
+
 #include "CAL_OPTIONS.h"
 
       SUBROUTINE CAL_SET(

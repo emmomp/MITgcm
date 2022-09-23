@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/atm_compon_interf/ATMCPL.h,v 1.5 2016/01/06 00:42:51 jmc Exp $
+C $Name:  $
+
 C     *==========================================================*
 C     | ATMCPL.h
 C     | o Variables shared between atmos. component to coupler
@@ -135,7 +138,7 @@ C--   fields sent from OCN to ATM:
 C-    COMMON /ATM_CPL2ATM_R/
 C     ocMxlD    :: Ocean mixed-layer depth (m). ocMxlD==0. => land.
 C     SSTocn    :: Ocean surface temperature (oC). Undefined data for land points.
-C     SSSocn    :: Ocean surface salinity (g/kg). Undefined data for land points.
+C     SSSocn    :: Ocean surface salinity (psu). Undefined data for land points.
 C     vSqocn    :: Ocean surface velocity square (m2/s2).
       COMMON /ATM_CPL2ATM_R/
      &            ocMxlD, SSTocn, SSSocn, vSqocn

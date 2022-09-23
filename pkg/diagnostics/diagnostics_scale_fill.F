@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/diagnostics/diagnostics_scale_fill.F,v 1.6 2013/08/14 01:00:11 jmc Exp $
+C $Name:  $
+
 #include "DIAG_OPTIONS.h"
 
 CBOP
@@ -66,7 +69,7 @@ C     ndId      :: diagnostic Id number (in available diagnostics list)
       INTEGER m, n, j, k, l, bi, bj
       INTEGER ndId, ipt, iSp
       INTEGER region2fill(0:nRegions)
-      INTEGER arrType, wFac
+      INTEGER arrType
       _RL     dummyRL(1)
       _RS     dummyRS(1)
 C ===============
@@ -94,13 +97,12 @@ C we are trying to fill a valid diagnostic
         IF ( chardiag.EQ.flds(m,n) .AND. idiag(m,n).GT.0 ) THEN
          ipt = idiag(m,n)
          IF ( ndiag(ipt,bi,bj).GE.0 ) THEN
-           ndId = ABS(jdiag(m,n))
-           wFac = MIN( jdiag(m,n), 0 )
+           ndId = jdiag(m,n)
            ipt = ipt + pdiag(n,bi,bj)*kdiag(ndId)
 C-    diagnostic is valid & active, do the filling:
            CALL DIAGNOSTICS_FILL_FIELD(
      I              inpFld, dummyRL, dummyRS, dummyRS,
-     I              scaleFact, power, arrType, wFac,
+     I              scaleFact, power, arrType, 0,
      I              ndId, ipt, kLev, nLevs,
      I              bibjFlg, biArg, bjArg, myThid )
          ENDIF

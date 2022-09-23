@@ -1,7 +1,7 @@
+C $Header: /u/gcmpack/MITgcm/pkg/obcs/obcs_calc.F,v 1.34 2012/11/15 15:55:42 dimitri Exp $
+C $Name:  $
+
 #include "OBCS_OPTIONS.h"
-#ifdef ALLOW_CTRL
-# include "CTRL_OPTIONS.h"
-#endif /* ALLOW_CTRL */
 
 CBOP
 C     !ROUTINE: OBCS_CALC
@@ -410,26 +410,6 @@ C--     Calculate future values on open boundaries
 #endif /* ALLOW_OBCS_PRESCRIBE */
 
 C ------------------------------------------------------------------------------
-C     read control parameter contributions here to be independent of flags
-C     ALLOW_OBCS_PRESCRIBE and useOBCSprescribe
-#ifdef ALLOW_CTRL
-      IF ( useCTRL ) THEN
-# ifdef ALLOW_OBCSN_CONTROL
-       CALL CTRL_GETOBCSN ( futureTime, futureIter, mythid )
-# endif
-# ifdef ALLOW_OBCSS_CONTROL
-       CALL CTRL_GETOBCSS ( futureTime, futureIter, mythid )
-# endif
-# ifdef ALLOW_OBCSW_CONTROL
-       CALL CTRL_GETOBCSW ( futureTime, futureIter, myThid )
-# endif
-# ifdef ALLOW_OBCSE_CONTROL
-       CALL CTRL_GETOBCSE ( futureTime, futureIter, myThid )
-# endif
-      ENDIF
-#endif /* ALLOW_CTRL */
-
-C ------------------------------------------------------------------------------
 
 #ifdef ALLOW_OBCS_STEVENS
 C     The Stevens (1990) boundary conditions come after reading data from
@@ -443,6 +423,18 @@ C     Orlanski and prescribed boundary conditions
        CALL OBCS_CALC_STEVENS( futureTime, futureIter, myThid )
       ENDIF
 #endif /* ALLOW_OBCS_STEVENS */
+
+#ifdef ALLOW_OBCS_BALANCE
+      IF ( useOBCSbalance ) THEN
+        CALL OBCS_BALANCE_FLOW( futureTime, futureIter, myThid )
+      ENDIF
+#endif /* ALLOW_OBCS_BALANCE */
+
+#ifdef ALLOW_OBCS_TIDES
+      IF ( useOBCStides ) THEN
+        CALL OBCS_ADD_TIDES( futureTime, futureIter, myThid )
+      ENDIF
+#endif /* ALLOW_OBCS_TIDES */
 
 #ifdef ALLOW_DEBUG
       IF (debugMode) CALL DEBUG_LEAVE('OBCS_CALC',myThid)

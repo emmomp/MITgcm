@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/mom_common/mom_calc_hdiv.F,v 1.5 2015/09/10 17:53:04 jmc Exp $
+C $Name:  $
+
 #include "MOM_COMMON_OPTIONS.h"
 
       SUBROUTINE MOM_CALC_HDIV(
@@ -17,7 +20,7 @@ C     == Global variables ==
 #include "PARAMS.h"
 #include "GRID.h"
 C     == Routine arguments ==
-C     myThid  :: my Thread Id number
+C     myThid - Instance number for this innvocation of CALC_MOM_RHS
       INTEGER bi,bj,k,hDivScheme
       _RL uFld(1-OLx:sNx+OLx,1-OLy:sNy+OLy)
       _RL vFld(1-OLx:sNx+OLx,1-OLy:sNy+OLy)
@@ -27,14 +30,6 @@ C     myThid  :: my Thread Id number
 C     == Local variables ==
       INTEGER i,j
 
-#ifdef ALLOW_AUTODIFF
-C     Initialise (again) hDiv (in case it got dropped in calling S/R):
-      DO j=1-OLy,sNy+OLy
-       DO i=1-OLx,sNx+OLx
-        hDiv(i,j)=0. _d 0
-       ENDDO
-      ENDDO
-#endif
       IF (hDivScheme.EQ.1) THEN
        DO j=1-OLy,sNy+OLy-1
         DO i=1-OLx,sNx+OLx-1

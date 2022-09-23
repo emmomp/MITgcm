@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/flt/flt_readparms.F,v 1.9 2014/05/27 23:41:28 jmc Exp $
+C $Name:  $
+
 #include "FLT_OPTIONS.h"
 
       SUBROUTINE FLT_READPARMS( myThid  )
@@ -69,11 +72,7 @@ C     Read parameters from open data file
       CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
      &                    SQUEEZE_RIGHT, myThid )
 C     Close the open data file
-#ifdef SINGLE_DISK_IO
       CLOSE(iUnit)
-#else
-      CLOSE(iUnit,STATUS='DELETE')
-#endif /* SINGLE_DISK_IO */
 
 C     Do some checks
 c     IF ( useFLT .AND. useOBCS ) THEN

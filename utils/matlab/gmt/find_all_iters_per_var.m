@@ -13,6 +13,8 @@ function [vit] = find_all_iters_per_var(fall,vnames,vit)
 %
 %
 %  Ed Hill
+%  $Id: find_all_iters_per_var.m,v 1.2 2006/06/24 22:08:06 edhill Exp $
+
 if isempty(vit) || not(isfield(vit,'tdname')) || isempty(vit.tdname)
   vit.tdname = 'T';
 end

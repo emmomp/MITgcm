@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/mdsio/mdsio_writelocal.F,v 1.22 2013/01/13 22:43:53 jmc Exp $
+C $Name:  $
+
 #include "MDSIO_OPTIONS.h"
 
 CBOP

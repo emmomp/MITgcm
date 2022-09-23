@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/model/src/ini_nh_fields.F,v 1.6 2013/08/11 20:23:39 jmc Exp $
+C $Name:  $
+
 #include "CPP_OPTIONS.h"
 
 CBOP

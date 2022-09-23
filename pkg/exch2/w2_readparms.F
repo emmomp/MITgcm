@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/exch2/w2_readparms.F,v 1.5 2012/09/04 00:44:30 jmc Exp $
+C $Name:  $
+
 #include "CPP_EEOPTIONS.h"
 #include "W2_OPTIONS.h"
 
@@ -121,11 +124,7 @@ C     Read parameters from open data file
      &    'W2_READPARMS: finished reading data.exch2'
         CALL PRINT_MESSAGE( msgBuf, stdUnit, SQUEEZE_RIGHT , myThid )
 C     Close the open data file
-#ifdef SINGLE_DISK_IO
         CLOSE(iUnit)
-#else
-        CLOSE(iUnit,STATUS='DELETE')
-#endif /* SINGLE_DISK_IO */
       ELSE
         WRITE(msgBuf,'(A)') 'W2_READPARMS: file data.exch2 not found'
         CALL PRINT_MESSAGE( msgBuf, stdUnit, SQUEEZE_RIGHT , myThid )

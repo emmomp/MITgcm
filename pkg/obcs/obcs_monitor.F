@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/obcs/obcs_monitor.F,v 1.5 2012/09/17 22:06:17 jmc Exp $
+C $Name:  $
+
 #include "OBCS_OPTIONS.h"
 
 C--  File obcs_monitor.F : write statistics of dynamical fields at OB section

@@ -1,7 +1,10 @@
+C $Header: /u/gcmpack/MITgcm/pkg/mypackage/mypackage_readparms.F,v 1.5 2014/05/27 23:41:31 jmc Exp $
+C $Name:  $
+
 #include "MYPACKAGE_OPTIONS.h"
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
-CBOP
+CBOP 0
 C !ROUTINE: MYPACKAGE_READPARMS
 
 C !INTERFACE:
@@ -12,7 +15,6 @@ C     Initialize MYPACKAGE variables and constants.
 
 C     !USES:
       IMPLICIT NONE
-C     == Global variables ===
 #include "SIZE.h"
 #include "EEPARAMS.h"
 #include "PARAMS.h"
@@ -21,6 +23,8 @@ C     == Global variables ===
 C     !INPUT PARAMETERS:
       INTEGER myThid
 CEOP
+
+#ifdef ALLOW_MYPACKAGE
 
 C     !LOCAL VARIABLES:
 C     msgBuf     :: Informational/error message buffer
@@ -80,7 +84,7 @@ C-    file names for initial conditions:
 
       WRITE(msgBuf,'(A)') 'MYPACKAGE_READPARMS: opening data.mypackage'
       CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
-     &                    SQUEEZE_RIGHT, myThid )
+     &                    SQUEEZE_RIGHT , 1)
       CALL OPEN_COPY_DATA_FILE(
      I                     'data.mypackage', 'MYPACKAGE_READPARMS',
      O                     iUnit,
@@ -91,13 +95,9 @@ C     Read parameters from open data file
       WRITE(msgBuf,'(A)')
      &    'MYPACKAGE_READPARMS: finished reading data.mypackage'
       CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
-     &                    SQUEEZE_RIGHT, myThid )
+     &    SQUEEZE_RIGHT , 1)
 C     Close the open data file
-#ifdef SINGLE_DISK_IO
       CLOSE(iUnit)
-#else
-      CLOSE(iUnit,STATUS='DELETE')
-#endif /* SINGLE_DISK_IO */
 
 C     Make sure that we locally honor the global MNC on/off flag
       myPa_MNC = myPa_MNC .AND. useMNC
@@ -111,6 +111,8 @@ C     Fix to avoid running without getting any output:
 
 C--   Everyone else must wait for the parameters to be loaded
       _BARRIER
+
+#endif /* ALLOW_MYPACKAGE */
 
       RETURN
       END

@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/eesupp/src/stop_if_error.F,v 1.2 2009/05/26 22:56:32 jmc Exp $
+C $Name:  $
+
 #include "CPP_EEOPTIONS.h"
 
 CBOP

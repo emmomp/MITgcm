@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/bulk_force/bulkf_readparms.F,v 1.7 2014/05/27 23:41:28 jmc Exp $
+C $Name:  $
+
 #include "BULK_FORCE_OPTIONS.h"
 
       SUBROUTINE BULKF_READPARMS( myThid )
@@ -176,11 +179,7 @@ c -- default
 #endif /* CONSERV_BULKF */
 
 C--   Close the open data file
-#ifdef SINGLE_DISK_IO
       CLOSE(iUnit)
-#else
-      CLOSE(iUnit,STATUS='DELETE')
-#endif /* SINGLE_DISK_IO */
 
 C-  check that CPP option is "defined" when running-flag parameter is on:
 #ifndef ALLOW_FORMULA_AIM

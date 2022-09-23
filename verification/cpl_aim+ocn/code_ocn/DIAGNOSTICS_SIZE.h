@@ -1,3 +1,7 @@
+C $Header: /u/gcmpack/MITgcm/verification/cpl_aim+ocn/code_ocn/DIAGNOSTICS_SIZE.h,v 1.1 2013/09/20 19:17:22 jmc Exp $
+C $Name:  $
+
+
 C     Diagnostics Array Dimension
 C     ---------------------------
 C     ndiagMax   :: maximum total number of available diagnostics
@@ -21,6 +25,7 @@ C  and "diagSt_size" (statistics-diags) since values here are deliberately small
       PARAMETER( numDiags = 40*Nr )
       PARAMETER( nRegions = 0 , sizRegMsk = 1 , nStats = 4 )
       PARAMETER( diagSt_size = 10*Nr )
+
 
 CEH3 ;;; Local Variables: ***
 CEH3 ;;; mode:fortran ***

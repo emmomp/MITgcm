@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/grdchk/grdchk_get_position.F,v 1.11 2014/10/09 00:50:54 gforget Exp $
+C $Name:  $
+
 #include "GRDCHK_OPTIONS.h"
 #ifdef ALLOW_CTRL
 # include "CTRL_OPTIONS.h"
@@ -37,10 +40,7 @@ c     == global variables ==
 #include "grdchk.h"
 
 c     == routine arguments ==
-      integer       mythid
 
-#ifdef ALLOW_GRDCHK
-c     == local variables ==
       integer       icvrec
       integer       jtile
       integer       itile
@@ -50,9 +50,17 @@ c     == local variables ==
       integer       jtilepos
       integer       itest
       integer       ierr
+      integer       mythid
+
+#ifdef ALLOW_GRDCHK
+c     == local variables ==
+
+      integer iG,jG
       integer bi,bj
       integer i,j,k
       integer iobcs
+c     integer biwrk,bjwrk
+      integer iproc, jproc
       integer iwrk, jwrk, kwrk
       integer iobcswrk
       integer irec, irecwrk
@@ -63,8 +71,10 @@ c     == local variables ==
       integer icomptest
       integer nobcsmax
       integer pastit
+
       _RL wetlocal
 
+      logical ltmp
 c     == end of interface ==
 
       jtlo = 1
@@ -126,6 +136,8 @@ cph-print               print *, 'ph-grd get_pos irec, bj, bi, k ',
 cph-print     &              irec, bj, bi, k
 cph)
              if ( ierr .ne. 0 ) then
+               icvrec = irec
+
                do j = jwrk, ncvarymax(grdchkvarindex)
                 do i = iwrk, ncvarxmax(grdchkvarindex)
                  if (ierr .ne. 0) then
@@ -144,14 +156,14 @@ cph)
                         icomptest = icomptest + 1
                      endif
                      wetlocal = _maskW(i,j,k,bi,bj)
-#ifdef ALLOW_SHELFICE
+#ifdef ALLOW_SHIFWFLX_CONTROL
 c--             Ice shelf mask.
                   else if ( ncvargrd(grdchkvarindex) .eq. 'i' ) then
                      if ( maskSHI(i,j,k,bi,bj) .gt. 0.) then
                         icomptest = icomptest + 1
                      endif
                      wetlocal = maskSHI(i,j,k,bi,bj)
-#endif /* ALLOW_SHELFICE */
+#endif /* ALLOW_SHIFWFLX_CONTROL */
                   else if ( ncvargrd(grdchkvarindex) .eq. 'm' ) then
                      if ( grdchkvarindex .EQ. 11 ) then
 #ifdef ALLOW_OBCSN_CONTROL

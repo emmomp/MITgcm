@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/ptracers/ptracers_reset.F,v 1.3 2014/08/15 19:18:12 jmc Exp $
+C $Name:  $
+
 #include "PTRACERS_OPTIONS.h"
 #include "GAD_OPTIONS.h"
 

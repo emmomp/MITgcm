@@ -49,7 +49,7 @@ ECCOOPTLIB  = liblsopt_ecco.a
 #---------
 CPPFLAGS        = -DIS_DOUBLE
 FC              = f77
-FFLAGS          = -fconvert=big-endian -fimplicit-none
+FFLAGS          =
 
 # SUN double precision.
 #---------

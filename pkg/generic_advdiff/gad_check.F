@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/generic_advdiff/gad_check.F,v 1.10 2014/08/18 14:29:29 jmc Exp $
+C $Name:  $
+
 #include "GAD_OPTIONS.h"
 
 CBOP
@@ -33,11 +36,9 @@ C     === Local variables ===
 C     msgBuf :: Informational/error message buffer
       CHARACTER*(MAX_LEN_MBUF) msgBuf
       INTEGER minOlSize, n
-      INTEGER errCount
 CEOP
 
       _BEGIN_MASTER(myThid)
-      errCount = 0
 
        WRITE(msgBuf,'(A)') 'GAD_CHECK: #define ALLOW_GENERIC_ADVDIFF'
        CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
@@ -54,11 +55,11 @@ c     IF ( useMultiDimAdvec ) THEN
      &   ) THEN
         WRITE(msgBuf,'(2A)') 'GAD_CHECK: ',
      &  'trying to use Multi-Dim. Advection code that is not compiled'
-        CALL PRINT_ERROR( msgBuf, myThid )
-        WRITE(msgBuf,'(2A)') 'GAD_CHECK: Re-compile with: ',
-     &    ' #undef DISABLE_MULTIDIM_ADVECTION in GAD_OPTIONS.h'
-        CALL PRINT_ERROR( msgBuf, myThid )
-        errCount = errCount + 1
+        CALL PRINT_ERROR( msgBuf , myThid )
+        WRITE(msgBuf,'(2A)') 'GAD_CHECK: ',
+     &  'Re-compile with:  #undef DISABLE_MULTIDIM_ADVECTION'
+        CALL PRINT_ERROR( msgBuf , myThid)
+        STOP 'ABNORMAL END: S/R GAD_CHECK'
       ENDIF
 #endif /* DISABLE_MULTIDIM_ADVECTION */
 
@@ -69,25 +70,12 @@ c     IF ( useMultiDimAdvec ) THEN
      & .OR.saltAdvScheme.EQ.ENUM_SOM_LIMITER ) THEN
         WRITE(msgBuf,'(2A)') 'GAD_CHECK: ',
      &  'trying to use 2nd.Order-Moment Advection that is not compiled'
-        CALL PRINT_ERROR( msgBuf, myThid )
-        WRITE(msgBuf,'(2A)') 'GAD_CHECK: Re-compile with: ',
-     &    ' #define GAD_ALLOW_TS_SOM_ADV in GAD_OPTIONS.h'
-        CALL PRINT_ERROR( msgBuf, myThid )
-        errCount = errCount + 1
+        WRITE(msgBuf,'(2A)') 'GAD_CHECK: ',
+     &  'Re-compile with:  #define GAD_ALLOW_TS_SOM_ADV'
+        CALL PRINT_ERROR( msgBuf , myThid)
+        STOP 'ABNORMAL END: S/R GAD_CHECK'
       ENDIF
 #endif /* ndef GAD_ALLOW_TS_SOM_ADV */
-
-#ifndef GAD_SMOLARKIEWICZ_HACK
-      IF ( temp_stayPositive .OR. salt_stayPositive ) THEN
-        WRITE(msgBuf,'(2A)') 'GAD_CHECK: ',
-     &  'Smolarkiewicz Hack code (to keep T/S positive) is not compiled'
-        CALL PRINT_ERROR( msgBuf, myThid )
-        WRITE(msgBuf,'(2A)') 'GAD_CHECK: Re-compile with: ',
-     &    ' #define GAD_SMOLARKIEWICZ_HACK in GAD_OPTIONS.h'
-        CALL PRINT_ERROR( msgBuf , myThid)
-        errCount = errCount + 1
-      ENDIF
-#endif /* ndef GAD_SMOLARKIEWICZ_HACK */
 
 C--  Check parameters:
 
@@ -126,7 +114,7 @@ C     for mom limitations, done in CONFIG_CHECK, but can move to MOM_INIT_FIXED
      &     'needs at least OLx,OLy=', minOlSize,
      &     ' (OlMinSize=', (GAD_OlMinSize(n),n=1,3), ')'
         CALL PRINT_ERROR( msgBuf, myThid )
-        errCount = errCount + 1
+        STOP 'ABNORMAL END: S/R GAD_CHECK'
       ENDIF
 
 C Check compatibility with adjoint
@@ -137,17 +125,9 @@ C Check compatibility with adjoint
      &     ENUM_OS7MP,
      &     ' not yet implemented for adjoint'
         CALL PRINT_ERROR( msgBuf, myThid )
-        errCount = errCount + 1
-      ENDIF
-#endif /* ALLOW_AUTODIFF */
-
-      IF ( errCount.GE.1 ) THEN
-        WRITE(msgBuf,'(A,I3,A)')
-     &       'GAD_CHECK: detected', errCount,' fatal error(s)'
-        CALL PRINT_ERROR( msgBuf, myThid )
-        CALL ALL_PROC_DIE( 0 )
         STOP 'ABNORMAL END: S/R GAD_CHECK'
       ENDIF
+#endif /* ALLOW_AUTODIFF */
 
       _END_MASTER(myThid)
 

@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/mdsio/mdsio_write_field.F,v 1.20 2014/08/12 17:38:11 jmc Exp $
+C $Name:  $
+
 #include "MDSIO_OPTIONS.h"
 
 CBOP

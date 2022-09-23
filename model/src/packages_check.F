@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/model/src/packages_check.F,v 1.70 2016/01/10 18:14:47 jmc Exp $
+C $Name:  $
+
 #include "PACKAGES_CONFIG.h"
 #include "CPP_OPTIONS.h"
 
@@ -50,8 +53,6 @@ C       |
 C       |-- SEAICE_CHECK
 C       |
 C       |-- SHELFICE_CHECK
-C       |
-C       |-- SMOOTH_CHECK
 C       |
 C       |-- STREAMICE_CHECK
 C       |
@@ -340,12 +341,6 @@ C---  Continue with standard packages (with standard usePKG flag)
       IF (useShelfIce) CALL SHELFICE_CHECK( myThid )
 #else
       IF (useShelfIce) CALL PACKAGES_ERROR_MSG('ShelfIce',' ',myThid)
-#endif
-
-#ifdef ALLOW_SMOOTH
-      IF (useSmooth) CALL SMOOTH_CHECK( myThid )
-#else
-      IF (useSmooth) CALL PACKAGES_ERROR_MSG('Smooth',' ',myThid)
 #endif
 
 #ifdef ALLOW_STREAMICE

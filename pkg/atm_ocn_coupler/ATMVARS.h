@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/atm_ocn_coupler/ATMVARS.h,v 1.8 2016/01/06 00:28:14 jmc Exp $
+C $Name:  $
+
 C     *==========================================================*
 C     | ATMVARS.h Declare arrays for holding data on the atmos.
 C     |           grid. Arrays may need adding or removing
@@ -10,7 +13,7 @@ C                       =0 : full ocean grid-point);
 C--   fields send to ATM:
 C     OcMxlD_atm     :: Ocean mixed-layer depths on atmos. grid (m)
 C     SST_atm        :: Sea surface temperature on atmos. grid ( oC).
-C     SSS_atm        :: Sea surface salinity on atmos. grid (g/kg).
+C     SSS_atm        :: Sea surface temperature on atmos. grid (psu).
 C     vSq_atm        :: Sea surface velocity square on atmos. grid (m2/s2)
 C-    optionally sent:
 C     fluxCO2_atm    :: flux of CO2 from ocn->Atm on atmos. grid (mol/m2/s)

@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/exf/exf_init_fld.F,v 1.2 2017/03/10 00:16:11 jmc Exp $
+C $Name:  $
+
 #include "EXF_OPTIONS.h"
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
@@ -31,8 +34,8 @@ C !USES:
 C     == global variables ==
 #include "EEPARAMS.h"
 #include "SIZE.h"
-#include "EXF_PARAM.h"
 #include "EXF_INTERP_SIZE.h"
+#include "EXF_PARAM.h"
 
 C !INPUT/OUTPUT PARAMETERS:
 C     fldName        :: field short name (to print mesg)
@@ -84,7 +87,7 @@ C     msgBuf     :: Informational/error message buffer
 CEOP
 
       DO bj = myByLo(myThid), myByHi(myThid)
-        DO bi = myBxLo(myThid), myBxHi(myThid)
+        DO bi = myBxLo(myThid), mybxhi(myThid)
           DO j = 1-OLy, sNy+OLy
             DO i = 1-OLx, sNx+OLx
               fldArr(i,j,bi,bj)  = fldConst
@@ -133,7 +136,7 @@ C-    apply mask
 
 C     Loop over tiles and scale fldArr
          DO bj = myByLo(myThid),myByHi(myThid)
-          DO bi = myBxLo(myThid),myBxHi(myThid)
+          DO bi = myBxLo(myThid),mybxhi(myThid)
            DO j = 1,sNy
             DO i = 1,sNx
               fldArr(i,j,bi,bj) = fld_inScale*fldArr(i,j,bi,bj)

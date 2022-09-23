@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/cal/cal_timeinterval.F,v 1.7 2013/06/03 22:27:03 heimbach Exp $
+C $Name:  $
+
 #include "CAL_OPTIONS.h"
 
       SUBROUTINE CAL_TIMEINTERVAL(

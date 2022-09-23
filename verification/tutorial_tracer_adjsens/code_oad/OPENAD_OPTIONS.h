@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/verification/tutorial_tracer_adjsens/code_oad/OPENAD_OPTIONS.h,v 1.1 2015/02/22 16:15:43 heimbach Exp $
+C $Name:  $
+
 CBOP
 C !ROUTINE: OPENAD_OPTIONS.h
 C !INTERFACE:
@@ -18,7 +21,7 @@ CEOP
 #ifdef ALLOW_OPENAD
 
 #define ALLOW_OPENAD_ACTIVE_READ_XYZ
-#define ALLOW_OPENAD_ACTIVE_READ_XY
+#undef ALLOW_OPENAD_ACTIVE_READ_XY
 #undef ALLOW_OPENAD_ACTIVE_WRITE
 
 #endif /* ALLOW_OPENAD */

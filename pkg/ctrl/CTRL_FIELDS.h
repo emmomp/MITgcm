@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/ctrl/CTRL_FIELDS.h,v 1.1 2014/04/26 19:20:43 jmc Exp $
+C $Name:  $
+
 CBOP
 C     !ROUTINE: CTRL_FIELDS.h
 C     !INTERFACE:
@@ -16,6 +19,16 @@ C     *==============================================================*
 C     \ev
 CEOP
 
+#ifdef ALLOW_KAPGM_CONTROL
+      COMMON /CTRL_FIELDS_KAPGM/
+     &                       kapGM
+      _RL  kapGM  (1-OLx:sNx+OLx,1-OLy:sNy+OLy,Nr,nSx,nSy)
+#endif
+#ifdef ALLOW_KAPREDI_CONTROL
+      COMMON /CTRL_FIELDS_KAPREDI/
+     &                       kapRedi
+      _RL  kapRedi  (1-OLx:sNx+OLx,1-OLy:sNy+OLy,Nr,nSx,nSy)
+#endif
 #ifdef ALLOW_BOTTOMDRAG_CONTROL
       COMMON /CTRL_FIELDS_BOTTOMDRAG/
      &                       bottomDragFld

@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/eesupp/src/lef_zero.F,v 1.1 2006/01/22 01:54:49 jmc Exp $
+C $Name:  $
+
 #include "CPP_EEOPTIONS.h"
 
 CBOP

@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/model/src/calc_grad_phi_surf.F,v 1.2 2001/09/26 18:09:13 cnh Exp $
+C $Name:  $
+
 #include "CPP_OPTIONS.h"
 
 CBOP

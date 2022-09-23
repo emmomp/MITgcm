@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/verification/offline_exf_seaice/code_ad/CPP_OPTIONS.h,v 1.7 2013/03/28 22:11:22 gforget Exp $
+C $Name:  $
+
 #ifndef CPP_OPTIONS_H
 #define CPP_OPTIONS_H
 
@@ -126,8 +129,8 @@ C   each of the above pkg get its own options from its specific option file.
 C   Although this method, inherited from ECCO setup, has been traditionally
 C   used for all adjoint built, work is in progress to allow to use the
 C   standard method also for adjoint built.
-c#ifdef PACKAGES_CONFIG_H
-c# include "ECCO_CPPOPTIONS.h"
-c#endif
+#ifdef PACKAGES_CONFIG_H
+# include "ECCO_CPPOPTIONS.h"
+#endif
 
 #endif /* CPP_OPTIONS_H */

@@ -1,7 +1,7 @@
+C $Header: /u/gcmpack/MITgcm/pkg/exf/exf_monitor.F,v 1.31 2017/02/12 00:55:12 jmc Exp $
+C $Name:  $
+
 #include "EXF_OPTIONS.h"
-#ifdef ALLOW_BLING
-# include "BLING_OPTIONS.h"
-#endif
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
 CBOP
@@ -29,7 +29,7 @@ C     !USES:
 # include "MNC_PARAMS.h"
 #endif
 #ifdef ALLOW_BLING
-# include "EXF_INTERP_SIZE.h"
+# include "BLING_OPTIONS.h"
 # include "BLING_VARS.h"
 #endif
 
@@ -198,7 +198,7 @@ C       Print some statistics about input forcing fields
         ENDIF
 # endif
 #endif
-#ifdef ALLOW_SALTFLX
+#ifdef EXF_SALTFLX
         IF ( saltflxfile .NE. ' ' ) THEN
           CALL MON_WRITESTATS_RL( 1, saltflx,'_saltflx',
      &             maskInC, maskInC, rA , drF, dummyRL, myThid )

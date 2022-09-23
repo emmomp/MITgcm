@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/exf/exf_mapfields.F,v 1.32 2017/01/11 03:45:34 gforget Exp $
+C $Name:  $
+
 #include "EXF_OPTIONS.h"
 #ifdef ALLOW_AUTODIFF
 # include "AUTODIFF_OPTIONS.h"
@@ -63,6 +66,7 @@ C     == global variables ==
 #include "EXF_FIELDS.h"
 #ifdef ALLOW_AUTODIFF_TAMC
 # include "tamc.h"
+# include "tamc_keys.h"
 #endif
 
 C     !INPUT/OUTPUT PARAMETERS:
@@ -80,16 +84,10 @@ C     !LOCAL VARIABLES:
       INTEGER jmin, jmax
       PARAMETER ( imin = 1-OLx , imax = sNx+OLx )
       PARAMETER ( jmin = 1-OLy , jmax = sNy+OLy )
-#ifdef ALLOW_AUTODIFF_TAMC
-      INTEGER act1, act2, act3, act4
-      INTEGER max1, max2, max3
-      INTEGER ikey
-#endif
 CEOP
 
 C--   set surface level index:
       ks = 1
-      IF ( usingPCoords ) ks = Nr
 
       DO bj = myByLo(myThid),myByHi(myThid)
        DO bi = myBxLo(myThid),myBxHi(myThid)
@@ -323,27 +321,17 @@ C             Short wave radiative flux.
 #endif
 
 #ifdef ATMOSPHERIC_LOADING
-C-    subtract "surf_pRef" to fill in atmos. pressure anomaly "pLoad"
           DO j = jmin,jmax
             DO i = imin,imax
-             pLoad(i,j,bi,bj) =
-     &          exf_outscal_apressure*apressure(i,j,bi,bj) - surf_pRef
+             pLoad(i,j,bi,bj)=exf_outscal_apressure*apressure(i,j,bi,bj)
             ENDDO
           ENDDO
 #endif
 
-#ifdef EXF_ALLOW_TIDES
-          DO j = jmin,jmax
-            DO i = imin,imax
-             phiTide2d(i,j,bi,bj)=exf_outscal_tidePot*tidePot(i,j,bi,bj)
-            ENDDO
-          ENDDO
-#endif /* EXF_ALLOW_TIDES */
-
 #ifdef ALLOW_SALTFLX
           DO j = jmin,jmax
             DO i = imin,imax
-              saltFlux(i,j,bi,bj) = saltflx(i,j,bi,bj)
+              saltFlux(I,J,bi,bj) = saltflx(I,J,bi,bj)
             ENDDO
           ENDDO
 #endif
@@ -353,8 +341,8 @@ C-    subtract "surf_pRef" to fill in atmos. pressure anomaly "pLoad"
             DO i = imin,imax
               exf_iceFraction(i,j,bi,bj) =
      &           exf_outscal_areamask*areamask(i,j,bi,bj)
-              exf_iceFraction(i,j,bi,bj) =
-     &           MIN( MAX(exf_iceFraction(i,j,bi,bj),zeroRS), oneRS )
+              exf_iceFraction(I,J,bi,bj) =
+     &           MIN( MAX(exf_iceFraction(I,J,bi,bj),zeroRS), oneRS )
             ENDDO
           ENDDO
 #endif
@@ -379,9 +367,6 @@ C     Qsw used in SHORTWAVE_HEATING code & for diagnostics (<- EXCH not needed)
 #endif
 #ifdef ATMOSPHERIC_LOADING
       _EXCH_XY_RS( pLoad, myThid )
-#endif
-#ifdef EXF_ALLOW_TIDES
-      _EXCH_XY_RS( phiTide2d, myThid )
 #endif
 #ifdef EXF_SEAICE_FRACTION
       _EXCH_XY_RS( exf_iceFraction, myThid )

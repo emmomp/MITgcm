@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/kl10/kl10_calc.F,v 1.5 2015/02/23 21:20:15 jmc Exp $
+C $Name:  $
+
 #include "KL10_OPTIONS.h"
 
 CBOP
@@ -35,6 +38,7 @@ C !USES: ============================================================
 #include "KL10.h"
 c#ifdef ALLOW_AUTODIFF_TAMC
 c# include "tamc.h"
+c# include "tamc_keys.h"
 c#endif /* ALLOW_AUTODIFF_TAMC */
 
 C !INPUT PARAMETERS: ===================================================

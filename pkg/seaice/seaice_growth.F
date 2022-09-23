@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/seaice/seaice_growth.F,v 1.212 2017/04/04 23:31:27 jmc Exp $
+C $Name:  $
+
 #include "SEAICE_OPTIONS.h"
 #ifdef ALLOW_EXF
 # include "EXF_OPTIONS.h"
@@ -53,7 +56,6 @@ C     myThid :: Thread no. that called this routine.
       INTEGER myIter, myThid
 CEOP
 
-#ifndef SEAICE_USE_GROWTH_ADX
 #if (defined ALLOW_EXF) && (defined ALLOW_ATM_TEMP)
 C     !FUNCTIONS:
 #ifdef ALLOW_DIAGNOSTICS
@@ -125,8 +127,6 @@ C     Regularization values squared
       _RL area_reg_sq, hice_reg_sq
 C     pathological cases thresholds
       _RL heffTooHeavy
-C     local copy of surface layer thickness in meters
-      _RL dzSurf
 
 C     Helper variables: reciprocal of some constants
       _RL recip_multDim
@@ -160,9 +160,7 @@ C     temporary variables available for the various computations
 #endif
 #endif /* ALLOW_SITRACER */
 #ifdef ALLOW_AUTODIFF_TAMC
-      INTEGER act1, act2, act3, act4
-      INTEGER max1, max2, max3
-      INTEGER iicekey
+      INTEGER ilockey
 #endif
 
 C==   local arrays ==
@@ -205,11 +203,9 @@ C     temporary variables available for the various computations
       _RL a_QbyATMmult_cover  (1:sNx,1:sNy,nITD)
       _RL a_QSWbyATMmult_cover(1:sNx,1:sNy,nITD)
       _RL a_FWbySublimMult    (1:sNx,1:sNy,nITD)
-#if defined ( ALLOW_SITRACER ) && defined ( SEAICE_GREASE )
+#ifdef SEAICE_GREASE
       _RL greaseLayerThick    (1:sNx,1:sNy)
       _RL d_HEFFbyGREASE      (1:sNx,1:sNy)
-      _RL uRelW               (1:sNx,1:sNy)
-      _RL vRelW               (1:sNx,1:sNy)
 #endif
 #ifdef SEAICE_ITD
       _RL r_QbyATMmult_cover  (1:sNx,1:sNy,nITD)
@@ -329,12 +325,10 @@ C ===================================================================
 C =================PART 0: constants and initializations=============
 C ===================================================================
 
-      IF ( usingPCoords ) THEN
-       kSurface = Nr
-       dzSurf   = drF(kSurface)*recip_rhoConst*recip_gravity
+      IF ( buoyancyRelation .EQ. 'OCEANICP' ) THEN
+       kSurface        = Nr
       ELSE
-       kSurface = 1
-       dzSurf   = drF(kSurface)
+       kSurface        = 1
       ENDIF
 
 C     avoid unnecessary divisions in loops
@@ -346,7 +340,8 @@ c     recip_multDim        = 1./float(SEAICE_multDim)
       recip_rhoIce      = ONE / SEAICE_rhoIce
 
 C     Cutoff for iceload
-      heffTooHeavy = dzSurf * 0.2 _d 0
+      heffTooHeavy=drF(kSurface) / 5. _d 0
+
 C     RATIO OF SEA ICE DENSITY to SNOW DENSITY
       ICE2SNOW     = SEAICE_rhoIce/SEAICE_rhoSnow
       SNOW2ICE     = ONE / ICE2SNOW
@@ -412,14 +407,14 @@ C parameters needed for variable floe diameter following Luepkes et al. (2012):
      &                       + act4*max1*max2*max3
 #endif /* ALLOW_AUTODIFF_TAMC */
 
-#if defined ( ALLOW_SITRACER ) && defined ( SEAICE_GREASE )
+#ifdef SEAICE_GREASE
 C time scale of grease ice decline by solidification,
 C with 50% grease ice becoming solid pancake ice within 1 day:
         greaseDecayTime=1.44*86400. _d 0
 C store position of 'grease' in tracer array
         iTrGrease=-1
         DO iTr = 1, SItrNumInUse
-         IF (SItrName(iTr).EQ.'grease') iTrGrease=iTr
+         if (SItrName(iTr).EQ.'grease') iTrGrease=iTr
         ENDDO
 #endif
 
@@ -464,7 +459,7 @@ C =====================
 #endif
           d_HFRWbyRAIN(I,J)          = 0.0 _d 0
           tmparr1(I,J)               = 0.0 _d 0
-#if defined ( ALLOW_SITRACER ) && defined ( SEAICE_GREASE )
+#ifdef SEAICE_GREASE
           greaseLayerThick(I,J)      = 0.0 _d 0
           d_HEFFbyGREASE(I,J)        = 0.0 _d 0
 #endif
@@ -498,8 +493,8 @@ C for lateral melt parameterization:
          ENDDO
         ENDDO
 #if (defined (ALLOW_MEAN_SFLUX_COST_CONTRIBUTION) || defined (ALLOW_SSH_GLOBMEAN_COST_CONTRIBUTION))
-        DO J=1-OLy,sNy+OLy
-         DO I=1-OLx,sNx+OLx
+        DO J=1-oLy,sNy+oLy
+         DO I=1-oLx,sNx+oLx
           frWtrAtm(I,J,bi,bj)        = 0.0 _d 0
          ENDDO
         ENDDO
@@ -764,8 +759,12 @@ C     Compute relative wind speed over sea ice.
           DO I=1,sNx
            SPEED_SQ =
      &          (uWind(I,J,bi,bj)
+     &          +0.5 _d 0*(uVel(i,j,kSurface,bi,bj)
+     &                    +uVel(i+1,j,kSurface,bi,bj))
      &          -0.5 _d 0*(uice(i,j,bi,bj)+uice(i+1,j,bi,bj)))**2
      &          +(vWind(I,J,bi,bj)
+     &          +0.5 _d 0*(vVel(i,j,kSurface,bi,bj)
+     &                    +vVel(i,j+1,kSurface,bi,bj))
      &          -0.5 _d 0*(vice(i,j,bi,bj)+vice(i,j+1,bi,bj)))**2
            IF ( SPEED_SQ .LE. SEAICE_EPS_SQ ) THEN
              UG(I,J)=SEAICE_EPS
@@ -836,8 +835,7 @@ CADJ &     comlev1_bibj, key = iicekey, byte = isbyte
 #ifdef SEAICE_CAP_SUBLIM
      I        latentHeatFluxMaxMult(1,1,IT),
 #endif
-     I        ticeInMult(1,1,IT),
-     O        ticeOutMult(1,1,IT),
+     U        ticeInMult(1,1,IT), ticeOutMult(1,1,IT),
      O        a_QbyATMmult_cover(1,1,IT),
      O        a_QSWbyATMmult_cover(1,1,IT),
      O        a_FWbySublimMult(1,1,IT),
@@ -1044,7 +1042,7 @@ C efficiency of turbulent fluxes : dependency to sign of THETA-TBC
           IF ( theta(I,J,kSurface,bi,bj) .GE. tempFrz ) THEN
            tmpscal1 = SEAICE_mcPheePiston
           ELSE
-           tmpscal1 =SEAICE_frazilFrac*dzSurf/SEAICE_deltaTtherm
+           tmpscal1 =SEAICE_frazilFrac*drF(kSurface)/SEAICE_deltaTtherm
           ENDIF
 C efficiency of turbulent fluxes : dependency to AREA (McPhee cases)
           IF ( (AREApreTH(I,J) .GT. 0. _d 0).AND.
@@ -1060,7 +1058,7 @@ C efficiency of turbulent fluxes : dependency to AREA (McPhee cases)
 C maximum turbulent flux, in ice meters
           tmpscal2= - (HeatCapacity_Cp*rhoConst * recip_QI)
      &         * (theta(I,J,kSurface,bi,bj)-tempFrz)
-     &         * SEAICE_deltaTtherm * HEFFM(i,j,bi,bj)
+     &         * SEAICE_deltaTtherm * maskC(i,j,kSurface,bi,bj)
 C available turbulent flux
           a_QbyOCN(i,j) =
      &         tmpscal1 * tmpscal2 * MixedLayerTurbulenceFactor
@@ -1130,39 +1128,28 @@ C ===================================================================
 C =========PART 3: determine effective thicknesses increments========
 C ===================================================================
 
-#if defined ( ALLOW_SITRACER ) && defined ( SEAICE_GREASE )
+#ifdef SEAICE_GREASE
 C convert SItracer 'grease' from ratio to grease ice volume:
 C ==========================================================
-        DO j=1,sNy
-         DO i=1,sNx
-          SItracer(i,j,bi,bj,iTrGrease) =
-     &     SItracer(i,j,bi,bj,iTrGrease) * HEFF(i,j,bi,bj)
-          uRelW(i,j) = uWind(i,j,bi,bj)
-          vRelW(i,j) = vWind(i,j,bi,bj)
+        DO J=1,sNy
+         DO I=1,sNx
+          SItracer(I,J,bi,bj,iTrGrease) =
+     &     SItracer(I,J,bi,bj,iTrGrease) * HEFF(I,J,bi,bj)
          ENDDO
         ENDDO
-        IF ( useRelativeWind ) THEN
-         DO j=1,sNy
-          DO i=1,sNx
-           uRelW(i,j) = uWind(i,j,bi,bj)
-     &          - 0.5 _d 0*( uIce(i,j,bi,bj) + uIce(i+1,j,bi,bj) )
-           vRelW(i,j) = vWind(i,j,bi,bj)
-     &          - 0.5 _d 0*( vIce(i,j,bi,bj) + vIce(i,j+1,bi,bj) )
-          ENDDO
-         ENDDO
-        ENDIF
 C compute actual grease ice layer thickness
 C as a function of wind stress
 C following Smedsrud [2011, Ann.Glac.]
 C =========================================
-         DO j=1,sNy
-          DO i=1,sNx
+         DO J=1,sNy
+          DO I=1,sNx
 C
 C          computing compaction force acting on grease
 C           (= air and water stress acting on ice)
 C          wind stress (using calculation of SPEED_SQ & UG as template)
 C          u_a**2 + v_a**2:
-           tmpscal1 = uRelW(i,j)*uRelW(i,j) + vRelW(i,j)*vRelW(i,j)
+           tmpscal1 = uWind(I,J,bi,bj)*uWind(I,J,bi,bj)
+     &              + vWind(I,J,bi,bj)*vWind(I,J,bi,bj)
            IF ( tmpscal1 .LE. SEAICE_EPS_SQ ) THEN
              tmpscal1=SEAICE_EPS
            ELSE
@@ -1174,12 +1161,12 @@ C          u_w - u_i:
            tmpscal2 =
      &        0.5 _d 0*(uVel(i,j,kSurface,bi,bj)
      &                 +uVel(i+1,j,kSurface,bi,bj))
-     &       -0.5 _d 0*(uIce(i,j,bi,bj)+uIce(i+1,j,bi,bj))
+     &       -0.5 _d 0*(uice(i,j,bi,bj)+uice(i+1,j,bi,bj))
 C          v_w - v_i:
            tmpscal3 =
      &        0.5 _d 0*(vVel(i,j,kSurface,bi,bj)
      &                 +vVel(i,j+1,kSurface,bi,bj))
-     &       -0.5 _d 0*(vIce(i,j,bi,bj)+vIce(i,j+1,bi,bj))
+     &       -0.5 _d 0*(vice(i,j,bi,bj)+vice(i,j+1,bi,bj))
 C          (u_w - u_i)**2 + (v_w - v_i)**2:
            tmpscal4 = (tmpscal2*tmpscal2 + tmpscal3*tmpscal3)
            IF ( tmpscal4 .LE. SEAICE_EPS_SQ ) THEN
@@ -1190,8 +1177,8 @@ C          (u_w - u_i)**2 + (v_w - v_i)**2:
            tmpscal4 = 1027.0 _d 0 * 6.0 _d -3 * tmpscal4
 C          magnitude of compined stresses:
            tmpscal0 =
-     &         ( tmpscal1 * uRelW(i,j) + tmpscal4 * tmpscal2 )**2
-     &       + ( tmpscal1 * vRelW(i,j) + tmpscal4 * tmpscal3 )**2
+     &         ( tmpscal1 * uWind(I,J,bi,bj) + tmpscal4 * tmpscal2 )**2
+     &       + ( tmpscal1 * vWind(I,J,bi,bj) + tmpscal4 * tmpscal3 )**2
            IF ( tmpscal0 .LE. SEAICE_EPS_SQ ) THEN
              tmpscal0=SEAICE_EPS
            ELSE
@@ -1199,17 +1186,17 @@ C          magnitude of compined stresses:
            ENDIF
 C
 C          mean grid cell width between tracer points
-           tmpscal3 = 0.5 _d 0 * (dxC(i,j,bi,bj)+dyC(i,j,bi,bj))
+           tmpscal3 = 0.5 _d 0 * (dxC(I,J,bi,bj)+dyC(I,J,bi,bj))
 C          grease ice volume Vg [m^3/m] as in Smedsrud [2011]
 C           is SItracer * gridcell_area / lead_width
 C           where lead width is lead extent along lead,
 C           i.e. perpendicular to L_lead in Smedsrud (2011),
 C           which is in the absence of lead length statistics
 C           simply the grid cell length
-           tmpscal4 = 4. _d 0 * SItracer(i,j,bi,bj,iTrGrease) * tmpscal3
+           tmpscal4 = 4. _d 0 * SItracer(I,J,bi,bj,iTrGrease) * tmpscal3
 C
 C          mean grease ice layer thickness <h_g>, Eq.10 in Smedsrud [2011] but incl. water stress
-           greaseLayerThick(i,j) = 0.763 _d 0
+           greaseLayerThick(I,J) = 0.763 _d 0
 C          grease ice volume
      &           * ( tmpscal4
 C          times magnitude of vector sum of air and water stresses
@@ -1221,9 +1208,9 @@ C          devided by K_r = 100 N/m^3 (resistance of grease against compression)
      &           * 0.01 _d 0 )**THIRD
 C
 C          assure a minimum thickness of 4 cm (equals HO=0.01):
-           greaseLayerThick(i,j)=max(4. _d -2, greaseLayerThick(i,j))
+           greaseLayerThick(I,J)=max(4. _d -2, greaseLayerThick(I,J))
 C          ... and a maximum thickness of 4 m (equals HO=1.0):
-           greaseLayerThick(i,j)=min(4. _d 0 , greaseLayerThick(i,j))
+           greaseLayerThick(I,J)=min(4. _d 0 , greaseLayerThick(I,J))
 C
           ENDDO
          ENDDO
@@ -1618,7 +1605,7 @@ C           impose -HEFF as the maxmum melting if SEAICE_doOpenWaterMelt
 C           or 0. otherwise (no melting if not SEAICE_doOpenWaterMelt)
             tmpscal3=facOpenGrow*MAX(tmpscal1-tmpscal2,
      &           -tmpscal4*facOpenMelt)*HEFFM(I,J,bi,bj)
-#if defined ( ALLOW_SITRACER ) && defined ( SEAICE_GREASE )
+#ifdef SEAICE_GREASE
 C Grease ice is a tracer or "bucket" for newly formed frazil ice
 C  that instead of becoming solid sea ice instantly has a half-time
 C  of 1 day (see greaseDecayTime) before solidifying.
@@ -1804,7 +1791,7 @@ C--   use HEFF, ARE, HSNOW, etc. as temporal storage for 1st category
         DO J=1,sNy
          DO I=1,sNx
 
-#if defined ( ALLOW_SITRACER ) && defined ( SEAICE_GREASE )
+#ifdef SEAICE_GREASE
 C         grease ice layer thickness (Hg) includes
 C         1 part frazil ice and 3 parts sea water
 C         i.e. HO = 0.25 * Hg
@@ -1819,7 +1806,7 @@ C         i.e. HO = 0.25 * Hg
           recip_HH = recip_heffActual(I,J)
 
 C gain of ice over open water : computed from
-#if defined ( ALLOW_SITRACER ) && defined ( SEAICE_GREASE )
+#ifdef SEAICE_GREASE
 C   from growth by ATM with grease ice time delay
           tmpscal4 = MAX(ZERO,d_HEFFbyGREASE(I,J))
 #else /* SEAICE_GREASE */
@@ -1963,7 +1950,7 @@ C ... and update total AREA, HEFF, HSNOW
 C     (the updated HEFF is used below for ice salinity increments)
         CALL SEAICE_ITD_SUM(bi, bj, myTime, myIter, myThid)
 #endif /* SEAICE_ITD */
-#if defined ( ALLOW_SITRACER ) && defined ( SEAICE_GREASE )
+#ifdef SEAICE_GREASE
 C convert SItracer 'grease' from grease ice volume back to ratio:
 C ===============================================================
         DO J=1,sNy
@@ -2223,7 +2210,7 @@ CADJ STORE d_hsnwbyocnonsnw = comlev1_bibj,key=iicekey,byte=isbyte
      &           + d_HSNWbyNEG(I,J,bi,bj)*SNOW2ICE
      &           - convertPRECIP2HI *
      &             snowPrecip(i,j,bi,bj) * (ONE-AREApreTH(I,J))
-     &           ) * HEFFM(I,J,bi,bj)
+     &           ) * maskC(I,J,kSurface,bi,bj)
          ENDDO
         ENDDO
         DO J=1,sNy
@@ -2272,7 +2259,7 @@ C to diagnoze and/or apply the correction to QNET.
 catn: initialize tmpscal1
            tmpscal1 = ZERO
 C ocean water going to ice/snow, in precip units
-           tmpscal3=rhoConstFresh*HEFFM(I,J,bi,bj)*(
+           tmpscal3=rhoConstFresh*maskC(I,J,kSurface,bi,bj)*(
      &       ( d_HSNWbyATMonSNW(I,J)*SNOW2ICE
      &       + d_HSNWbyOCNonSNW(I,J)*SNOW2ICE
      &       + d_HEFFbyOCNonICE(I,J) + d_HEFFbyATMonOCN(I,J)
@@ -2325,17 +2312,17 @@ CML since it does not contribute to heating the air.
 CML So this diagnostic is only good for heat budget calculations within
 CML the ice-ocean system.
            SIatmQnt(I,J,bi,bj) =
-     &            HEFFM(I,J,bi,bj)*convertHI2Q*(
+     &            maskC(I,J,kSurface,bi,bj)*convertHI2Q*(
      &            a_QSWbyATM_cover(I,J) +
      &            a_QbyATM_cover(I,J) + a_QbyATM_open(I,J) )
 Cgf 2) SItflux (analogous to tflux; includes advection by water
 C             exchanged between atmosphere and ocean+ice)
 C solid water going to atm, in precip units
-           tmpscal1 = rhoConstFresh*HEFFM(I,J,bi,bj)
+           tmpscal1 = rhoConstFresh*maskC(I,J,kSurface,bi,bj)
      &       * convertHI2PRECIP * ( - d_HSNWbyRAIN(I,J)*SNOW2ICE
      &       + a_FWbySublim(I,J) - r_FWbySublim(I,J) )
 C liquid water going to atm, in precip units
-           tmpscal2=rhoConstFresh*HEFFM(I,J,bi,bj)*
+           tmpscal2=rhoConstFresh*maskC(I,J,kSurface,bi,bj)*
      &       ( ( EVAP(I,J,bi,bj)-PRECIP(I,J,bi,bj) )
      &         * ( ONE - AREApreTH(I,J) )
 #ifdef ALLOW_RUNOFF
@@ -2384,7 +2371,7 @@ C ==================================================
      &             +d_HSNWbyNEG(I,J,bi,bj)*SNOW2ICE
 C     If r_FWbySublim>0, then it is evaporated from ocean.
      &             +r_FWbySublim(I,J)
-          EmPmR(I,J,bi,bj)  = HEFFM(I,J,bi,bj)*(
+          EmPmR(I,J,bi,bj)  = maskC(I,J,kSurface,bi,bj)*(
      &         ( EVAP(I,J,bi,bj)-PRECIP(I,J,bi,bj) )
      &         * ( ONE - AREApreTH(I,J) )
 #ifdef ALLOW_RUNOFF
@@ -2396,10 +2383,10 @@ C     If r_FWbySublim>0, then it is evaporated from ocean.
 C     beware of the sign: fw2ObyRidge is snow mass moved into the ocean
 C     by ridging, so requires a minus sign
      &         - fw2ObyRidge(I,J,bi,bj)*recip_deltaTtherm
-     &           * HEFFM(I,J,bi,bj)
+     &           * maskC(I,J,kSurface,bi,bj)
 #endif /* SEAICE_ITD */
 C and the flux leaving/entering the ocean+ice
-           SIatmFW(I,J,bi,bj) = HEFFM(I,J,bi,bj)*(
+           SIatmFW(I,J,bi,bj) = maskC(I,J,kSurface,bi,bj)*(
      &          EVAP(I,J,bi,bj)*( ONE - AREApreTH(I,J) )
      &          - PRECIP(I,J,bi,bj)
 #ifdef ALLOW_RUNOFF
@@ -2415,7 +2402,7 @@ C and the flux leaving/entering the ocean+ice
 C--
         DO J=1,sNy
          DO I=1,sNx
-            frWtrAtm(I,J,bi,bj) = HEFFM(I,J,bi,bj)*(
+            frWtrAtm(I,J,bi,bj) = maskC(I,J,kSurface,bi,bj)*(
      &           PRECIP(I,J,bi,bj)
      &           - EVAP(I,J,bi,bj)*( ONE - AREApreTH(I,J) )
 # ifdef ALLOW_RUNOFF
@@ -2433,7 +2420,7 @@ C--
 # ifdef ALLOW_MEAN_SFLUX_COST_CONTRIBUTION
         DO J=1,sNy
          DO I=1,sNx
-          frWtrAtm(I,J,bi,bj) = HEFFM(I,J,bi,bj)*(
+          frWtrAtm(I,J,bi,bj) = maskC(I,J,kSurface,bi,bj)*(
      &         PRECIP(I,J,bi,bj)
      &         - EVAP(I,J,bi,bj)
      &         *( ONE - AREApreTH(I,J) )
@@ -2484,7 +2471,7 @@ CADJ STORE hsnow(:,:,bi,bj) = comlev1_bibj,key=iicekey,byte=isbyte
 C Compute tile integrals of heat/fresh water fluxes to/from atm.
 C ==============================================================
         FWFsiTile(bi,bj) = 0. _d 0
-        IF ( selectBalanceEmPmR.EQ.1 ) THEN
+        IF ( balanceEmPmR ) THEN
          DO j=1,sNy
           DO i=1,sNx
            FWFsiTile(bi,bj) =
@@ -2495,8 +2482,7 @@ C ==============================================================
         ENDIF
 C to translate global mean FWF adjustements (see below) we may need :
         FWF2HFsiTile(bi,bj) = 0. _d 0
-        IF ( selectBalanceEmPmR.EQ.1 .AND.
-     &       temp_EvPrRn.EQ.UNSET_RL ) THEN
+        IF ( balanceEmPmR.AND.(temp_EvPrRn.EQ.UNSET_RL) ) THEN
          DO j=1,sNy
           DO i=1,sNx
            FWF2HFsiTile(bi,bj) = FWF2HFsiTile(bi,bj) +
@@ -2555,7 +2541,7 @@ C ===================================================================
 C three that actually need intermediate storage
          DO J=1,sNy
           DO I=1,sNx
-            DIAGarrayA(I,J) = HEFFM(I,J,bi,bj)
+            DIAGarrayA(I,J) = maskC(I,J,kSurface,bi,bj)
      &        * d_HSNWbyRAIN(I,J)*SEAICE_rhoSnow*recip_deltaTtherm
             DIAGarrayB(I,J) =  AREA(I,J,bi,bj)-AREApreTH(I,J)
           ENDDO
@@ -2566,7 +2552,7 @@ C three that actually need intermediate storage
      &      tmpscal1,1,'SIdA    ',0,1,3,bi,bj,myThid)
          DO J=1,sNy
           DO I=1,sNx
-           DIAGarrayB(I,J) = HEFFM(I,J,bi,bj) *
+           DIAGarrayB(I,J) = maskC(I,J,kSurface,bi,bj) *
      &       a_FWbySublim(I,J) * SEAICE_rhoIce * recip_deltaTtherm
           ENDDO
          ENDDO
@@ -2576,11 +2562,11 @@ C
          DO J=1,sNy
           DO I=1,sNx
 C the actual Freshwater flux of sublimated ice, >0 decreases ice
-           DIAGarrayA(I,J) = HEFFM(I,J,bi,bj)
+           DIAGarrayA(I,J) = maskC(I,J,kSurface,bi,bj)
      &       * (a_FWbySublim(I,J)-r_FWbySublim(I,J))
      &       * SEAICE_rhoIce * recip_deltaTtherm
 C the residual Freshwater flux of sublimated ice
-           DIAGarrayC(I,J) = HEFFM(I,J,bi,bj)
+           DIAGarrayC(I,J) = maskC(I,J,kSurface,bi,bj)
      &       * r_FWbySublim(I,J)
      &       * SEAICE_rhoIce * recip_deltaTtherm
 C the latent heat flux
@@ -2589,14 +2575,14 @@ C the latent heat flux
            tmpscal2= ( a_FWbySublim(I,J)-r_FWbySublim(I,J) )
      &             * convertHI2PRECIP
            tmpscal3= SEAICE_lhEvap+SEAICE_lhFusion
-           DIAGarrayB(I,J) = -HEFFM(I,J,bi,bj)*rhoConstFresh
+           DIAGarrayB(I,J) = -maskC(I,J,kSurface,bi,bj)*rhoConstFresh
      &             * ( tmpscal1*SEAICE_lhEvap + tmpscal2*tmpscal3 )
           ENDDO
          ENDDO
          CALL DIAGNOSTICS_FILL(DIAGarrayA,'SIacSubl',0,1,3,bi,bj,myThid)
          CALL DIAGNOSTICS_FILL(DIAGarrayC,'SIrsSubl',0,1,3,bi,bj,myThid)
          CALL DIAGNOSTICS_FILL(DIAGarrayB,'SIhl    ',0,1,3,bi,bj,myThid)
-# if defined ( ALLOW_SITRACER ) && defined ( SEAICE_GREASE )
+# ifdef SEAICE_GREASE
 C actual grease ice layer thickness
          CALL DIAGNOSTICS_FILL(greaseLayerThick,
      &        'SIgrsLT ',0,1,3,bi,bj,myThid)
@@ -2620,15 +2606,14 @@ CADJ STORE FWFsiTile = comlev1, key=ikey_dynamics, kind=isbyte
 CADJ STORE HFsiTile = comlev1, key=ikey_dynamics, kind=isbyte
 CADJ STORE FWF2HFsiTile = comlev1, key=ikey_dynamics, kind=isbyte
 # endif /* ALLOW_AUTODIFF_TAMC */
-      FWFsiGlob = 0. _d 0
-      FWF2HFsiGlob = 0. _d 0
-      IF ( selectBalanceEmPmR.EQ.1 ) THEN
-        CALL GLOBAL_SUM_TILE_RL( FWFsiTile, FWFsiGlob, myThid )
-        IF ( temp_EvPrRn.EQ.UNSET_RL ) THEN
-          CALL GLOBAL_SUM_TILE_RL( FWF2HFsiTile, FWF2HFsiGlob, myThid )
-        ELSE
-          FWF2HFsiGlob = HeatCapacity_Cp * temp_EvPrRn * globalArea
-        ENDIF
+      FWFsiGlob=0. _d 0
+      IF ( balanceEmPmR )
+     &   CALL GLOBAL_SUM_TILE_RL( FWFsiTile, FWFsiGlob, myThid )
+      FWF2HFsiGlob=0. _d 0
+      IF ( balanceEmPmR.AND.(temp_EvPrRn.EQ.UNSET_RL) ) THEN
+         CALL GLOBAL_SUM_TILE_RL(FWF2HFsiTile, FWF2HFsiGlob, myThid)
+      ELSEIF ( balanceEmPmR ) THEN
+         FWF2HFsiGlob=HeatCapacity_Cp * temp_EvPrRn * globalArea
       ENDIF
       HFsiGlob=0. _d 0
       IF ( balanceQnet )
@@ -2643,10 +2628,10 @@ C        (if mean SIatmFW was removed uniformely from ocean)
 C mean SItflux (before potential adjustement due to SIatmFW)
       tmpscal2=HFsiGlob / globalArea
 C mean SItflux (after potential adjustement due to SIatmFW)
-      IF ( selectBalanceEmPmR.EQ.1 ) tmpscal2=tmpscal2-tmpscal1
+      IF ( balanceEmPmR ) tmpscal2=tmpscal2-tmpscal1
 
 C 3) balancing adjustments
-      IF ( selectBalanceEmPmR.EQ.1 ) THEN
+      IF ( balanceEmPmR ) THEN
        DO bj=myByLo(myThid),myByHi(myThid)
         DO bi=myBxLo(myThid),myBxHi(myThid)
          DO j=1-OLy,sNy+OLy
@@ -2676,8 +2661,8 @@ C           no qnet or tflux adjustement is needed
        ENDDO
        IF ( balancePrintMean ) THEN
         _BEGIN_MASTER( myThid )
-        WRITE(msgBuf,'(2A,1PE21.14,A,I10)') 'rm Global mean of',
-     &               ' SIatmFW = ', tmpscal0, '  @ it=', myIter
+        WRITE(msgBuf,'(a,a,e24.17)') 'rm Global mean of ',
+     &       'SIatmFW = ', tmpscal0
         CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
      &                      SQUEEZE_RIGHT, myThid )
         _END_MASTER( myThid )
@@ -2697,8 +2682,8 @@ C           no qnet or tflux adjustement is needed
        ENDDO
        IF ( balancePrintMean ) THEN
         _BEGIN_MASTER( myThid )
-        WRITE(msgBuf,'(2A,1PE21.14,A,I10)') 'rm Global mean of',
-     &               ' SItflux = ', tmpscal2, '  @ it=', myIter
+        WRITE(msgBuf,'(a,a,e24.17)') 'rm Global mean of ',
+     &       'SItflux = ', tmpscal2
         CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
      &                      SQUEEZE_RIGHT, myThid )
         _END_MASTER( myThid )
@@ -2724,7 +2709,6 @@ C SIatmFW follows the same convention as empmr -- SIatmFW diag does not
 #else  /* ALLOW_EXF and ALLOW_ATM_TEMP */
       STOP 'SEAICE_GROWTH not compiled without EXF and ALLOW_ATM_TEMP'
 #endif /* ALLOW_EXF and ALLOW_ATM_TEMP */
-#endif /* ndef SEAICE_USE_GROWTH_ADX */
 
       RETURN
       END

@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/mypackage/mypackage_read_pickup.F,v 1.6 2017/03/24 23:38:57 jmc Exp $
+C $Name:  $
+
 #include "MYPACKAGE_OPTIONS.h"
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
@@ -12,7 +15,6 @@ C     Reads current state of MYPACKAGE from a pickup file
 
 C     !USES:
       IMPLICIT NONE
-C     == Global variables ===
 #include "SIZE.h"
 #include "EEPARAMS.h"
 #include "PARAMS.h"
@@ -24,6 +26,7 @@ C     myThid            :: thread number
       INTEGER myIter
       INTEGER myThid
 
+#ifdef ALLOW_MYPACKAGE
 #if (defined MYPACKAGE_3D_STATE) || (defined MYPACKAGE_2D_STATE)
 
 C     !LOCAL VARIABLES:
@@ -195,6 +198,7 @@ C-      Assume Agrid position:
 #endif /* MYPACKAGE_2D_STATE */
 
 #endif /* MYPACKAGE_3D_STATE or MYPACKAGE_2D_STATE */
+#endif /* ALLOW_MYPACKAGE */
 
       RETURN
       END

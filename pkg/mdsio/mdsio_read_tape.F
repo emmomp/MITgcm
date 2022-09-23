@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/mdsio/mdsio_read_tape.F,v 1.1 2013/10/17 00:30:46 jmc Exp $
+C $Name:  $
+
 #include "MDSIO_OPTIONS.h"
 
 CBOP
@@ -128,7 +131,7 @@ C-    If global file is visible to process 0, then open it here.
      &                         SQUEEZE_RIGHT, myThid )
           ENDIF
           length_of_rec = MDS_RECLEN( filePrec, vec_size, myThid )
-          OPEN( dUnit, file=dataFName, status='old', _READONLY_ACTION
+          OPEN( dUnit, file=dataFName, status='old',
      &          access='direct', recl=length_of_rec )
          ELSE
 C     Otherwise stop program.
@@ -193,7 +196,7 @@ C-    Check first for global file with with MDS name (ie. fName.data)
           globalFile = .TRUE.
 C-    And open it here
           length_of_rec = MDS_RECLEN( filePrec, nSize, myThid )
-          OPEN( dUnit, file=dataFName, status='old',_READONLY_ACTION 
+          OPEN( dUnit, file=dataFName, status='old',
      &          access='direct', recl=length_of_rec )
           fileIsOpen=.TRUE.
         ENDIF
@@ -213,7 +216,7 @@ C-    If we are reading from a tiled MDS file then we open each one here
      &                         SQUEEZE_RIGHT, myThid )
           ENDIF
           length_of_rec = MDS_RECLEN( filePrec, nSize, myThid )
-          OPEN( dUnit, file=dataFName, status='old',_READONLY_ACTION 
+          OPEN( dUnit, file=dataFName, status='old',
      &          access='direct', recl=length_of_rec )
           fileIsOpen=.TRUE.
          ELSE

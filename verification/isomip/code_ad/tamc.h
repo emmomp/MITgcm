@@ -1,3 +1,8 @@
+C $Header: /u/gcmpack/MITgcm/verification/isomip/code_ad/tamc.h,v 1.1 2012/01/06 13:01:09 heimbach Exp $
+C $Name:  $
+
+#include "PACKAGES_CONFIG.h"
+
 c     ================================================================
 c     HEADER TAMC
 c     ================================================================
@@ -15,6 +20,7 @@ c              - new keys, separate for different packages
 c     ================================================================
 c     HEADER TAMC
 c     ================================================================
+
 
 c     TAMC checkpointing parameters:
 c     ==============================
@@ -95,8 +101,11 @@ c     and writing data.
       integer iloop_daily
 
       INTEGER    isbyte
-C     For smaller tapes replace 8 by 4.
+#ifdef ALLOW_TAMC_SINGLEPREC_COMLEV
+      PARAMETER( isbyte      = 4 )
+#else
       PARAMETER( isbyte      = 8 )
+#endif
 
       INTEGER    maximpl
       PARAMETER( maximpl     = 6 )
@@ -109,8 +118,15 @@ cph      PARAMETER( maxpass     = PTRACERS_num + 2 )
       PARAMETER( maxpass     = 3 )
 #endif
       INTEGER    maxcube
-      PARAMETER( maxcube     = 2 )
+      PARAMETER( maxcube     = 3 )
+
+      INTEGER act0, act1, act2, act3, act4
+      INTEGER max0, max1, max2, max3
+      INTEGER iikey, kkey, passkey, igadkey, 
+     &        itdkey, idynkey, igmkey
 
 c     ================================================================
 c     END OF HEADER TAMC
 c     ================================================================
+
+

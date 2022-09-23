@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/aim_v23/phy_suflux_sice.F,v 1.6 2006/03/13 03:58:32 jmc Exp $
+C $Name:  $
+
 #include "AIM_OPTIONS.h"
 
 CBOP

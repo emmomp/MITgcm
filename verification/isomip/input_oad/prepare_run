@@ -1,5 +1,8 @@
 #! /usr/bin/env bash
 
+#  $Header: /u/gcmpack/MITgcm/verification/isomip/input_oad/prepare_run,v 1.2 2015/02/05 21:11:01 jmc Exp $
+#  $Name:  $
+
 #- in order to save disc space, take *.bin files from this dir:
 fromDir="../input"
 
@@ -28,7 +31,7 @@ fi
 #- an take pickup files from this dir:
 fromDir="../input_ad"
 
-fileList=`( cd $fromDir ; ls pickup* ones_64b.bin )`
+fileList=`( cd $fromDir ; echo pickup* )`
 
 #echo 'fileList=' $fileList
 

@@ -1,5 +1,7 @@
 #!/bin/bash
 #
+#  $Header: /u/gcmpack/MITgcm/tools/build_options/linux_amd64_pgf77,v 1.10 2016/12/28 23:16:22 jmc Exp $
+#  $Name:  $
 #
 # Build options for PGI compiler on Linux AMD64 platform
 #
@@ -47,7 +49,7 @@ DEFINES="-DWORDLENGTH=4"
 if test "x$ALWAYS_USE_F90" = x1 ; then
     FC=$F90C
 else
-    DEFINES="$DEFINES -DNML_EXTENDED_F77 -DEXCLUDE_OPEN_ACTION"
+    DEFINES="$DEFINES -DNML_EXTENDED_F77"
 fi
 CPP='cpp -traditional -P'
 F90FIXEDFORMAT='-Mfixed'

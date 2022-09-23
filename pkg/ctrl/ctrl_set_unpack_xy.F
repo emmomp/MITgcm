@@ -1,9 +1,12 @@
+C $Header: /u/gcmpack/MITgcm/pkg/ctrl/ctrl_set_unpack_xy.F,v 1.34 2015/06/16 20:20:26 gforget Exp $
+C $Name:  $
+
 #include "CTRL_OPTIONS.h"
 
       subroutine ctrl_set_unpack_xy(
      &     lxxadxx, cunit, ivartype, PrecondScalar,
      &     fname, masktype, weighttype,
-     &     nwetglobal, mythid )
+     &     nwetglobal, mythid)
 
 c     ==================================================================
 c     SUBROUTINE ctrl_set_unpack_xy
@@ -35,69 +38,64 @@ c     == routine arguments ==
       character*( 80) fname
       character*(  9) masktype
       character*( 80) weighttype
-      integer nwetglobal(Nr)
+      integer nwetglobal(nr)
       integer mythid
 
 #ifndef EXCLUDE_CTRL_PACK
-c     == external ==
-      integer  ilnblnk
-      external ilnblnk
-
-c     == local variables ==
-      integer bi,bj
-      integer i,j,k
-      integer ii, irec
-      integer cbuffindex
-      real*4 cbuff( sNx*nSx*nPx*sNy*nSy*nPy )
-      character*(80) cfile2, cfile3
-C========================================================================
 # ifndef ALLOW_PACKUNPACK_METHOD2
+c     == local variables ==
+
+      integer bi,bj
       integer ip,jp
-      integer nrec_nl
+      integer i,j,k
+      integer ii
+      integer il
+      integer irec,nrec_nl
       integer itlo,ithi
       integer jtlo,jthi
       integer jmin,jmax
       integer imin,imax
-      _RL     globmsk  ( sNx,nSx,nPx,sNy,nSy,nPy,Nr )
-      _RL     globfld3d( sNx,nSx,nPx,sNy,nSy,nPy,Nr )
+
+      integer cbuffindex
+
+      _RL     globmsk  ( snx,nsx,npx,sny,nsy,npy,nr )
+      _RL     globfld3d( snx,nsx,npx,sny,nsy,npy,nr )
 #ifdef ALLOW_NONDIMENSIONAL_CONTROL_IO
-      integer il
-      _RL     weightfld2d( sNx,nSx,nPx,sNy,nSy,nPy )
-      character*( 80) weightname
+      _RL     weightfld2d( snx,nsx,npx,sny,nsy,npy )
 #endif
-      integer reclen, irectrue
+      real*4  cbuff    ( snx*nsx*npx*sny*nsy*npy )
+
+      character*( 80) weightname
+
+      integer reclen,irectrue
       integer cunit2, cunit3
-      real*4 globfldtmp2( sNx,nSx,nPx,sNy,nSy,nPy )
-      real*4 globfldtmp3( sNx,nSx,nPx,sNy,nSy,nPy )
-# else /* ALLOW_PACKUNPACK_METHOD2 */
-      integer il
-      _RL msk3d(1-OLx:sNx+OLx,1-OLy:sNy+OLy,Nr,nSx,nSy)
-      real*8 msk2d_buf(sNx,sNy,nSx,nSy)
-      real*8 msk2d_buf_glo(Nx,Ny)
-      real*8 fld2d_buf(sNx,sNy,nSx,nSy)
-      real*8 fld2d_buf_glo(Nx,Ny)
-      _RL fld2dDim(1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
-      _RL fld2dNodim(1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
-      _RL wei2d(1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
-      _RL dummy
-# endif /* ALLOW_PACKUNPACK_METHOD2 */
+      character*(80) cfile2, cfile3
+      real*4 globfldtmp2( snx,nsx,npx,sny,nsy,npy )
+      real*4 globfldtmp3( snx,nsx,npx,sny,nsy,npy )
+
+      LOGICAL doPackOld
+
+c     == external ==
+
+      integer  ilnblnk
+      external ilnblnk
+
 c     == end of interface ==
 
-# ifndef ALLOW_PACKUNPACK_METHOD2
-
       jtlo = 1
-      jthi = nSy
+      jthi = nsy
       itlo = 1
-      ithi = nSx
+      ithi = nsx
       jmin = 1
-      jmax = sNy
+      jmax = sny
       imin = 1
-      imax = sNx
+      imax = snx
 
       nbuffGlobal = nbuffGlobal + 1
+      doPackOld = (.NOT.ctrlSmoothCorrel2D).AND.(.NOT.ctrlUseGen)
 
 c     Initialise temporary file
-      do k = 1,Nr
+      do k = 1,nr
        do jp = 1,nPy
         do bj = jtlo,jthi
          do j = jmin,jmax
@@ -138,7 +136,7 @@ c--   Only the master thread will do I/O.
      &           ivartype, '_', optimcycle, '.bin'
          endif
 
-         reclen = FLOAT(sNx*nSx*nPx*sNy*nSy*nPy*4)
+         reclen = FLOAT(snx*nsx*npx*sny*nsy*npy*4)
          call mdsfindunit( cunit2, mythid )
          open( cunit2, file=cfile2, status='unknown',
      &        access='direct', recl=reclen )
@@ -179,7 +177,7 @@ c--   Only the master thread will do I/O.
       nrec_nl=int(ncvarrecs(ivartype)/Nr)
       do irec = 1, nrec_nl
          do k = 1,Nr
-         irectrue = (irec-1)*Nr + k
+         irectrue = (irec-1)*nr + k
 #ifndef ALLOW_ADMTLM
          read(cunit) filencvarindex(ivartype)
          if (filencvarindex(ivartype) .NE. ncvarindex(ivartype))
@@ -233,6 +231,23 @@ cph(
      &                 phtmpadmtlm(nveccount)
 cph)
 #endif
+                     IF ( doPackOld ) THEN
+                      if ( lxxadxx ) then
+                        globfld3d(i,bi,ip,j,bj,jp,k) =
+     &                       globfld3d(i,bi,ip,j,bj,jp,k)
+#ifdef ALLOW_NONDIMENSIONAL_CONTROL_IO
+     &                       / sqrt(weightfld2d(i,bi,ip,j,bj,jp))
+#endif
+     &                       * precondScalar
+                      else
+                        globfld3d(i,bi,ip,j,bj,jp,k) =
+     &                       globfld3d(i,bi,ip,j,bj,jp,k)
+#ifdef ALLOW_NONDIMENSIONAL_CONTROL_IO
+     &                       * sqrt(weightfld2d(i,bi,ip,j,bj,jp))
+#endif
+     &                       / precondScalar
+                      endif
+                     ELSE !IF ( doPackOld ) THEN
                       if ( lxxadxx ) then
                         globfld3d(i,bi,ip,j,bj,jp,k) =
      &                       globfld3d(i,bi,ip,j,bj,jp,k)
@@ -242,6 +257,7 @@ cph)
      &                       globfld3d(i,bi,ip,j,bj,jp,k)
      &                       / precondScalar
                       endif
+                     ENDIF !IF ( doPackOld ) THEN
                   else
                      globfld3d(i,bi,ip,j,bj,jp,k) = 0. _d 0
                   endif
@@ -325,6 +341,23 @@ cph(
      &                 phtmpadmtlm(nveccount)
 cph)
 #endif
+                     IF ( doPackOld ) THEN
+                      if ( lxxadxx ) then
+                        globfld3d(i,bi,ip,j,bj,jp,k) =
+     &                       globfld3d(i,bi,ip,j,bj,jp,k)
+#ifdef ALLOW_NONDIMENSIONAL_CONTROL_IO
+     &                       / sqrt(weightfld2d(i,bi,ip,j,bj,jp))
+#endif
+     &                       * precondScalar
+                      else
+                        globfld3d(i,bi,ip,j,bj,jp,k) =
+     &                       globfld3d(i,bi,ip,j,bj,jp,k)
+#ifdef ALLOW_NONDIMENSIONAL_CONTROL_IO
+     &                       * sqrt(weightfld2d(i,bi,ip,j,bj,jp))
+#endif
+     &                       / precondScalar
+                      endif
+                     ELSE !IF ( doPackOld ) THEN
                       if ( lxxadxx ) then
                         globfld3d(i,bi,ip,j,bj,jp,k) =
      &                       globfld3d(i,bi,ip,j,bj,jp,k)
@@ -334,6 +367,7 @@ cph)
      &                       globfld3d(i,bi,ip,j,bj,jp,k)
      &                       / precondScalar
                       endif
+                     ENDIF !IF ( doPackOld ) THEN
                   else
                      globfld3d(i,bi,ip,j,bj,jp,k) = 0. _d 0
                   endif
@@ -368,9 +402,52 @@ cph)
 
       _END_MASTER( mythid )
 
-# else /* ALLOW_PACKUNPACK_METHOD2 */
+# else
+c     == local variables ==
+
+      integer bi,bj
+      integer ip,jp
+      integer i,j,k
+      integer ii
+      integer il
+      integer irec
+      integer itlo,ithi
+      integer jtlo,jthi
+
+      integer cbuffindex
+
+      _RL msk3d(1-Olx:sNx+Olx,1-Oly:sNy+Oly,Nr,nSx,nSy)
+      real*8 msk2d_buf(sNx,sNy,nSx,nSy)
+      real*8 msk2d_buf_glo(Nx,Ny)
+
+      _RL fld2d(1-Olx:sNx+Olx,1-Oly:sNy+Oly,nSx,nSy)
+      real*8 fld2d_buf(sNx,sNy,nSx,nSy)
+      real*8 fld2d_buf_glo(Nx,Ny)
+
+      _RL fld2dDim(1-Olx:sNx+Olx,1-Oly:sNy+Oly,nSx,nSy)
+      _RL fld2dNodim(1-Olx:sNx+Olx,1-Oly:sNy+Oly,nSx,nSy)
+
+      _RL wei2d(1-Olx:sNx+Olx,1-Oly:sNy+Oly,nSx,nSy)
+
+      real*4 cbuff      ( snx*nsx*npx*sny*nsy*npy )
+
+      character*(80) weightname
+      _RL delZnorm
+      character*(80) cfile2, cfile3
+      _RL dummy
+
+      LOGICAL doPackOld
+
+c     == external ==
+
+      integer  ilnblnk
+      external ilnblnk
+
+c     == end of interface ==
 
 c-- part 1: preliminary reads and definitions
+
+      doPackOld = (.NOT.ctrlSmoothCorrel2D).AND.(.NOT.ctrlUseGen)
 
 #ifdef ALLOW_NONDIMENSIONAL_CONTROL_IO
 #ifdef ALLOW_AUTODIFF
@@ -478,6 +555,7 @@ c-- 2.1: array <- buffer <- global buffer <- global file
 
       enddo !do k = 1, 1
 
+
 c-- 2.2: normalize field if needed
       DO bj = myByLo(myThid), myByHi(myThid)
        DO bi = myBxLo(myThid), myBxHi(myThid)
@@ -491,6 +569,7 @@ c-- 2.2: normalize field if needed
             nveccount = nveccount + 1
             fld2dNodim(i,j,bi,bj)=phtmpadmtlm(nveccount)
 #endif
+           IF ( .NOT.doPackOld ) THEN
             if (lxxadxx) then
                fld2dDim(i,j,bi,bj) =
      &              fld2dNodim(i,j,bi,bj) * precondScalar
@@ -498,6 +577,27 @@ c-- 2.2: normalize field if needed
                fld2dDim(i,j,bi,bj) =
      &              fld2dNodim(i,j,bi,bj) / precondScalar
             endif
+           ELSE !IF ( .NOT.doPackOld ) THEN
+# ifndef ALLOW_NONDIMENSIONAL_CONTROL_IO
+            if (lxxadxx) then
+               fld2dDim(i,j,bi,bj) = fld2dNodim(i,j,bi,bj)
+     &                       * precondScalar
+            else
+               fld2dDim(i,j,bi,bj) = fld2dNodim(i,j,bi,bj)
+     &                       / precondScalar
+            endif
+# else
+            if (lxxadxx) then
+               fld2dDim(i,j,bi,bj) =
+     &              fld2dNodim(i,j,bi,bj) / sqrt(wei2d(i,j,bi,bj))
+     &                       * precondScalar
+            else
+               fld2dDim(i,j,bi,bj) =
+     &              fld2dNodim(i,j,bi,bj) * sqrt(wei2d(i,j,bi,bj))
+     &                       / precondScalar
+            endif
+# endif /* ALLOW_NONDIMENSIONAL_CONTROL_IO */
+           ENDIF !IF ( .NOT.doPackOld ) THEN
            endif
           ENDDO
          ENDDO
@@ -523,3 +623,4 @@ c-- 2.4:
 
       return
       end
+

@@ -1,8 +1,7 @@
-#include "PACKAGES_CONFIG.h"
+C $Header: /u/gcmpack/MITgcm/model/src/solve_pentadiagonal.F,v 1.13 2016/10/26 00:50:25 jmc Exp $
+C $Name:  $
+
 #include "CPP_OPTIONS.h"
-#ifdef ALLOW_AUTODIFF
-# include "AUTODIFF_OPTIONS.h"
-#endif
 
 CBOP
 C     !ROUTINE: SOLVE_PENTADIAGONAL
@@ -295,9 +294,6 @@ C-    end i,j loop
 
 #else  /* ndef SOLVE_DIAGONAL_KINNER */
 
-#ifdef ALLOW_AUTODIFF_TAMC
-CADJ INIT loctape_solvepenta = COMMON, Nr
-#endif
 C--   Init. + copy to temp. array
       DO k=1,Nr
        DO j=1-OLy,sNy+OLy
@@ -311,95 +307,86 @@ C--   Init. + copy to temp. array
        ENDDO
       ENDDO
 
+CADJ loop = sequential
       DO k=1,Nr
 C--   Forward sweep (starting from top)
-#ifdef ALLOW_AUTODIFF_TAMC
-CADJ STORE d5d_prime(:,:,k) = loctape_solvepenta, key = k
-CADJ STORE e5d_prime(:,:,k) = loctape_solvepenta, key = k
-CADJ STORE y5d_prime(:,:,k) = loctape_solvepenta, key = k
-#endif
-       IF ( k .EQ. 1 ) THEN
-C-    just copy terms
-        DO j=1-OLy,sNy+OLy
-         DO i=1-OLx,sNx+OLx
-          c5d_prime(i,j,k) = c5d(i,j,k)
-          d5d_prime(i,j,k) = d5d(i,j,k)
-          e5d_prime(i,j,k) = e5d(i,j,k)
-          y5d_prime(i,j,k) = y5d_m1(i,j,k)
-         ENDDO
-        ENDDO
-       ELSEIF ( k .EQ. 2 ) THEN
-C-    subtract one term
-        DO j=1-OLy,sNy+OLy
-         DO i=1-OLx,sNx+OLx
-          tmpVar = b5d(i,j,k)
-          c5d_prime(i,j,k) = c5d(i,j,k)    - tmpVar*d5d_prime(i,j,k-1)
-          d5d_prime(i,j,k) = d5d(i,j,k)    - tmpVar*e5d_prime(i,j,k-1)
-          e5d_prime(i,j,k) = e5d(i,j,k)
-          y5d_prime(i,j,k) = y5d_m1(i,j,k) - tmpVar*y5d_prime(i,j,k-1)
-         ENDDO
-        ENDDO
-       ELSE
-C-    subtract two terms
-        DO j=1-OLy,sNy+OLy
-         DO i=1-OLx,sNx+OLx
-          tmpVar = b5d(i,j,k)-a5d(i,j,k)*d5d_prime(i,j,k-2)
-          c5d_prime(i,j,k) = c5d(i,j,k)    - tmpVar*d5d_prime(i,j,k-1)
-     &         -a5d(i,j,k)*e5d_prime(i,j,k-2)
-          d5d_prime(i,j,k) = d5d(i,j,k)    - tmpVar*e5d_prime(i,j,k-1)
-          e5d_prime(i,j,k) = e5d(i,j,k)
-          y5d_prime(i,j,k) = y5d_m1(i,j,k) - tmpVar*y5d_prime(i,j,k-1)
-     &         -a5d(i,j,k)*y5d_prime(i,j,k-2)
-         ENDDO
-        ENDDO
-       ENDIF
 
-C-    normalization
        DO j=1-OLy,sNy+OLy
         DO i=1-OLx,sNx+OLx
-         tmpVar = c5d_prime(i,j,k)
-         IF ( tmpVar.NE.0. _d 0 ) THEN
-          recVar = 1. _d 0 / tmpVar
-          d5d_prime(i,j,k) = d5d_prime(i,j,k)*recVar
-          e5d_prime(i,j,k) = e5d_prime(i,j,k)*recVar
-          y5d_prime(i,j,k) = y5d_prime(i,j,k)*recVar
-         ELSE
-          d5d_prime(i,j,k) = 0. _d 0
-          e5d_prime(i,j,k) = 0. _d 0
-          y5d_prime(i,j,k) = 0. _d 0
-          errCode = 1
-         ENDIF
+c      DO j=jMin,jMax
+c       DO i=iMin,iMax
+
+          IF (k.EQ.1) THEN
+C-    just copy terms
+           c5d_prime(i,j,k) = c5d(i,j,k)
+           d5d_prime(i,j,k) = d5d(i,j,k)
+           e5d_prime(i,j,k) = e5d(i,j,k)
+           y5d_prime(i,j,k) = y5d_m1(i,j,k)
+          ELSEIF (k.EQ.2) THEN
+C-    subtract one term
+           c5d_prime(i,j,k) = c5d(i,j,k)
+     &      -b5d(i,j,k)*d5d_prime(i,j,k-1)
+           d5d_prime(i,j,k) = d5d(i,j,k)
+     &      -b5d(i,j,k)*e5d_prime(i,j,k-1)
+           e5d_prime(i,j,k) = e5d(i,j,k)
+           y5d_prime(i,j,k) = y5d_m1(i,j,k)
+     &      -b5d(i,j,k)*y5d_prime(i,j,k-1)
+          ELSE
+C-    subtract two terms
+           c5d_prime(i,j,k) = c5d(i,j,k)
+     &      -a5d(i,j,k)*e5d_prime(i,j,k-2)
+     &      -(b5d(i,j,k)-a5d(i,j,k)*d5d_prime(i,j,k-2))
+     &      *d5d_prime(i,j,k-1)
+           d5d_prime(i,j,k) = d5d(i,j,k)
+     &      -(b5d(i,j,k)-a5d(i,j,k)*d5d_prime(i,j,k-2))
+     &      *e5d_prime(i,j,k-1)
+           e5d_prime(i,j,k) = e5d(i,j,k)
+           y5d_prime(i,j,k) = y5d_m1(i,j,k)
+     &      -a5d(i,j,k)*y5d_prime(i,j,k-2)
+     &      -(b5d(i,j,k)-a5d(i,j,k)*d5d_prime(i,j,k-2))
+     &      *y5d_prime(i,j,k-1)
+          ENDIF
+
+C-    normalization
+          tmpVar = c5d_prime(i,j,k)
+          IF ( tmpVar.NE.0. _d 0 ) THEN
+           recVar = 1. _d 0 / tmpVar
+           d5d_prime(i,j,k) = d5d_prime(i,j,k)*recVar
+           e5d_prime(i,j,k) = e5d_prime(i,j,k)*recVar
+           y5d_prime(i,j,k) = y5d_prime(i,j,k)*recVar
+          ELSE
+           d5d_prime(i,j,k) = 0. _d 0
+           e5d_prime(i,j,k) = 0. _d 0
+           y5d_prime(i,j,k) = 0. _d 0
+           errCode = 1
+          ENDIF
+
         ENDDO
        ENDDO
 
 C-    end k-loop
       ENDDO
 
+CADJ loop = sequential
 C--   Backward sweep (starting from bottom)
       DO k=Nr,1,-1
-       IF ( k .EQ. Nr ) THEN
-        DO j=1-OLy,sNy+OLy
-         DO i=1-OLx,sNx+OLx
+       DO j=1-OLy,sNy+OLy
+        DO i=1-OLx,sNx+OLx
+c      DO j=jMin,jMax
+c       DO i=iMin,iMax
+         IF (k.EQ.Nr) THEN
           y5d(i,j,k) =    y5d_prime(i,j,k)
-         ENDDO
-        ENDDO
-       ELSEIF ( k .EQ. Nr-1 ) THEN
-        DO j=1-OLy,sNy+OLy
-         DO i=1-OLx,sNx+OLx
+         ELSEIF (k.EQ.Nr-1) THEN
           y5d(i,j,k) =    y5d_prime(i,j,k)
      &     - y5d(i,j,k+1)*d5d_prime(i,j,k)
-         ENDDO
-        ENDDO
-       ELSE
-        DO j=1-OLy,sNy+OLy
-         DO i=1-OLx,sNx+OLx
+         ELSE
           y5d(i,j,k) =    y5d_prime(i,j,k)
      &     - y5d(i,j,k+1)*d5d_prime(i,j,k)
      &     - y5d(i,j,k+2)*e5d_prime(i,j,k)
-         ENDDO
+         ENDIF
         ENDDO
-       ENDIF
-C-    k-loop
+       ENDDO
+C-    end k-loop
       ENDDO
 
 #endif /* SOLVE_DIAGONAL_KINNER */

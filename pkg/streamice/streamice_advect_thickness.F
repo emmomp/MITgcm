@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/streamice/streamice_advect_thickness.F,v 1.13 2016/12/01 12:34:03 dgoldberg Exp $
+C $Name:  $
+
 #include "STREAMICE_OPTIONS.h"
 #ifdef ALLOW_AUTODIFF
 # include "AUTODIFF_OPTIONS.h"
@@ -73,6 +76,7 @@ CADJ STORE streamice_hmask  = comlev1, key=ikey_dynamics
       ENDDO
 #endif
 
+
       DO bj=myByLo(myThid),myByHi(myThid)
        DO bi=myBxLo(myThid),myBxHi(myThid)
         DO j=1,sNy+1
@@ -83,7 +87,7 @@ CADJ STORE streamice_hmask  = comlev1, key=ikey_dynamics
 
           hflux_x_SI (i,j,bi,bj) = 0. _d 0
           hflux_y_SI (i,j,bi,bj) = 0. _d 0
-
+          
           IF (STREAMICE_hmask(i,j,bi,bj).eq.1.0) THEN
            h_after_uflux_SI(i,j,bi,bj) = 0. _d 0
            h_after_vflux_SI(i,j,bi,bj) = 0. _d 0
@@ -95,15 +99,8 @@ CADJ STORE streamice_hmask  = comlev1, key=ikey_dynamics
           IF (STREAMICE_ufacemask(i,j,bi,bj).eq.3.0) THEN
            BCMASKX(i,j,bi,bj) = 3.0
            BCVALX(i,j,bi,bj) = h_ubdry_values_SI(i,j,bi,bj)
-           IF (STREAMICE_vel_ext_cgrid) THEN
-            utrans(i,j,bi,bj) = u_streamice_ext(i,j,bi,bj)
-           ELSEIF (STREAMICE_vel_ext) THEN
-            utrans(i,j,bi,bj) = .5 * (
-     &       u_streamice_ext(i,j,bi,bj)+u_streamice_ext(i,j+1,bi,bj))
-           ELSE
-            utrans(i,j,bi,bj) = .5 * (
-     &       u_streamice(i,j,bi,bj)+u_streamice(i,j+1,bi,bj))
-           ENDIF
+           utrans(i,j,bi,bj) = .5 * (
+     &      u_streamice(i,j,bi,bj)+u_streamice(i,j+1,bi,bj))
           ELSEIF (STREAMICE_ufacemask(i,j,bi,bj).eq.4.0) THEN
            IF (STREAMICE_hmask(i,j,bi,bj).eq.1.0) THEN
             uflux = u_flux_bdry_SI(i,j,bi,bj)
@@ -125,29 +122,15 @@ CADJ STORE streamice_hmask  = comlev1, key=ikey_dynamics
           ELSE
            BCMASKX(i,j,bi,bj) = 0.0
            BCVALX(i,j,bi,bj) = 0. _d 0
-           IF (STREAMICE_vel_ext_cgrid) THEN
-            utrans(i,j,bi,bj) = u_streamice_ext(i,j,bi,bj)
-           ELSEIF (STREAMICE_vel_ext) THEN
-            utrans(i,j,bi,bj) = .5 * (
-     &       u_streamice_ext(i,j,bi,bj)+u_streamice_ext(i,j+1,bi,bj))
-           ELSE
-            utrans(i,j,bi,bj) = .5 * (
-     &       u_streamice(i,j,bi,bj)+u_streamice(i,j+1,bi,bj))
-           ENDIF
+           utrans(i,j,bi,bj) = .5 * (
+     &      u_streamice(i,j,bi,bj)+u_streamice(i,j+1,bi,bj))
           ENDIF
 
           IF (STREAMICE_vfacemask(i,j,bi,bj).eq.3.0) THEN
            BCMASKy(i,j,bi,bj) = 3.0
            BCVALy(i,j,bi,bj) = h_vbdry_values_SI(i,j,bi,bj)
-           IF (STREAMICE_vel_ext_cgrid) THEN
-            vtrans(i,j,bi,bj) = v_streamice_ext(i,j,bi,bj)
-           ELSEIF (STREAMICE_vel_ext) THEN
-            vtrans(i,j,bi,bj) = .5 * (
-     &       v_streamice_ext(i,j,bi,bj)+v_streamice_ext(i+1,j,bi,bj))
-           ELSE
-            vtrans(i,j,bi,bj) = .5 * (
-     &       v_streamice(i,j,bi,bj)+v_streamice(i+1,j,bi,bj))
-           ENDIF
+           vtrans(i,j,bi,bj) = .5 * (
+     &      v_streamice(i,j,bi,bj)+v_streamice(i+1,j,bi,bj))
           ELSEIF (STREAMICE_vfacemask(i,j,bi,bj).eq.4.0) THEN
            IF (STREAMICE_hmask(i,j,bi,bj).eq.1.0) THEN
             vflux = v_flux_bdry_SI(i,j,bi,bj)
@@ -160,6 +143,8 @@ CADJ STORE streamice_hmask  = comlev1, key=ikey_dynamics
             BCVALY(i,j,bi,bj) = vflux
             vtrans(i,j,bi,bj) = -1.0
            ENDIF
+
+           vtrans(i,j,bi,bj) = 1.0
           ELSEIF (.not.(
      &     STREAMICE_hmask(i,j,bi,bj).eq.1.0.OR.
      &     STREAMICE_hmask(i,j-1,bi,bj).eq.1.0)) THEN
@@ -169,15 +154,8 @@ CADJ STORE streamice_hmask  = comlev1, key=ikey_dynamics
           ELSE
            BCMASKy(i,j,bi,bj) = 0.0
            BCVALy(i,j,bi,bj) = 0. _d 0
-           IF (STREAMICE_vel_ext_cgrid) THEN
-            vtrans(i,j,bi,bj) = v_streamice_ext(i,j,bi,bj)
-           ELSEIF (STREAMICE_vel_ext) THEN
-            vtrans(i,j,bi,bj) = .5 * (
-     &       v_streamice_ext(i,j,bi,bj)+v_streamice_ext(i+1,j,bi,bj))
-           ELSE
-            vtrans(i,j,bi,bj) = .5 * (
-     &       v_streamice(i,j,bi,bj)+v_streamice(i+1,j,bi,bj))
-           ENDIF
+           vtrans(i,j,bi,bj) =  .5 * (
+     &      v_streamice(i,j,bi,bj)+v_streamice(i+1,j,bi,bj))
           ENDIF
 
          ENDDO
@@ -193,8 +171,6 @@ CADJ STORE streamice_hmask  = comlev1, key=ikey_dynamics
       _EXCH_XY_RL(BCVALY,myThid)
       _EXCH_XY_RL(h_after_uflux_SI,myThid)
       _EXCH_XY_RL(h_after_vflux_SI,myThid)
-      _EXCH_XY_RL(hflux_x_SI,myThid)
-      _EXCH_XY_RL(hflux_y_SI,myThid)
 
 #ifndef ALLOW_AUTODIFF
 
@@ -368,7 +344,7 @@ CADJ STORE streamice_hmask  = comlev1, key=ikey_dynamics
            IF (STREAMICE_allow_cpl) THEN
 #ifdef ALLOW_SHELFICE
             MR = -1. * (1.-float_frac_streamice(i,j,bi,bj)) *
-     &        shelfIceFreshWaterFlux(i,j,bi,bj) * irho *
+     &        shelfIceFreshWaterFlux(I,J,bi,bj) * irho *
      &        sec_per_year
 
 #else

@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/seaice/advect.F,v 1.30 2014/10/20 03:20:57 gforget Exp $
+C $Name:  $
+
 #include "SEAICE_OPTIONS.h"
 #ifdef ALLOW_AUTODIFF
 # include "AUTODIFF_OPTIONS.h"
@@ -72,33 +75,44 @@ C     save fld from previous time step
        ENDDO
       ENDDO
 
-#ifdef ALLOW_AUTODIFF_TAMC
-CADJ INIT loctape_advect = COMMON, 2
-#endif
       DO k=1,2
-#ifdef ALLOW_AUTODIFF_TAMC
-CADJ STORE fld = loctape_advect, key = k
-#endif
+cph       IF ( k .EQ. 1 ) THEN
+C     Prediction step
+cph        DO bj=myByLo(myThid),myByHi(myThid)
+cph         DO bi=myBxLo(myThid),myBxHi(myThid)
+cph          DO j=1-OLy,sNy+OLy
+cph           DO i=1-OLx,sNx+OLx
+cph            tmpFld(i,j,bi,bj) = fld(i,j,bi,bj)
+cph           ENDDO
+cph          ENDDO
+cph         ENDDO
+cph        ENDDO
+cph       ELSE
 C     Backward Euler correction step
         DO bj=myByLo(myThid),myByHi(myThid)
          DO bi=myBxLo(myThid),myBxHi(myThid)
           DO j=1-OLy,sNy+OLy
            DO i=1-OLx,sNx+OLx
+cph for k=1 this is same as tmpFld = fld
             tmpFld(i,j,bi,bj)=HALF*(fld(i,j,bi,bj)
      &           +fldNm1(i,j,bi,bj))
            ENDDO
           ENDDO
          ENDDO
         ENDDO
+cph       ENDIF
 
-#ifdef ALLOW_AUTODIFF
-       DO j=1-OLy,sNy+OLy
-        DO i=1-OLx,sNx+OLx
+#ifdef ALLOW_AUTODIFF_TAMC
+cphCADJ STORE fld    = comlev1, key = ikey_dynamics
+cphCADJ STORE fldNm1 = comlev1, key = ikey_dynamics
+cphCADJ STORE tmpFld = comlev1, key = ikey_dynamics
+       DO J=1-Oly,sNy+Oly
+        DO I=1-Olx,sNx+Olx
          afx(i,j) = 0. _d 0
          afy(i,j) = 0. _d 0
         ENDDO
        ENDDO
-#endif /* ALLOW_AUTODIFF */
+#endif /* ALLOW_AUTODIFF_TAMC */
 
 C NOW GO THROUGH STANDARD CONSERVATIVE ADVECTION
        IF ( .NOT. SEAICEuseFluxForm ) THEN

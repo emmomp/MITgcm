@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/land/land_ini_vars.F,v 1.7 2007/11/05 15:40:53 jmc Exp $
+C $Name:  $
+
 #include "LAND_OPTIONS.h"
 
 CBOP

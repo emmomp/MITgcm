@@ -86,7 +86,7 @@
  meridWindFile=  '',
 # thetaClimFile=  '',
 # saltClimFile=   '',
- surfQnetFile=   '',
+ surfQFile=      '',
  EmPmRFile=      '',
  the_run_name=   'Offline dic',
  &

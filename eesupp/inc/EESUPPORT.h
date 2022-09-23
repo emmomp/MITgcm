@@ -1,3 +1,5 @@
+C $Header: /u/gcmpack/MITgcm/eesupp/inc/EESUPPORT.h,v 1.10 2009/04/21 16:00:53 jmc Exp $
+C $Name:  $
 CBOP
 C     !ROUTINE: EESUPPORT.h
 C     !INTERFACE:
@@ -7,11 +9,11 @@ C     !DESCRIPTION:
 C     *==========================================================*
 C     | EESUPPORT.h                                              |
 C     *==========================================================*
-C     | Support data structures for the MITgcm UV                |
-C     | "execution environment" code. This data should be        |
-C     | private to the execution environment routines. Data      |
-C     | which needs to be accessed directly by a numerical model |
-C     | goes in EEPARAMS.h.                                      |
+C     | Support data structures for the MITgcm UV ``execution    |
+C     | environment'' code. This data should be private to the   |
+C     | execution environment routines. Data which needs to be   |
+C     | accessed directly by a numerical model goes in           |
+C     | EEPARAMS.h.                                              |
 C     *==========================================================*
 CEOP
 

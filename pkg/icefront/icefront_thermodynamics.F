@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/icefront/icefront_thermodynamics.F,v 1.10 2013/11/10 02:58:34 yunx Exp $
+C $Name:  $
+
 #include "ICEFRONT_OPTIONS.h"
 
 CBOP

@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/model/src/cg3d.F,v 1.25 2012/05/11 23:34:06 jmc Exp $
+C $Name:  $
+
 #include "CPP_OPTIONS.h"
 #ifdef TARGET_NEC_SX
 C     set a sensible default for the outer loop unrolling parameter that can

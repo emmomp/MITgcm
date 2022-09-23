@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/aim_v23/phy_suflux_post.F,v 1.3 2004/06/24 23:43:11 jmc Exp $
+C $Name:  $
+
 #include "AIM_OPTIONS.h"
 
 CBOP

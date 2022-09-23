@@ -1,7 +1,10 @@
+C $Header: /u/gcmpack/MITgcm/pkg/smooth/smooth2d.F,v 1.3 2015/01/23 18:58:26 gforget Exp $
+C $Name:  $
+
 #include "SMOOTH_OPTIONS.h"
 
-      SUBROUTINE SMOOTH2D(
-     &           fld_in, mask_in, smoothOpNb, myThid )
+      subroutine smooth2D (
+     U     fld_in,mask_in,smoothOpNb,mythid)
 
 C     *==========================================================*
 C     | SUBROUTINE smooth2D
@@ -13,29 +16,36 @@ C     *==========================================================*
 #include "EEPARAMS.h"
 #include "GRID.h"
 #include "PARAMS.h"
+c#include "tamc.h"
 #include "SMOOTH.h"
 
-      _RL fld_in (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
-      _RS mask_in(1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
-      INTEGER smoothOpNb
-      INTEGER myThid
+      _RL mask_in(1-OLx:sNx+OLx,1-OLy:sNy+OLy,nR,nSx,nSy)
+      _RL fld_in(1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
+      integer smoothOpNb
+      integer nbt_in
+      character*( 80) fnamegeneric
+      integer i,j,bi,bj
+      integer itlo,ithi
+      integer jtlo,jthi
+      integer myThid
 
-      INTEGER nbt_in
-      CHARACTER*(80) fnamegeneric
+      jtlo = mybylo(mythid)
+      jthi = mybyhi(mythid)
+      itlo = mybxlo(mythid)
+      ithi = mybxhi(mythid)
 
-C read smoothing [i.e diffusion] operator:
-      WRITE(fnamegeneric(1:80),'(1A,I3.3)')
+c read smoothing [i.e diffusion] operator:
+      write(fnamegeneric(1:80),'(1a,i3.3)')
      &    'smooth2Doperator',smoothOpNb
-      CALL READ_REC_3D_RL( fnamegeneric, smoothprec,
-     &                     1, smooth2D_Kux, 1, 1, myThid )
-      CALL READ_REC_3D_RL( fnamegeneric, smoothprec,
-     &                     1, smooth2D_Kvy, 2, 1, myThid )
-      CALL EXCH_XY_RL( smooth2D_Kux, myThid )
-      CALL EXCH_XY_RL( smooth2D_Kvy, myThid )
+      CALL READ_REC_3D_RL(fnamegeneric,smoothprec,
+     &           1, smooth2D_Kux,1,1,mythid)
+      CALL READ_REC_3D_RL(fnamegeneric,smoothprec,
+     &           1, smooth2D_Kvy,2,1,mythid)
+      CALL EXCH_XY_RL ( smooth2D_Kux, myThid )
+      CALL EXCH_XY_RL ( smooth2D_Kvy, myThid )
 
-C do the smoothing:
-      nbt_in = smooth2Dnbt(smoothOpNb)
-      CALL SMOOTH_DIFF2D( fld_in, mask_in, nbt_in, myThid )
+c do the smoothing:
+      nbt_in=smooth2Dnbt(smoothOpNb)
+      call smooth_diff2D(fld_in,mask_in,nbt_in,mythid)
 
-      RETURN
-      END
+      end

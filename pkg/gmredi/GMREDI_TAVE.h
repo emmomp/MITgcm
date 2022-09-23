@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/gmredi/GMREDI_TAVE.h,v 1.3 2010/01/02 23:10:47 jmc Exp $
+C $Name:  $
+
 #ifdef ALLOW_GMREDI
 
 C     *==========================================================*

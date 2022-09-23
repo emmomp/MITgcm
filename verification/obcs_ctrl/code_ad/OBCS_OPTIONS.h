@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/verification/obcs_ctrl/code_ad/OBCS_OPTIONS.h,v 1.4 2014/09/27 00:13:41 dimitri Exp $
+C $Name:  $
+
 C CPP options file for OBCS package
 C Use this file for selecting options within the OBCS package
 
@@ -23,7 +26,7 @@ C from a file
 #define ALLOW_OBCS_PRESCRIBE
 
 C Enable OB conditions following Stevens (1990)
-#define ALLOW_OBCS_STEVENS
+#undef ALLOW_OBCS_STEVENS
 
 C Allow sponge layer treatment of open boundary conditions
 #define ALLOW_OBCS_SPONGE

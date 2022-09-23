@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/seaice/seaice_tracer_phys.F,v 1.11 2014/08/23 20:22:16 torge Exp $
+C $Name:  $
+
 #include "SEAICE_OPTIONS.h"
 
 CStartOfInterface
@@ -221,7 +224,7 @@ c should work for both constant and variable ice salinity -- to be tested
 #endif
 c empty bucket
 c  but not for 'grease' (see seaice_growth.F)
-        if (SItrName(iTr).NE.'grease')
+        if (SItrName(iTr).NE.'grease') 
      &      SItrBucket(i,j,bi,bj,iTr)=0. _d 0
        ENDDO
       ENDDO

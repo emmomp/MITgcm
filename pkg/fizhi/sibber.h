@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/fizhi/sibber.h,v 1.5 2010/08/24 14:36:55 jmc Exp $
+C $Name:  $
+
 C****
 C**** CHIP HEADER FILE
 C****

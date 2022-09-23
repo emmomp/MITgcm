@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/aim_v23/com_forcing.h,v 1.6 2010/08/24 13:29:00 jmc Exp $
+C $Name:  $
+
 #ifdef ALLOW_AIM
 
 C-- Note: Variables which do not need to stay in common block (local var)

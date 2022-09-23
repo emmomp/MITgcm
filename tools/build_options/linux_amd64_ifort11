@@ -1,5 +1,8 @@
 #!/bin/bash
 #
+# $Header: /u/gcmpack/MITgcm/tools/build_options/linux_amd64_ifort11,v 1.15 2013/10/25 18:59:58 jmc Exp $
+# $Name:  $
+
 #  Build options for version 11 and newer of intel compiler on Linux AMD64 platform
 #  Author: Constantinos Evangelinos
 
@@ -75,7 +78,7 @@ else
    #FFLAGS="$FFLAGS -debug all -debug-parameters all -fp-model strict"
     FOPTIM="-O0 -noalign -g -traceback $PROCF"
     NOOPTFLAGS=$FOPTIM
-    NOOPTFILES='adread_adwrite.F'
+    NOOPTFILES='adread_adwrite.F mdsio_rw_field.F mdsio_rw_slice.F'
     FOPTIM="$FOPTIM -warn all -warn nounused"
     FOPTIM="$FOPTIM -fpe0 -ftz -fp-stack-check -check all -ftrapuv"
   fi

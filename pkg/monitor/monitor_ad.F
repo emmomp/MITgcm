@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/monitor/monitor_ad.F,v 1.14 2014/04/04 21:21:53 jmc Exp $
+C $Name:  $
+
 #include "MONITOR_OPTIONS.h"
 #ifdef ALLOW_AUTODIFF
 # include "AUTODIFF_OPTIONS.h"
@@ -60,7 +63,7 @@ C     !LOCAL VARIABLES:
       _RS dumRS(1)
       _RL dumRL(1)
 
-      IF ( DIFFERENT_MULTIPLE(adjMonitorFreq,myTime,deltaTClock) ) THEN
+      IF ( DIFFERENT_MULTIPLE(adjmonitorFreq,myTime,deltaTClock) ) THEN
 
         IF ( MASTER_CPU_IO(myThid) ) THEN
 C--   only the master thread is allowed to switch On/Off mon_write_stdout
@@ -94,7 +97,7 @@ C       Dynamics field monitor start
      &             '============================='
             CALL PRINT_MESSAGE( msgBuf, mon_ioUnit, SQUEEZE_RIGHT , 1)
             WRITE(msgBuf,'(A)')
-     &             '// Begin AD_MONITOR dynamic field statistics'
+     &             '// Begin MONITOR dynamic field statistics'
             CALL PRINT_MESSAGE( msgBuf, mon_ioUnit, SQUEEZE_RIGHT , 1)
             WRITE(msgBuf,'(2A)') '// ==========================',
      &             '============================='
@@ -178,7 +181,7 @@ C-      print stats only if nSx=nSy=1 since otherwise stats are wrong
         ENDIF
 
 C       Print the basic statistics of external forcing
-        IF ( monitorSelect.GE.4 ) THEN
+        IF ( monitorSelect.GE.3 ) THEN
           CALL MON_SET_PREF('ad_forcing',myThid)
           IF ( mon_AdVarExch.NE.2 ) THEN
            CALL MON_WRITESTATS_RS( 1, adQnet, '_adqnet',
@@ -225,7 +228,7 @@ C     & mon_write_mnc (since it is the only thread that uses those flags):
      &             '============================='
             CALL PRINT_MESSAGE( msgBuf, mon_ioUnit, SQUEEZE_RIGHT , 1)
             WRITE(msgBuf,'(A)')
-     &             '// End AD_MONITOR dynamic field statistics'
+     &             '// End MONITOR dynamic field statistics'
             CALL PRINT_MESSAGE( msgBuf, mon_ioUnit, SQUEEZE_RIGHT , 1)
             WRITE(msgBuf,'(2A)') '// ==========================',
      &             '============================='

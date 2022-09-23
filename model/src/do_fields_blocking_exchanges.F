@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/model/src/do_fields_blocking_exchanges.F,v 1.32 2016/02/15 18:00:26 jmc Exp $
+C $Name:  $
+
 #include "PACKAGES_CONFIG.h"
 #include "CPP_OPTIONS.h"
 
@@ -98,6 +101,11 @@ C-    if not useOffLine: end
 C     endif LS_doTimeStep
       ENDIF
 #endif /* ALLOW PTRACERS */
+
+#ifdef ALLOW_GGL90
+      IF (useGGL90)
+     &  CALL GGL90_EXCHANGES(myThid)
+#endif /* ALLOW_GGL90 */
 
       RETURN
       END

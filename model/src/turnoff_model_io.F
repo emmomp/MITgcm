@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/model/src/turnoff_model_io.F,v 1.8 2017/04/04 23:21:46 jmc Exp $
+C $Name:  $
+
 #include "PACKAGES_CONFIG.h"
 #include "CPP_OPTIONS.h"
 
@@ -31,10 +34,6 @@ c#endif
 #endif
 #ifdef ALLOW_OBCS
 # include "OBCS_PARAMS.h"
-#endif
-#ifdef ALLOW_ECCO
-# include "ECCO_SIZE.h"
-# include "ECCO.h"
 #endif
 
 C     !INPUT/OUTPUT PARAMETERS:
@@ -83,11 +82,6 @@ C-    should call a S/R EXF_TURNOFF_IO (like SEAICE) to reset this flag
 #ifdef ALLOW_OBCS
 C-    should call a S/R OBCS_TURNOFF_IO (like SEAICE) to reset this flag
       IF ( useOBCS ) OBCS_monitorFreq = 0.
-#endif
-
-#ifdef ALLOW_ECCO
-C-    should call a S/R ECCO_TURNOFF_IO (like SEAICE) to reset this flag
-      IF ( useECCO ) ecco_output_sterGloH = .FALSE.
 #endif
 
 C--   Disable SBO output

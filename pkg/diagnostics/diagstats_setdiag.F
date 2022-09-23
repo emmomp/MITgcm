@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/diagnostics/diagstats_setdiag.F,v 1.4 2011/06/15 13:44:42 jmc Exp $
+C $Name:  $
+
 #include "DIAG_OPTIONS.h"
 
 CBOP

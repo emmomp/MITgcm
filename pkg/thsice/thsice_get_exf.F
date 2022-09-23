@@ -1,7 +1,7 @@
+C $Header: /u/gcmpack/MITgcm/pkg/thsice/thsice_get_exf.F,v 1.24 2014/05/02 22:15:26 jmc Exp $
+C $Name:  $
+
 #include "THSICE_OPTIONS.h"
-#ifdef ALLOW_AUTODIFF
-# include "AUTODIFF_OPTIONS.h"
-#endif
 #ifdef ALLOW_EXF
 #include "EXF_OPTIONS.h"
 #endif
@@ -38,6 +38,7 @@ C     == Global data ==
 #endif
 #ifdef ALLOW_AUTODIFF_TAMC
 # include "tamc.h"
+# include "tamc_keys.h"
 # include "THSICE_SIZE.h"
 #endif
 
@@ -62,7 +63,7 @@ C     myThid      :: my Thread Id number
       INTEGER iMin, iMax
       INTEGER jMin, jMax
       _RL     icFlag  (1-OLx:sNx+OLx,1-OLy:sNy+OLy)
-      _RL     hSnow1  (1-OLx:sNx+OLx,1-OLy:sNy+OLy)
+      _RL     hSnow1   (1-OLx:sNx+OLx,1-OLy:sNy+OLy)
       _RL     tsfCel  (1-OLx:sNx+OLx,1-OLy:sNy+OLy)
       _RL     flxExcSw(1-OLx:sNx+OLx,1-OLy:sNy+OLy)
       _RL     dFlxdT  (1-OLx:sNx+OLx,1-OLy:sNy+OLy)
@@ -111,7 +112,7 @@ C     local atmospheric density [kg/m^3]
       _RL atmrho_loc(1-OLx:sNx+OLx,1-OLy:sNy+OLy)
 #endif
 C
-      _RL ssq
+      _RL ssq   (1-OLx:sNx+OLx,1-OLy:sNy+OLy)
       _RL ren, rhn           ! neutral, zref (=10m) values of re, rh
       _RL usn, usm           ! neutral, zref (=10m) wind-speed (+limited)
       _RL stable             ! = 1 if stable ; = 0 if unstable
@@ -148,11 +149,6 @@ C     latent heat of evaporation or sublimation [J/kg]
       _RL lath
       _RL qsat_fac
       _RL qsat_exp
-#ifdef ALLOW_AUTODIFF_TAMC
-      INTEGER act1, act2, act3, act4
-      INTEGER max1, max2, max3
-      INTEGER ticekey, ikeyexf, ikeynb, ikey_5
-#endif
 #ifdef ALLOW_DBUG_THSICE
       LOGICAL dBugFlag
       INTEGER stdUnit
@@ -199,22 +195,10 @@ C     initialisation of local arrays
         re(i,j)     = 0. _d 0
         delq(i,j)   = 0. _d 0
         deltap(i,j) = 0. _d 0
+        ssq(i,j)    = 0. _d 0
        ENDDO
       ENDDO
 C
-#ifdef ALLOW_AUTODIFF_TAMC
-      act1 = bi - myBxLo(myThid)
-      max1 = myBxHi(myThid) - myBxLo(myThid) + 1
-      act2 = bj - myByLo(myThid)
-      max2 = myByHi(myThid) - myByLo(myThid) + 1
-      act3 = myThid - 1
-      max3 = nTx*nTy
-      act4 = ikey_dynamics - 1
-      ticekey = (act1 + 1) + act2*max1
-     &                     + act3*max1*max2
-     &                     + act4*max1*max2*max3
-      ikeyexf = (ticekey-1)*MaxTsf + it2
-#endif
       DO j=jMin,jMax
        DO i=iMin,iMax
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
@@ -223,6 +207,23 @@ C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
      &    WRITE(stdUnit,'(A,2I4,2I2,2F12.6)')
      &    'ThSI_GET_EXF: i,j,atemp,lwd=',
      &           i,j,bi,bj, atemp(i,j,bi,bj),lwdown(i,j,bi,bj)
+#endif
+
+#ifdef ALLOW_AUTODIFF_TAMC
+          act1 = bi - myBxLo(myThid)
+          max1 = myBxHi(myThid) - myBxLo(myThid) + 1
+          act2 = bj - myByLo(myThid)
+          max2 = myByHi(myThid) - myByLo(myThid) + 1
+          act3 = myThid - 1
+          max3 = nTx*nTy
+          act4 = ikey_dynamics - 1
+          ikey_1 = i
+     &         + sNx*(j-1)
+     &         + sNx*sNy*(it2-1)
+     &         + sNx*sNy*MaxTsf*act1
+     &         + sNx*sNy*MaxTsf*max1*act2
+     &         + sNx*sNy*MaxTsf*max1*max2*act3
+     &         + sNx*sNy*MaxTsf*max1*max2*max3*act4
 #endif
 
 C--   Use atmospheric state to compute surface fluxes.
@@ -237,26 +238,29 @@ C     copy a few variables to names used in bulkf_formula_lay
          Tsf         = tsfCel(i,j)+cen2kel
          Ts2         = Tsf*Tsf
 C     wind speed
+#ifdef ALLOW_AUTODIFF_TAMC
+CADJ STORE sh(i,j,bi,bj) = comlev1_thsice_3, key = ikey_1
+#endif
          wsm         = sh(i,j,bi,bj)
 C--   air - surface difference of temperature & humidity
 c        tmpbulk= exf_BulkqSat(Tsf)
-c        ssq         = saltsat*tmpbulk/atmrho
+c        ssq(i,j)    = saltsat*tmpbulk/atmrho
          tmpbulk     = qsat_fac*EXP(-qsat_exp/Tsf)
 #ifdef EXF_CALC_ATMRHO
          atmrho_loc(i,j) = apressure(i,j,bi,bj) /
      &                  (287.04 _d 0*atemp(i,j,bi,bj)
      &                  *(1. _d 0 + humid_fac*aqh(i,j,bi,bj)))
-         ssq         = tmpbulk/atmrho_loc(i,j)
+         ssq(i,j)    = tmpbulk/atmrho_loc(i,j)
 #else
-         ssq         = tmpbulk/atmrho
+         ssq(i,j)    = tmpbulk/atmrho
 #endif
          deltap(i,j) = atemp(i,j,bi,bj) + gamma_blk*ht - Tsf
-         delq(i,j)   = aqh(i,j,bi,bj) - ssq
+         delq(i,j)   = aqh(i,j,bi,bj) - ssq(i,j)
 C     Do the part of the output variables that do not depend
 C     on the ice here to save a few re-computations
 C     This is not yet dEvdT, but just a cheap way to save a 2D-field
 C     for ssq and recomputing Ts2 lateron
-         dEvdT(i,j)  = ssq*qsat_exp/Ts2
+         dEvdT(i,j)  = ssq(i,j)*qsat_exp/Ts2
          flwup       = emiss*stefanBoltzmann*Ts2*Ts2
          dflwupdT    = emiss*stefanBoltzmann*Ts2*Tsf * 4. _d 0
 c        flwNet_dwn  =       lwdown(i,j,bi,bj) - flwup
@@ -275,7 +279,24 @@ C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
       IF ( useStabilityFct_overIce ) THEN
        DO j=jMin,jMax
         DO i=iMin,iMax
+#ifdef ALLOW_AUTODIFF_TAMC
+          act1 = bi - myBxLo(myThid)
+          max1 = myBxHi(myThid) - myBxLo(myThid) + 1
+          act2 = bj - myByLo(myThid)
+          max2 = myByHi(myThid) - myByLo(myThid) + 1
+          act3 = myThid - 1
+          max3 = nTx*nTy
+          act4 = ikey_dynamics - 1
+          ikey_1 = i
+     &         + sNx*(j-1)
+     &         + sNx*sNy*(it2-1)
+     &         + sNx*sNy*MaxTsf*act1
+     &         + sNx*sNy*MaxTsf*max1*act2
+     &         + sNx*sNy*MaxTsf*max1*max2*act3
+     &         + sNx*sNy*MaxTsf*max1*max2*max3*act4
 C--
+CADJ STORE sh(i,j,bi,bj) = comlev1_thsice_3, key = ikey_1
+#endif
          IF ( (icFlag(i,j).GT.0. _d 0) .AND.
      &        (atemp(i,j,bi,bj).NE.0. _d 0) ) THEN
 C--   Compute the turbulent surface fluxes (function of stability).
@@ -307,24 +328,25 @@ C--  calculate turbulent scales
 
 C     start iteration
        DO iter = 1,niter_bulk
-#ifdef ALLOW_AUTODIFF_TAMC
-        ikeynb = (ikeyexf-1)*niter_bulk + iter
-CADJ STORE ustar = comlev1_thsice_exf_niter, key = ikeynb, kind = isbyte
-CADJ STORE qstar = comlev1_thsice_exf_niter, key = ikeynb, kind = isbyte
-CADJ STORE tstar = comlev1_thsice_exf_niter, key = ikeynb, kind = isbyte
-#endif
         DO j=jMin,jMax
          DO i=iMin,iMax
           IF ( (icFlag(i,j).GT.0. _d 0) .AND.
      &         (atemp(i,j,bi,bj).NE.0. _d 0) ) THEN
 
 #ifdef ALLOW_AUTODIFF_TAMC
-           ikey_5 = iter
-     &            + niter_bulk*(i-1)
-     &            + niter_bulk*sNx*(j-1)
-     &            + (ikeynb-1)*sNx*sNy
-C     Not sure why this has to be done here and not outside the ij-loop.
-CADJ STORE rdn(i,j) = comlev1_thsice_5, key = ikey_5, kind = isbyte
+                  ikey_2 = iter
+     &                  + niter_bulk*(i-1)
+     &                  + niter_bulk*sNx*(j-1)
+     &                  + niter_bulk*sNx*sNy*(it2-1)
+     &                  + niter_bulk*sNx*sNy*MaxTsf*act1
+     &                  + niter_bulk*sNx*sNy*MaxTsf*max1*act2
+     &                  + niter_bulk*sNx*sNy*MaxTsf*max1*max2*act3
+     &                  + niter_bulk*sNx*sNy*MaxTsf*max1*max2*max3*act4
+CADJ STORE rdn(i,j)    = comlev1_thsice_5, key = ikey_2
+CADJ STORE ustar(i,j)  = comlev1_thsice_5, key = ikey_2
+CADJ STORE qstar(i,j)  = comlev1_thsice_5, key = ikey_2
+CADJ STORE tstar(i,j)  = comlev1_thsice_5, key = ikey_2
+CADJ STORE sh(i,j,bi,bj)     = comlev1_thsice_5, key = ikey_2
 #endif
 
            t0     = atemp(i,j,bi,bj)*
@@ -405,15 +427,6 @@ C     end i/j-loops
         ENDDO
 C     end iteration loop
        ENDDO
-#ifdef ALLOW_AUTODIFF_TAMC
-C     these stores avoid recomputing this routine in the ad-code (not
-C     strictly necessary)
-CADJ STORE rd    = comlev1_thsice_exf, key = ikeyexf, kind = isbyte
-CADJ STORE rh    = comlev1_thsice_exf, key = ikeyexf, kind = isbyte
-CADJ STORE re    = comlev1_thsice_exf, key = ikeyexf, kind = isbyte
-CADJ STORE qstar = comlev1_thsice_exf, key = ikeyexf, kind = isbyte
-CADJ STORE tstar = comlev1_thsice_exf, key = ikeyexf, kind = isbyte
-#endif
        DO j=jMin,jMax
         DO i=iMin,iMax
          IF ( (icFlag(i,j).GT.0. _d 0) .AND.
