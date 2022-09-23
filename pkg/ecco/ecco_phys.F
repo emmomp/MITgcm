@@ -274,6 +274,29 @@ c
               if (tmpmsk.NE.0. _d 0) tmpmsk2=1. _d 0
 #endif
             endif
+
+C ---- If density mask is enabled, use it here ----
+            IF ( maskC(i,j,k,bi,bj).EQ.oneRS .AND.
+     &           gencost_useDensityMask(kgen) ) THEN
+C            - first, calculate the scalar density
+             CALL FIND_RHO_SCALAR(
+     I              theta(i,j,k,bi,bj),
+     I              salt(i,j,k,bi,bj),
+     I              gencost_refPressure(kgen),
+     O              tmpsig,
+     I              myThid )
+C            - subtract 1000 to get sigma
+             tmpsig = tmpsig - 1000. _d 0
+C            - now, tmpmsk is sigmoid times this value
+             tmpsig_lower = 0.5 + 0.5*tanh(gencost_tanhScale(kgen)
+     &           *(tmpsig-gencost_sigmaLow(kgen)))
+             tmpsig_upper = 0.5 - 0.5*tanh(gencost_tanhScale(kgen)
+     &           *(tmpsig-gencost_sigmaHigh(kgen)))
+C             - update mask value based on the sigmoid function
+           tmp_sigmsk = tmpsig_lower*tmpsig_upper
+           tmpmsk = tmpmsk*tmp_sigmsk
+          ENDIF
+C ---- end of density mask (but tmpmsk is used below)
 c
             gencost_storefld(i,j,bi,bj,kgen) =
      &          gencost_storefld(i,j,bi,bj,kgen)

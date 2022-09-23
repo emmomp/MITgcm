@@ -308,11 +308,12 @@ c     objf_gencost - gencost user defined contribution
       common /ecco_gencost_l_1/
      &       gencost_timevaryweight, gencost_barskip,
      &       using_gencost, gencost_is3d, gencost_msk_is3d,
-     &       gencost_is1d
+     &       gencost_is1d, gencost_useDensityMask
       LOGICAL using_gencost(NGENCOST)
       LOGICAL gencost_is3d(NGENCOST)
       LOGICAL gencost_is1d(NGENCOST)
       LOGICAL gencost_msk_is3d(NGENCOST)
+      LOGICAL gencost_useDensityMask(NGENCOST)
       LOGICAL gencost_timevaryweight(NGENCOST)
       LOGICAL gencost_barskip(NGENCOST)
 
