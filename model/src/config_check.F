@@ -1,10 +1,10 @@
-C $Header: /u/gcmpack/MITgcm/model/src/config_check.F,v 1.85 2016/11/28 22:57:01 jmc Exp $
-C $Name:  $
-
 #include "PACKAGES_CONFIG.h"
 #include "CPP_OPTIONS.h"
 #ifdef ALLOW_MOM_COMMON
 # include "MOM_COMMON_OPTIONS.h"
+#endif
+#ifdef ALLOW_CTRL
+# include "CTRL_OPTIONS.h"
 #endif
 
 CBOP
@@ -58,6 +58,30 @@ C      (as long as all procs finish cleanly by calling ALL_PROC_DIE)
 
 C-  check that CPP option is "defined" when running-flag parameter is on:
 
+#ifndef INCLUDE_CONVECT_CALL
+C     o Check that Convective-adjustment code is compiled If cAdjFreq <> 0
+      IF ( cAdjFreq .NE. 0. ) THEN
+#ifdef INCLUDE_CONVECT_INI_CALL
+        WRITE(msgBuf,'(2A)') '** Warning ** CONFIG_CHECK: ',
+     &  'Convective-Adjustment (cAdjFreq) turned off (except INI)'
+        CALL PRINT_MESSAGE( msgBuf, errorMessageUnit,
+     &                      SQUEEZE_RIGHT, myThid )
+        WRITE(msgBuf,'(2A)') '** Warning ** CONFIG_CHECK: ',
+     &  ' without "#define INCLUDE_CONVECT_CALL" in CPP_OPTIONS.h'
+        CALL PRINT_MESSAGE( msgBuf, errorMessageUnit,
+     &                      SQUEEZE_RIGHT, myThid )
+#else
+        WRITE(msgBuf,'(2A)') 'CONFIG_CHECK: ',
+     &  'Cannot use Convective-Adjustment (cAdjFreq) without'
+        CALL PRINT_ERROR( msgBuf, myThid )
+        WRITE(msgBuf,'(2A)') 'CONFIG_CHECK: ',
+     &  ' defining INCLUDE_CONVECT_(CALL/INI_CALL) in CPP_OPTIONS.h'
+        CALL PRINT_ERROR( msgBuf, myThid )
+        errCount = errCount + 1
+#endif
+      ENDIF
+#endif /* ndef INCLUDE_CONVECT_CALL */
+
 C     o If diffKrFile is set, then we should make sure the corresponing
 C       code is being compiled
 #ifndef ALLOW_3D_DIFFKR
@@ -72,6 +96,45 @@ C       code is being compiled
       ENDIF
 #endif
 
+#ifdef EXCLUDE_PCELL_MIX_CODE
+      IF ( interDiffKr_pCell .OR. interViscAr_pCell
+     &                       .OR. pCellMix_select.NE.0 ) THEN
+        IF ( interDiffKr_pCell ) THEN
+          WRITE(msgBuf,'(2A)') 'CONFIG_CHECK: ',
+     &    'Cannot use interDiffKr_pCell=.TRUE.'
+          CALL PRINT_ERROR( msgBuf, myThid )
+        ENDIF
+        IF ( interViscAr_pCell ) THEN
+          WRITE(msgBuf,'(2A)') 'CONFIG_CHECK: ',
+     &    'Cannot use interViscAr_pCell=.TRUE.'
+          CALL PRINT_ERROR( msgBuf, myThid )
+        ENDIF
+        IF ( pCellMix_select.NE.0 ) THEN
+          WRITE(msgBuf,'(2A,I6)') 'CONFIG_CHECK: ',
+     &    'Cannot use pCellMix_select=', pCellMix_select
+          CALL PRINT_ERROR( msgBuf, myThid )
+        ENDIF
+        WRITE(msgBuf,'(2A)') 'CONFIG_CHECK: when compiled ',
+     &  'with "#define EXCLUDE_PCELL_MIX_CODE" in CPP_OPTIONS.h'
+        CALL PRINT_ERROR( msgBuf, myThid )
+        errCount = errCount + 1
+      ENDIF
+#endif
+
+#ifndef ALLOW_LEITH_QG
+C     Check that Leith QG viscosity coefficeint is zero if the
+C     QGLeith code has not been compiled.
+      IF ( viscC2LeithQG.NE.zeroRL )  THEN
+        WRITE(msgBuf,'(2A)') 'CONFIG_CHECK: ',
+     &  'must #define ALLOW_LEITH_QG in MOM_COMMON_OPTIONS.h'
+        CALL PRINT_ERROR( msgBuf, myThid )
+        WRITE(msgBuf,'(2A)') 'CONFIG_CHECK: ',
+     &  ' in order to use QG-Leith (viscC2LeithQG > 0)'
+        CALL PRINT_ERROR( msgBuf, myThid )
+        errCount = errCount + 1
+      ENDIF
+#endif /* ALLOW_LEITH_QG */
+
 #ifndef ALLOW_SMAG_3D
       IF ( useSmag3D ) THEN
         WRITE(msgBuf,'(2A)') 'CONFIG_CHECK: ',
@@ -79,6 +142,17 @@ C       code is being compiled
         CALL PRINT_ERROR( msgBuf, myThid )
         WRITE(msgBuf,'(2A)') 'CONFIG_CHECK: ',
      &  '"#undef ALLOW_SMAG_3D" in MOM_COMMON_OPTIONS.h'
+        CALL PRINT_ERROR( msgBuf, myThid )
+        errCount = errCount + 1
+      ENDIF
+#endif
+#ifndef ALLOW_SMAG_3D_DIFFUSIVITY
+      IF ( smag3D_diffCoeff.NE.zeroRL ) THEN
+        WRITE(msgBuf,'(2A)') 'CONFIG_CHECK: ',
+     &  'Cannot use smag3D_diffCoeff > 0 when compiled with'
+        CALL PRINT_ERROR( msgBuf, myThid )
+        WRITE(msgBuf,'(2A)') 'CONFIG_CHECK: ',
+     &  '"#undef ALLOW_SMAG_3D_DIFFUSIVITY" in CPP_OPTIONS.h'
         CALL PRINT_ERROR( msgBuf, myThid )
         errCount = errCount + 1
       ENDIF
@@ -93,6 +167,18 @@ C       code is being compiled
      &   'CONFIG_CHECK: implicitIntGravWave is TRUE'
        IF ( nonHydrostatic ) WRITE(msgBuf,'(A)')
      &   'CONFIG_CHECK: nonHydrostatic is TRUE'
+        CALL PRINT_ERROR( msgBuf, myThid )
+        errCount = errCount + 1
+      ENDIF
+#endif
+
+#ifndef ALLOW_QHYD_STAGGER_TS
+      IF ( quasiHydrostatic .AND. staggerTimeStep ) THEN
+        WRITE(msgBuf,'(2A)') 'CONFIG_CHECK: ',
+     &    'Cannot use quasiHydrostatic with staggerTimeStep'
+        CALL PRINT_ERROR( msgBuf, myThid )
+        WRITE(msgBuf,'(2A)') 'CONFIG_CHECK: when compiled ',
+     &  'with "#undef ALLOW_QHYD_STAGGER_TS" in CPP_OPTIONS.h'
         CALL PRINT_ERROR( msgBuf, myThid )
         errCount = errCount + 1
       ENDIF
@@ -313,9 +399,19 @@ C       code is being compiled
       ENDIF
 #endif
 
+      IF ( geothermalFile.NE.' ' ) THEN
+C     o Need to use S/R APPLY_FORCING_T to get Geothermal forcing
+#ifdef USE_OLD_EXTERNAL_FORCING
+        WRITE(msgBuf,'(2A)') 'CONFIG_CHECK: ',
+     &  'geothermalFile is set but Geothermal-Flux code'
+        CALL PRINT_ERROR( msgBuf, myThid )
+        WRITE(msgBuf,'(2A)')' is missing.',
+     &  ' Re-compile with "#undef USE_OLD_EXTERNAL_FORCING"'
+        CALL PRINT_ERROR( msgBuf, myThid )
+        errCount = errCount + 1
+#endif /* USE_OLD_EXTERNAL_FORCING */
 C     o Need to define ALLOW_GEOTHERMAL_FLUX to use geothermalFile forcing
 #ifndef ALLOW_GEOTHERMAL_FLUX
-      IF ( geothermalFile.NE.' ' ) THEN
         WRITE(msgBuf,'(2A)') 'CONFIG_CHECK: ',
      &  'geothermalFile is set but Geothermal-Flux code'
         CALL PRINT_ERROR( msgBuf, myThid )
@@ -323,8 +419,21 @@ C     o Need to define ALLOW_GEOTHERMAL_FLUX to use geothermalFile forcing
      &  ' Re-compile with "#define ALLOW_GEOTHERMAL_FLUX"'
         CALL PRINT_ERROR( msgBuf, myThid )
         errCount = errCount + 1
-      ENDIF
 #endif /* ALLOW_GEOTHERMAL_FLUX */
+      ENDIF
+
+C     o Need to use S/R APPLY_FORCING_U,V to get Tidal forcing
+#ifdef USE_OLD_EXTERNAL_FORCING
+      IF ( momTidalForcing ) THEN
+        WRITE(msgBuf,'(2A)') 'CONFIG_CHECK: ',
+     &  'momTidalForcing is set but Tidal forcing code'
+        CALL PRINT_ERROR( msgBuf, myThid )
+        WRITE(msgBuf,'(2A)')' is missing.',
+     &  ' Re-compile with "#undef USE_OLD_EXTERNAL_FORCING"'
+        CALL PRINT_ERROR( msgBuf, myThid )
+        errCount = errCount + 1
+      ENDIF
+#endif /* USE_OLD_EXTERNAL_FORCING */
 
 #ifndef ALLOW_FRICTION_HEATING
       IF ( addFrictionHeating ) THEN
@@ -338,8 +447,15 @@ C     o Need to define ALLOW_GEOTHERMAL_FLUX to use geothermalFile forcing
       ENDIF
 #endif
 
-#ifndef ALLOW_BALANCE_FLUXES
-      IF (balanceEmPmR .OR. balanceQnet) THEN
+#ifdef ALLOW_BALANCE_FLUXES
+      IF ( selectBalanceEmPmR.LT.0 .OR. selectBalanceEmPmR.GT.2 ) THEN
+        WRITE(msgBuf,'(2A,I6,A)') 'CONFIG_CHECK: ',
+     &   'selectBalanceEmPmR=', selectBalanceEmPmR,' : invalid value'
+        CALL PRINT_ERROR( msgBuf, myThid )
+        errCount = errCount + 1
+      ENDIF
+#else /* ALLOW_BALANCE_FLUXES */
+      IF ( selectBalanceEmPmR.NE.0 .OR. balanceQnet ) THEN
         WRITE(msgBuf,'(A,A)')
      &  'CONFIG_CHECK: balanceEmPmR/Qnet is set but balance code ',
      &  'is not compiled.'
@@ -349,7 +465,7 @@ C     o Need to define ALLOW_GEOTHERMAL_FLUX to use geothermalFile forcing
         CALL PRINT_ERROR( msgBuf, myThid )
         errCount = errCount + 1
       ENDIF
-#endif
+#endif /* ALLOW_BALANCE_FLUXES */
 
 #ifndef ALLOW_BALANCE_RELAX
       IF (balanceThetaClimRelax .OR. balanceSaltClimRelax) THEN
@@ -364,6 +480,19 @@ C     o Need to define ALLOW_GEOTHERMAL_FLUX to use geothermalFile forcing
       ENDIF
 #endif
 
+#ifndef ALLOW_CG2D_NSA
+      IF (useNSACGSolver) THEN
+        WRITE(msgBuf,'(A,A)')
+     &  'CONFIG_CHECK: useNSACGSolver = .TRUE., but CG2D_NSA ',
+     &  'code is not compiled.'
+        CALL PRINT_ERROR( msgBuf, myThid )
+        WRITE(msgBuf,'(A)')
+     &  'CONFIG_CHECK: Re-compile with ALLOW_CG2D_NSA defined'
+        CALL PRINT_ERROR( msgBuf, myThid )
+        errCount = errCount + 1
+      ENDIF
+#endif /* ALLOW_CG2D_NSA */
+
 #ifndef ALLOW_SRCG
       IF (useSRCGSolver) THEN
         WRITE(msgBuf,'(A,A)')
@@ -377,10 +506,28 @@ C     o Need to define ALLOW_GEOTHERMAL_FLUX to use geothermalFile forcing
       ENDIF
 #endif /* ALLOW_SRCG */
 
+      IF ( useNSACGSolver .AND. useSRCGSolver ) THEN
+        WRITE(msgBuf,'(A,A)')
+     &      'CONFIG_CHECK: both useNSACGSolver and ',
+     &      'useSRCGSolver = .TRUE., this is not allowed.'
+        CALL PRINT_ERROR( msgBuf, myThid )
+        errCount = errCount + 1
+      ENDIF
+
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
 
 C--   Check parameter consistency :
 
+      IF ( ( OLx.LT.2 .OR. OLy.LT.2 ) .AND. momStepping ) THEN
+C-    Current algorithm (solve_for_pressure, RHS) prevents to use
+C     momAdvection or viscAh > 0 with OLx,y=1 ; it should still allow us
+C     to use OLx,y=1 when momAdvection=F and viscAh=0 but some loop range
+C     in few momentum S/R are not carefully set to support this.
+        WRITE(msgBuf,'(A,A)') 'CONFIG_CHECK: Cannot use momStepping',
+     &  ' with overlap (OLx,OLy) smaller than 2'
+        CALL PRINT_ERROR( msgBuf, myThid )
+        errCount = errCount + 1
+      ENDIF
       IF ( ( OLx.LT.3 .OR. OLy.LT.3 ) .AND.
      &     ( viscC4leithD.NE.0.  .OR. viscC4leith.NE.0.
      &     .OR. viscC4smag.NE.0. .OR. viscA4Grid.NE.0.
@@ -392,10 +539,11 @@ C--   Check parameter consistency :
         errCount = errCount + 1
       ENDIF
       IF ( ( OLx.LT.3 .OR. OLy.LT.3 ) .AND.
-     &     ( viscC2leithD.NE.0. .OR. viscC4leithD.NE.0. )
+     &     ( viscC2leithD.NE.0. .OR. viscC4leithD.NE.0. .OR.
+     &       viscC2LeithQG.NE.0.)
      &   ) THEN
         WRITE(msgBuf,'(A,A)')
-     &  'CONFIG_CHECK: cannot use Leith Visc.(div.part) with',
+     &  'CONFIG_CHECK: cannot use Leith Visc.(div.part or QG) with',
      &  ' overlap (OLx,OLy) smaller than 3'
         CALL PRINT_ERROR( msgBuf, myThid )
         errCount = errCount + 1
@@ -405,6 +553,16 @@ C--   Check parameter consistency :
         WRITE(msgBuf,'(A,A)')
      &  'CONFIG_CHECK: cannot use Smag-3D + CD-scheme with',
      &  ' overlap (OLx,OLy) smaller than 3'
+        CALL PRINT_ERROR( msgBuf, myThid )
+        errCount = errCount + 1
+      ENDIF
+
+      IF ( ( viscC4leithD.NE.0. .OR. viscC4leith.NE.0. .OR.
+     &       viscC2leithD.NE.0. .OR. viscC2leith.NE.0.)
+     &     .AND. (viscC2LeithQG.NE.0) ) THEN
+        WRITE(msgBuf,'(A,A)')
+     &  'CONFIG_CHECK: cannot use LeithQG in conjunction with',
+     &  ' either standard Leith or LeithD'
         CALL PRINT_ERROR( msgBuf, myThid )
         errCount = errCount + 1
       ENDIF

@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/pkg/flt/FLT_OPTIONS.h,v 1.4 2011/12/24 01:04:47 jmc Exp $
-C $Name:  $
-
 C CPP options file for FLT package
 
 #ifndef FLT_OPTIONS_H
@@ -28,6 +25,9 @@ C Define this to revert to old second-order Runge-Kutta integration
 C Prevent floats to re-enter the opposite side of a periodic domain (stop instead)
 #undef FLT_WITHOUT_X_PERIODICITY
 #undef FLT_WITHOUT_Y_PERIODICITY
+
+C Allow experimentation with pkg/flt + exch2 despite incomplete implementation
+#undef DEVEL_FLT_EXCH2
 
 #endif /* ALLOW_FLT */
 #endif /* FLT_OPTIONS_H */

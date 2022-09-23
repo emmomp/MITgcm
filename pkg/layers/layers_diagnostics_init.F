@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/pkg/layers/layers_diagnostics_init.F,v 1.12 2015/06/10 20:51:17 jmc Exp $
-C $Name:  $
-
 #include "LAYERS_OPTIONS.h"
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
@@ -178,8 +175,9 @@ C --- U, V
         CALL DIAGNOSTICS_SETKLEV( diagName, Nlayers , myThid )
 
         WRITE(diagName,'(A4,I1,A3)') 'LaTs',iLa,layers_name(iLa)
-        diagTitle = 'Layer THETA transformation from surf. forc.'
-        diagUnits = 'm deg./s        '
+        diagTitle = 
+     &   'Layer thickness tendency due to THETA surf. forc.'
+        diagUnits = 'm/s             '
         diagCode  = 'SM      MX      '
         diagMate  = 0
         CALL DIAGNOSTICS_ADDTOLIST( diagNum,
@@ -187,8 +185,9 @@ C --- U, V
         CALL DIAGNOSTICS_SETKLEV( diagName, Nlayers-1 , myThid )
 
         WRITE(diagName,'(A4,I1,A3)') 'LaTh',iLa,layers_name(iLa)
-        diagTitle = 'Layer THETA transformation from horiz. diff.'
-        diagUnits = 'm deg./s        '
+        diagTitle = 
+     &   'Layer thickness tendency due to THETA horiz. diff.'
+        diagUnits = 'm/s             '
         diagCode  = 'SM      MX      '
         diagMate  = 0
         CALL DIAGNOSTICS_ADDTOLIST( diagNum,
@@ -198,8 +197,9 @@ C --- U, V
 C ------- This diagnostic used to be called 'LaTr', but that name
 C         conflicts with JMC s prho diagnostics.
         WRITE(diagName,'(A4,I1,A3)') 'LaTz',iLa,layers_name(iLa)
-        diagTitle = 'Layer THETA transformation from vert. diff.'
-        diagUnits = 'm deg./s        '
+        diagTitle = 
+     &   'Layer thickness tendency due to THETA vert. diff.'
+        diagUnits = 'm/s             '
         diagCode  = 'SM      MX      '
         diagMate  = 0
         CALL DIAGNOSTICS_ADDTOLIST( diagNum,
@@ -207,8 +207,9 @@ C         conflicts with JMC s prho diagnostics.
         CALL DIAGNOSTICS_SETKLEV( diagName, Nlayers-1 , myThid )
 
         WRITE(diagName,'(A4,I1,A3)') 'LTha',iLa,layers_name(iLa)
-        diagTitle = 'Layer THETA transformation from horiz. adv.'
-        diagUnits = 'm deg./s        '
+        diagTitle = 
+     &   'Layer thickness tendency due to THETA horiz. adv.'
+        diagUnits = 'm/s             '
         diagCode  = 'SM      MX      '
         diagMate  = 0
         CALL DIAGNOSTICS_ADDTOLIST( diagNum,
@@ -216,8 +217,9 @@ C         conflicts with JMC s prho diagnostics.
         CALL DIAGNOSTICS_SETKLEV( diagName, Nlayers-1 , myThid )
 
         WRITE(diagName,'(A4,I1,A3)') 'LTza',iLa,layers_name(iLa)
-        diagTitle = 'Layer THETA transformation from vert. adv.'
-        diagUnits = 'm deg./s        '
+        diagTitle = 
+     &   'Layer thickness tendency due to THETA vert. adv.'
+        diagUnits = 'm/s             '
         diagCode  = 'SM      MX      '
         diagMate  = 0
         CALL DIAGNOSTICS_ADDTOLIST( diagNum,
@@ -225,8 +227,9 @@ C         conflicts with JMC s prho diagnostics.
         CALL DIAGNOSTICS_SETKLEV( diagName, Nlayers-1 , myThid )
 
         WRITE(diagName,'(A4,I1,A3)') 'LTto',iLa,layers_name(iLa)
-        diagTitle = 'Layer THETA transformation from total tend'
-        diagUnits = 'm deg./s        '
+        diagTitle = 
+     &   'Layer thickness tendency due to all THETA terms.'
+        diagUnits = 'm/day           '
         diagCode  = 'SM      MX      '
         diagMate  = 0
         CALL DIAGNOSTICS_ADDTOLIST( diagNum,
@@ -234,8 +237,9 @@ C         conflicts with JMC s prho diagnostics.
         CALL DIAGNOSTICS_SETKLEV( diagName, Nlayers-1 , myThid )
 
         WRITE(diagName,'(A4,I1,A3)') 'LaSs',iLa,layers_name(iLa)
-        diagTitle = 'Layer SALT transformation from surf. forc.'
-        diagUnits = 'm PSU/s        '
+        diagTitle = 
+     &   'Layer thickness tendency due to SALT surf. forc.'
+        diagUnits = 'm/s             '
         diagCode  = 'SM      MX      '
         diagMate  = 0
         CALL DIAGNOSTICS_ADDTOLIST( diagNum,
@@ -243,8 +247,9 @@ C         conflicts with JMC s prho diagnostics.
         CALL DIAGNOSTICS_SETKLEV( diagName, Nlayers-1 , myThid )
 
         WRITE(diagName,'(A4,I1,A3)') 'LaSh',iLa,layers_name(iLa)
-        diagTitle = 'Layer SALT transformation from horiz. diff.'
-        diagUnits = 'm PSU/s        '
+        diagTitle = 
+     &   'Layer thickness tendency due to SALT horiz. diff.'
+        diagUnits = 'm/s             '
         diagCode  = 'SM      MX      '
         diagMate  = 0
         CALL DIAGNOSTICS_ADDTOLIST( diagNum,
@@ -252,8 +257,9 @@ C         conflicts with JMC s prho diagnostics.
         CALL DIAGNOSTICS_SETKLEV( diagName, Nlayers-1 , myThid )
 
         WRITE(diagName,'(A4,I1,A3)') 'LaSz',iLa,layers_name(iLa)
-        diagTitle = 'Layer SALT transformation from vert. diff.'
-        diagUnits = 'm PSU/s        '
+        diagTitle = 
+     &   'Layer thickness tendency due to SALT vert. diff.'
+        diagUnits = 'm/s             '
         diagCode  = 'SM      MX      '
         diagMate  = 0
         CALL DIAGNOSTICS_ADDTOLIST( diagNum,
@@ -261,8 +267,9 @@ C         conflicts with JMC s prho diagnostics.
         CALL DIAGNOSTICS_SETKLEV( diagName, Nlayers-1 , myThid )
 
         WRITE(diagName,'(A4,I1,A3)') 'LSha',iLa,layers_name(iLa)
-        diagTitle = 'Layer SALT transformation from horiz. adv.'
-        diagUnits = 'm PSU/s        '
+        diagTitle = 
+     &   'Layer thickness tendency due to SALT horiz. adv.'
+        diagUnits = 'm/s             '
         diagCode  = 'SM      MX      '
         diagMate  = 0
         CALL DIAGNOSTICS_ADDTOLIST( diagNum,
@@ -270,8 +277,9 @@ C         conflicts with JMC s prho diagnostics.
         CALL DIAGNOSTICS_SETKLEV( diagName, Nlayers-1 , myThid )
 
         WRITE(diagName,'(A4,I1,A3)') 'LSza',iLa,layers_name(iLa)
-        diagTitle = 'Layer SALT transformation from vert. adv.'
-        diagUnits = 'm PSU/s        '
+        diagTitle = 
+     &   'Layer thickness tendency due to SALT vert. adv.'
+        diagUnits = 'm/s             '
         diagCode  = 'SM      MX      '
         diagMate  = 0
         CALL DIAGNOSTICS_ADDTOLIST( diagNum,
@@ -279,8 +287,9 @@ C         conflicts with JMC s prho diagnostics.
         CALL DIAGNOSTICS_SETKLEV( diagName, Nlayers-1 , myThid )
 
         WRITE(diagName,'(A4,I1,A3)') 'LSto',iLa,layers_name(iLa)
-        diagTitle = 'Layer SALT transformation from total tend'
-        diagUnits = 'm PSU/s        '
+        diagTitle = 
+     &   'Layer thickness tendency due to all SALT terms.'
+        diagUnits = 'm/day           '
         diagCode  = 'SM      MX      '
         diagMate  = 0
         CALL DIAGNOSTICS_ADDTOLIST( diagNum,

@@ -1,9 +1,8 @@
-C $Header: /u/gcmpack/MITgcm/pkg/streamice/streamice_dump.F,v 1.1 2013/06/12 21:30:22 dgoldberg Exp $
-C $Name:  $
-
-#include "AD_CONFIG.h"
-#include "PACKAGES_CONFIG.h"
 #include "STREAMICE_OPTIONS.h"
+#ifdef ALLOW_AUTODIFF
+# include "AUTODIFF_OPTIONS.h"
+#endif
+#include "AD_CONFIG.h"
 
 CBOP
 C     !ROUTINE: streamice_dump

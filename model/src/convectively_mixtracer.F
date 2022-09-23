@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/model/src/convectively_mixtracer.F,v 1.3 2012/03/05 01:11:43 jmc Exp $
-C $Name:  $
-
 #include "CPP_OPTIONS.h"
 
 CBOP
@@ -34,7 +31,7 @@ C     myThid  :: my Thread Id number
       _RL Tracer (1-OLx:sNx+OLx,1-OLy:sNy+OLy,Nr,nSx,nSy)
       INTEGER myThid
 
-#ifdef INCLUDE_CONVECT_CALL
+#if (defined INCLUDE_CONVECT_CALL || defined INCLUDE_CONVECT_INI_CALL)
 
 C !LOCAL VARIABLES:
 C     i,j      :: Loop counter
@@ -55,7 +52,7 @@ CEOP
        ENDDO
       ENDDO
 
-#endif /* INCLUDE_CONVECT_CALL */
+#endif /* INCLUDE_CONVECT_CALL or INCLUDE_CONVECT_INI_CALL */
 
       RETURN
       END

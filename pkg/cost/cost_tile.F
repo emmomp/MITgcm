@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/pkg/cost/cost_tile.F,v 1.21 2014/06/27 13:56:05 mlosch Exp $
-C $Name:  $
-
 #include "COST_OPTIONS.h"
 #ifdef ALLOW_AUTODIFF
 # include "AUTODIFF_OPTIONS.h"
@@ -80,7 +77,9 @@ C     == Global variables ===
 #include "GRID.h"
 #include "cost.h"
 #ifdef ALLOW_AUTODIFF
-# include "tamc.h"
+# ifdef ALLOW_AUTODIFF_TAMC
+#  include "tamc.h"
+# endif
 # ifdef ALLOW_PTRACERS
 #  include "PTRACERS_SIZE.h"
 #  include "PTRACERS_FIELDS.h"

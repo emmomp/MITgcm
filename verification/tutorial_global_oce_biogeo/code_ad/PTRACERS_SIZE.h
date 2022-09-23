@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/verification/tutorial_global_oce_biogeo/code_ad/PTRACERS_SIZE.h,v 1.2 2013/03/28 18:08:03 jahn Exp $
-C $Name:  $
-
 #ifdef ALLOW_PTRACERS
 
 CBOP
@@ -19,7 +16,6 @@ C     Number of tracers
       PARAMETER(PTRACERS_num = 5 )
 
 #ifdef ALLOW_AUTODIFF_TAMC
-      INTEGER    iptrkey
       INTEGER    maxpass
       PARAMETER( maxpass     = PTRACERS_num + 2 )
 #endif

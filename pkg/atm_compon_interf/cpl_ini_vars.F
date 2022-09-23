@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/pkg/atm_compon_interf/cpl_ini_vars.F,v 1.6 2016/01/06 00:42:51 jmc Exp $
-C $Name:  $
-
 #include "ATM_CPL_OPTIONS.h"
 
 CBOP
@@ -45,7 +42,7 @@ C     i,j,bi,bj :: Loop counters
       INTEGER i,j,bi,bj
 
       DO bj=myByLo(myThid),myByHi(myThid)
-       DO bi=myBxLo(myThid),myByLo(myThid)
+       DO bi=myBxLo(myThid),myBxHi(myThid)
         DO J=1-OLy,sNy+OLy
          DO I=1-OLx,sNx+OLx
 C-        Export field

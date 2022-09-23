@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/model/src/packages_init_variables.F,v 1.100 2017/02/21 00:57:47 jmc Exp $
-C $Name:  $
-
 #include "PACKAGES_CONFIG.h"
 #include "CPP_OPTIONS.h"
 #ifdef ALLOW_AUTODIFF
@@ -69,17 +66,17 @@ C       |-- RBCS_INIT_VARIA
 C       |
 C       |-- MATRIX_INIT_VARIA
 C       |
+C       |-- STREAMICE_INIT_VARIA
+C       |
+C       |-- SHELFICE_INIT_VARIA
+C       |
+C       |-- ICEFRONT_INIT_VARIA
+C       |
 C       |-- FRAZIL_INIT_VARIA
 C       |
 C       |-- SEAICE_INIT_VARIA
 C       |
 C       |-- SALT_PLUME_INIT_VARIA
-C       |
-C       |-- SHELFICE_INIT_VARIA
-C       |
-C       |-- STREAMICE_INIT_VARIA
-C       |
-C       |-- ICEFRONT_INIT_VARIA
 C       |
 C       |-- THSICE_INI_VARS
 C       |
@@ -97,6 +94,8 @@ C       |-- LAYERS_INIT_VARIA
 C       |
 C       |-- NEST_CHILD_INIT_VARIA
 C       |-- NEST_PARENT_INIT_VARIA
+C       |
+C       |-- NEST2W_INIT_VARIA
 C       |
 C       |-- CPL_INI_VARS
 C       |
@@ -117,8 +116,9 @@ C     === Global variables ===
 #include "PARAMS.h"
 #ifdef ALLOW_AUTODIFF
 # include "DYNVARS.h"
-# include "tamc.h"
-# include "tamc_keys.h"
+# ifdef ALLOW_AUTODIFF_TAMC
+#  include "tamc.h"
+# endif
 #endif
 
 C     !INPUT/OUTPUT PARAMETERS:
@@ -221,12 +221,21 @@ C--   Initialize KPP vertical mixing scheme.
 
 #ifdef ALLOW_GMREDI
 C--   Initialize GM/Redi parameterization
-      IF (useGMRedi) THEN
+# ifdef ALLOW_AUTODIFF
+C- Note: To simplify dependency & avoid recomputations, when compiling
+C        pkg/autodiff, we always call GMREDI_INIT_VARIA to initialise control
+C        variables (ALLOW_KAPGM/KAPREDI_CONTROL) without condition on useGMRedi
+C        (in this case the "If useGMRedi" is added inside gmredi_init_varia.F).
+# else
+      IF ( useGMRedi ) THEN
+# endif
 # ifdef ALLOW_DEBUG
         IF (debugMode) CALL DEBUG_CALL('GMREDI_INIT_VARIA',myThid)
 # endif
         CALL GMREDI_INIT_VARIA( myThid )
+# ifndef ALLOW_AUTODIFF
       ENDIF
+# endif
 #endif /* ALLOW_GMREDI */
 
 #ifdef ALLOW_BBL
@@ -318,6 +327,33 @@ C--   Initialise float position
       ENDIF
 #endif /* ALLOW_MATRIX */
 
+#ifdef ALLOW_STREAMICE
+      IF (useStreamIce) THEN
+# ifdef ALLOW_DEBUG
+       IF (debugMode) CALL DEBUG_CALL('STREAMICE_INIT_VARIA',myThid)
+# endif
+       CALL STREAMICE_INIT_VARIA( myThid )
+      ENDIF
+#endif /* ALLOW_STREAMICE */
+
+#ifdef ALLOW_SHELFICE
+      IF (useShelfIce) THEN
+# ifdef ALLOW_DEBUG
+       IF (debugMode) CALL DEBUG_CALL('SHELFICE_INIT_VARIA',myThid)
+# endif
+       CALL SHELFICE_INIT_VARIA( myThid )
+      ENDIF
+#endif /* ALLOW_SHELFICE */
+
+#ifdef ALLOW_ICEFRONT
+      IF (useICEFRONT) THEN
+# ifdef ALLOW_DEBUG
+       IF (debugMode) CALL DEBUG_CALL('ICEFRONT_INIT_VARIA',myThid)
+# endif
+       CALL ICEFRONT_INIT_VARIA( myThid )
+      ENDIF
+#endif /* ALLOW_ICEFRONT */
+
 #ifdef ALLOW_FRAZIL
       IF (useFRAZIL) THEN
 # ifdef ALLOW_DEBUG
@@ -342,33 +378,6 @@ C--   Initialize SEAICE model.
         CALL SALT_PLUME_INIT_VARIA( myThid )
       ENDIF
 #endif /* ALLOW_SALT_PLUME */
-
-#ifdef ALLOW_SHELFICE
-      IF (useShelfIce) THEN
-# ifdef ALLOW_DEBUG
-       IF (debugMode) CALL DEBUG_CALL('SHELFICE_INIT_VARIA',myThid)
-# endif
-       CALL SHELFICE_INIT_VARIA( myThid )
-      ENDIF
-#endif /* ALLOW_SHELFICE */
-
-#ifdef ALLOW_STREAMICE
-      IF (useStreamIce) THEN
-# ifdef ALLOW_DEBUG
-       IF (debugMode) CALL DEBUG_CALL('STREAMICE_INIT_VARIA',myThid)
-# endif
-       CALL STREAMICE_INIT_VARIA( myThid )
-      ENDIF
-#endif /* ALLOW_STREAMICE */
-
-#ifdef ALLOW_ICEFRONT
-      IF (useICEFRONT) THEN
-# ifdef ALLOW_DEBUG
-       IF (debugMode) CALL DEBUG_CALL('ICEFRONT_INIT_VARIA',myThid)
-# endif
-       CALL ICEFRONT_INIT_VARIA( myThid )
-      ENDIF
-#endif /* ALLOW_ICEFRONT */
 
 #ifdef ALLOW_THSICE
       IF (useThSIce) THEN
@@ -450,6 +459,16 @@ C--   Initialize NEST in PARENT configuration
       ENDIF
 #endif /* ALLOW_NEST_PARENT */
 
+#ifdef ALLOW_NEST2W_COMMON
+C--   Initialise the 2-Way Nesting packages variables
+      IF ( useNest2W_parent .OR. useNest2W_child ) THEN
+# ifdef ALLOW_DEBUG
+        IF (debugMode) CALL DEBUG_CALL('NEST2W_INIT_VARIA',myThid)
+# endif
+        CALL NEST2W_INIT_VARIA( myThid )
+      ENDIF
+#endif /* ALLOW_NEST2W_COMMON */
+
 #ifdef COMPONENT_MODULE
       IF (useCoupler) THEN
 # ifdef ALLOW_DEBUG
@@ -489,6 +508,12 @@ C--   Initialise pkg/profiles
 
 C--   Initialise pkg/ecco (and related pkgs components)
 #ifdef ALLOW_ECCO
+# ifdef ALLOW_AUTODIFF_TAMC
+#  if (defined (ALLOW_UVEL0_CONTROL) && defined (ALLOW_VVEL0_CONTROL))
+CADJ STORE uvel = tapelev_init, key = 1
+CADJ STORE vvel = tapelev_init, key = 1
+#  endif
+# endif
       IF ( useECCO ) CALL ECCO_INIT_VARIA( myThid )
 #endif
 

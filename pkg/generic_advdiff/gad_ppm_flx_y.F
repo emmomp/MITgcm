@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/pkg/generic_advdiff/gad_ppm_flx_y.F,v 1.1 2016/03/13 01:44:03 jmc Exp $
-C $Name:  $
-
 #     include "GAD_OPTIONS.h"
 
       SUBROUTINE GAD_PPM_FLX_Y(bi,bj,kk,ix,
@@ -96,7 +93,7 @@ C     ==================== integrate profile over region swept by face
      &             + ivec(2) * fhat(2,iy-1)
      &             + ivec(3) * fhat(3,iy-1)
 
-              intF = intF / (ss22 - ss11)
+CML              intF = intF / (ss22 - ss11)
 
               else
 
@@ -123,9 +120,13 @@ C     ==================== integrate profile over region swept by face
      &             + ivec(2) * fhat(2,iy-0)
      &             + ivec(3) * fhat(3,iy-0)
 
-              intF = intF / (ss22 - ss11)
+CML              intF = intF / (ss22 - ss11)
 
               end if
+
+c             intF = 0.5 _d 0 * intF / vCFL
+C-    to avoid potential underflow:
+              intF = 0.5 _d 0 * intF / sign(max(abs(vCFL),1.d-20),vCFL)
 
 C     ==================== calc. flux = upwind tracer * face-transport
               flux(ix,iy) = + vfac(ix,iy) * intF

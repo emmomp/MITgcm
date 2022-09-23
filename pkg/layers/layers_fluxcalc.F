@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/pkg/layers/layers_fluxcalc.F,v 1.17 2015/06/15 21:34:07 jmc Exp $
-C $Name:  $
-
 #include "LAYERS_OPTIONS.h"
 #ifdef ALLOW_GMREDI
 #include "GMREDI_OPTIONS.h"
@@ -626,10 +623,12 @@ C ------- Thickness at c point
 C ------- Now rescale dzfac to include the layer coordinate spacing
          dzfac = dzfac * layers_recip_delta(kloc,iLa)
 
+#ifdef LAYERS_PRHO_REF 
          IF ( layers_num(iLa) .EQ. 3 ) THEN
            Tfac = layers_alpha(i,j,kci,bi,bj)
            Sfac = layers_beta(i,j,kci,bi,bj)
          ENDIF
+#endif
          IF (kci.EQ.1) THEN
 C ------- We are in the surface layer
           TtendSurf(i,j,kloc,bi,bj) =

@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/pkg/exf/exf_set_gen.F,v 1.39 2017/02/21 01:04:26 jmc Exp $
-C $Name:  $
-
 #include "EXF_OPTIONS.h"
 
 C--  File exf_set_gen.F: General routines to load-in an input field
@@ -33,6 +30,7 @@ C     == global variables ==
 #include "EEPARAMS.h"
 #include "SIZE.h"
 #include "EXF_PARAM.h"
+#include "EXF_INTERP_SIZE.h"
 
 C     == routine arguments ==
       _RL genStartTime, genperiod
@@ -106,7 +104,7 @@ C  *=================================================================*
 C     == global variables ==
 #include "EEPARAMS.h"
 #include "SIZE.h"
-#include "EXF_PARAM.h"
+#include "EXF_INTERP_SIZE.h"
 
 C     == routine arguments ==
       _RL genperiod, exf_inscal_gen, genconst

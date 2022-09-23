@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/pkg/diagnostics/diagnostics_set_pointers.F,v 1.16 2011/07/01 18:52:18 jmc Exp $
-C $Name:  $
-
 #include "DIAG_OPTIONS.h"
 
 CBOP
@@ -139,7 +136,6 @@ C        Search all possible model diagnostics
           IF ( flds(md,ld).EQ.cdiag(nd) ) THEN
             CALL DIAGNOSTICS_SETDIAG(mate,ndiagcount,md,ld,nd,myThid)
             found = .TRUE.
-            jdiag(md,ld) = nd
           ENDIF
          ENDDO
          IF ( .NOT.found ) THEN
@@ -196,12 +192,13 @@ C     and if it exists. Note: for now, only used to print message.
        DO md=1,nActive(ld)
         IF (mdiag(md,ld).EQ.0 ) THEN
 
-         nd = jdiag(md,ld)
+         k = SIGN(1,jdiag(md,ld))
+         nd = ABS(jdiag(md,ld))
          mate = hdiag(nd)
          IF ( mate.GT.0 ) THEN
           DO j=1,nlists
            DO i=1,nActive(j)
-            IF ( mdiag(md,ld).EQ.0 .AND. jdiag(i,j).EQ.mate ) THEN
+            IF ( mdiag(md,ld).EQ.0 .AND. (k*jdiag(i,j)).EQ.mate ) THEN
              IF ( freq(j).EQ.freq(ld) .AND. phase(j).EQ.phase(ld)
      &           .AND. averageFreq(j) .EQ.averageFreq(ld)
      &           .AND. averagePhase(j).EQ.averagePhase(ld)
@@ -224,6 +221,17 @@ C     and if it exists. Note: for now, only used to print message.
       ENDDO
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
+C--   Set internal parameter "useDiag4AdjOutp" if Adj Diagnostics are found
+      DO ld=1,nlists
+       DO md=1,nfields(ld)
+c      DO md=1,nActive(ld)
+         nd = ABS(jdiag(md,ld))
+         useDiag4AdjOutp = useDiag4AdjOutp
+     &                .OR. ( gdiag(nd)(4:4).EQ.'A' )
+       ENDDO
+      ENDDO
+
+C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
 C--   Set list of levels to write (if not specified in data.diagnostics)
 
       DO ld=1,nlists
@@ -231,7 +239,7 @@ C--   Set list of levels to write (if not specified in data.diagnostics)
 C-      set Nb of levels to the minimum size of all diag of this list:
           kLev = numLevels*10
           DO md=1,nfields(ld)
-            nd = jdiag(md,ld)
+            nd = ABS(jdiag(md,ld))
             kLev = MIN(kdiag(nd),kLev)
           ENDDO
           IF ( kLev.LE.0 ) THEN
@@ -273,7 +281,7 @@ C-      if no Vert.Interpolation, check for levels out of range ( > kdiag):
             kLev = MAX(NINT(levs(k,ld)),kLev)
           ENDDO
           DO md=1,nfields(ld)
-            nd = jdiag(md,ld)
+            nd = ABS(jdiag(md,ld))
             IF ( kLev.GT.kdiag(nd) ) THEN
 C- Note: diagnostics_out take care (in some way) of this case
 C        so that it does not cause "index out-off bounds" error.

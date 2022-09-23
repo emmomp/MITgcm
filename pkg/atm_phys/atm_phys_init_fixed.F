@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/pkg/atm_phys/atm_phys_init_fixed.F,v 1.3 2015/12/21 20:04:57 jmc Exp $
-C $Name:  $
-
 #include "ATM_PHYS_OPTIONS.h"
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
@@ -42,7 +39,7 @@ C     iUnit      :: Work variable for IO unit number
       CHARACTER*(MAX_LEN_MBUF) msgBuf
       INTEGER iUnit
       INTEGER axes(4)
-      INTEGER i,j,bi,bj
+      INTEGER i,j,k,bi,bj
       _RL cst_albedo, cst_mxlDepth
 
       namelist / atmosphere_nml /
@@ -55,32 +52,36 @@ C     iUnit      :: Work variable for IO unit number
 
       _BARRIER
       _BEGIN_MASTER(myThid)
-        module_is_initialized =.false.
-        turb = .false.
-        ldry_convection = .false.
-        lwet_convection = .false.
-        do_virtual = .false. ! whether virtual temp used in gcm_vert_diff
-        two_stream = .true.
-        mixed_layer_bc = .false.
-        roughness_heat = 0.05
-        roughness_moist = 0.05
-        roughness_mom = 0.05
-       WRITE(msgBuf,'(A)') 'ATM_PHYS_INIT_FIXED: opening data.atm_gray'
-       CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
-     &                     SQUEEZE_RIGHT , 1)
-       CALL OPEN_COPY_DATA_FILE(
-     I                      'data.atm_gray', 'ATM_PHYS_INIT_FIXED',
-     O                      iUnit,
-     I                      myThid )
+      module_is_initialized =.false.
+      turb = .false.
+      ldry_convection = .false.
+      lwet_convection = .false.
+      do_virtual = .false.      ! whether virtual temp used in gcm_vert_diff
+      two_stream = .true.
+      mixed_layer_bc = .false.
+      roughness_heat = 0.05
+      roughness_moist = 0.05
+      roughness_mom = 0.05
+      WRITE(msgBuf,'(A)') 'ATM_PHYS_INIT_FIXED: opening data.atm_gray'
+      CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
+     &                    SQUEEZE_RIGHT , 1)
+      CALL OPEN_COPY_DATA_FILE(
+     I                     'data.atm_gray', 'ATM_PHYS_INIT_FIXED',
+     O                     iUnit,
+     I                     myThid )
 
 C      Read parameters from open data file
-       READ(UNIT=iUnit,NML=atmosphere_nml)
-       WRITE(msgBuf,'(A)')
+      READ(UNIT=iUnit,NML=atmosphere_nml)
+      WRITE(msgBuf,'(A)')
      &     'ATM_PHYS_INIT_FIXED: finished reading data.atm_gray'
-       CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
-     &                     SQUEEZE_RIGHT , 1)
+      CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
+     &                    SQUEEZE_RIGHT , 1)
 C     Close the open data file
-       CLOSE(iUnit)
+#ifdef SINGLE_DISK_IO
+      CLOSE(iUnit)
+#else
+      CLOSE(iUnit,STATUS='DELETE')
+#endif /* SINGLE_DISK_IO */
 
       CALL GCM_PARAMS_INIT(
      I         UNSET_RS, UNSET_RL, UNSET_I,
@@ -130,6 +131,13 @@ c    I                        lat2d, ocean_qflux,
             atmPhys_Albedo(i,j,bi,bj) = cst_albedo
           ENDDO
          ENDDO
+         DO k=1,Nr
+          DO j=1-OLy,sNy+OLy
+           DO i=1-OLx,sNx+OLx
+            atmPhys_Ozone(i,j,k,bi,bj) = 0. _d 0
+           ENDDO
+          ENDDO
+         ENDDO
        ENDDO
       ENDDO
       IF ( atmPhys_qFlxFile .NE. ' ' ) THEN
@@ -146,6 +154,11 @@ c    I                        lat2d, ocean_qflux,
         CALL READ_FLD_XY_RL( atmPhys_albedoFile,' ',
      &                       atmPhys_Albedo, 0, myThid )
         CALL EXCH_XY_RL( atmPhys_Albedo, myThid )
+      ENDIF
+      IF ( atmPhys_ozoneFile .NE. ' ' ) THEN
+        CALL READ_FLD_XYZ_RL( atmPhys_ozoneFile,' ',
+     &                        atmPhys_Ozone, 0, myThid )
+        CALL EXCH_XYZ_RL( atmPhys_Ozone, myThid )
       ENDIF
 
 #ifdef ALLOW_MNC

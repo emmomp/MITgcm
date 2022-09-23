@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/pkg/gchem/gchem_init_fixed.F,v 1.12 2016/05/23 13:09:31 jmc Exp $
-C $Name:  $
-
 #include "GCHEM_OPTIONS.h"
 
 C !INTERFACE: ==========================================================
@@ -57,6 +54,12 @@ c         _END_MASTER( myThid )
 #ifdef ALLOW_DARWIN
       IF ( useDARWIN ) THEN
          CALL DARWIN_INIT_FIXED(myThid)
+      ENDIF
+#endif
+
+#ifdef ALLOW_SPOIL
+      IF ( useSPOIL ) THEN
+         CALL SPOIL_INIT_FIXED( myThid )
       ENDIF
 #endif
 

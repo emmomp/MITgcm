@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/model/src/calc_surf_dr.F,v 1.20 2014/07/24 15:41:57 jmc Exp $
-C $Name:  $
-
 #include "PACKAGES_CONFIG.h"
 #include "CPP_OPTIONS.h"
 
@@ -49,7 +46,8 @@ C     adjust_volum :: adjustment effect on the volume (domain size)
 C     numbWrite    :: count the Number of warning written on STD-ERR file
 C     numbWrMax    ::  maximum  Number of warning written on STD-ERR file
       INTEGER i,j,bi,bj
-      INTEGER ks, numbWrite, numbWrMax
+      INTEGER ks, nTmp
+      INTEGER numbWrite, numbWrMax
       _RL hFactmp, adjust_nb_pt, adjust_volum
       _RL rSurftmp(1-OLx:sNx+OLx,1-OLy:sNy+OLy)
       _RS hhm, hhp
@@ -85,7 +83,9 @@ C-- Compute the new fractional thickness of surface level (kSurfC):
           IF (ks.LE.Nr) THEN
            IF ( rSurftmp(i,j).LT.Rmin_surf(i,j,bi,bj) ) THEN
 C-- Needs to do something :
-            IF (numbWrite.LE.numbWrMax) THEN
+            IF ( numbWrite.LE.numbWrMax .AND.
+     &           ( i.GE.1.AND.i.LE.sNx .AND.
+     &             j.GE.1.AND.j.LE.sNy ) ) THEN
              numbWrite = numbWrite + 1
              hFactmp = h0FacC(i,j,ks,bi,bj)
      &         + ( rSurftmp(i,j) - Ro_surf(i,j,bi,bj) )*recip_drF(ks)
@@ -99,7 +99,7 @@ C-- Needs to do something :
      &         ' i,j,k,bi,bj,Thid,Iter=',i,j,ks,bi,bj,myThid,myIter
              ENDIF
              WRITE(errorMessageUnit,'(A,2F10.6,1PE14.6)')
-     &         'hFac_n-1,hFac_n,eta =',
+     &         ' hFac_n-1,hFac_n,eta =',
      &          hfacC(i,j,ks,bi,bj), hFactmp, etaFld(i,j,bi,bj)
             ENDIF
 C-- Decide to STOP :
@@ -130,7 +130,7 @@ C-- Usefull warning when hFac becomes very large:
      &         'WARNING: hFacC > hFacSup at:',
      &         ' i,j,k,bi,bj,Thid,Iter=',i,j,ks,bi,bj,myThid,myIter
               WRITE(errorMessageUnit,'(A,2F10.6,1PE14.6)')
-     &         'hFac_n-1,hFac_n,eta =', hfacC(i,j,ks,bi,bj),
+     &         ' hFac_n-1,hFac_n,eta =', hfacC(i,j,ks,bi,bj),
      &          hFac_surfC(i,j,bi,bj), etaFld(i,j,bi,bj)
            ENDIF
 C----------
@@ -156,8 +156,7 @@ c           IF(ks.EQ.kSurfC(i-1,j,bi,bj)) hhm = rSurftmp(i-1,j)
 c           hhp = rF(ks)
 c           IF(ks.EQ.kSurfC(i,j,bi,bj))   hhp = rSurftmp(i,j)
             hFac_surfW(i,j,bi,bj) = h0FacW(i,j,ks,bi,bj)
-     &            + ( MIN(hhm,hhp)
-     &              - MIN( Ro_surf(i-1,j,bi,bj), Ro_surf(i,j,bi,bj) )
+     &            + ( MIN(hhm,hhp) - rSurfW(i,j,bi,bj)
      &              )*recip_drF(ks)*maskW(i,j,ks,bi,bj)
           ENDIF
          ENDDO
@@ -177,8 +176,7 @@ c           IF(ks.EQ.kSurfC(i,j-1,bi,bj)) hhm = rSurftmp(i,j-1)
 c           hhp = rF(ks)
 c           IF(ks.EQ.kSurfC(i,j,bi,bj))   hhp = rSurftmp(i,j)
             hFac_surfS(i,j,bi,bj) = h0FacS(i,j,ks,bi,bj)
-     &            + ( MIN(hhm,hhp)
-     &              - MIN( Ro_surf(i,j-1,bi,bj), Ro_surf(i,j,bi,bj) )
+     &            + ( MIN(hhm,hhp) - rSurfS(i,j,bi,bj)
      &              )*recip_drF(ks)*maskS(i,j,ks,bi,bj)
           ENDIF
          ENDDO
@@ -205,9 +203,11 @@ C-- Global diagnostic :
       IF ( adjust_nb_pt.GE.1. ) THEN
         _GLOBAL_SUM_RL( adjust_volum , myThid )
         _BEGIN_MASTER( myThid )
+C   just to avoid issue with OpenAD: copy to integer nTmp before printing
+        nTmp = NINT(adjust_nb_pt)
         WRITE(standardMessageUnit,'(2(A,I10),1PE16.8)')
      &    ' SURF_ADJUSTMENT: Iter=', myIter,
-     &    ' Nb_pts,Vol=', nint(adjust_nb_pt), adjust_volum
+     &    ' Nb_pts,Vol=', nTmp, adjust_volum
         _END_MASTER( myThid )
       ENDIF
 

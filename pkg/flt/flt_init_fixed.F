@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/pkg/flt/flt_init_fixed.F,v 1.7 2017/02/11 21:07:13 gforget Exp $
-C $Name:  $
-
 #include "FLT_OPTIONS.h"
 
       SUBROUTINE FLT_INIT_FIXED( myThid  )
@@ -71,12 +68,16 @@ C Set domain dependent constants:
 
 #ifndef DEVEL_FLT_EXCH2
 #ifdef ALLOW_EXCH2
-      IF (nFacets .GT. 1) THEN
         WRITE(msgBuf,'(2A)') 'FLT_INIT_FIXED:',
-     &         ' more than 1 exch2 facet not yet supported'
+     &    ' exch2 is not yet fully supported in pkg/flt;'
+        CALL PRINT_ERROR( msgBuf, myThid )
+        WRITE(msgBuf,'(2A)') 'FLT_INIT_FIXED:',
+     &    ' if you want to try using it anyway then recompile with'
+        CALL PRINT_ERROR( msgBuf, myThid )
+        WRITE(msgBuf,'(2A)') 'FLT_INIT_FIXED:',
+     &    ' "#define DEVEL_FLT_EXCH2" added in FLT_OPTIONS.h'
         CALL PRINT_ERROR( msgBuf, myThid )
         STOP 'ABNORMAL END: S/R FLT_INIT_FIXED'
-      ENDIF
 #endif
 #endif
 

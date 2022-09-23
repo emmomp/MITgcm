@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/pkg/diagnostics/diagnostics_switch_onoff.F,v 1.20 2015/06/02 20:58:22 jmc Exp $
-C $Name:  $
-
 #include "DIAG_OPTIONS.h"
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
@@ -106,7 +103,7 @@ C--    Select diagnostics list that uses instantaneous output
           IF ( time4SnapShot ) THEN
 C--       switch ON diagnostics of output-stream # n
             DO m=1,nActive(n)
-c             nd = jdiag(m,n)
+c             nd = ABS(jdiag(m,n))
 c             IF (ndiag(nd).NE.0) WRITE(0,*) myIter,nd,ndiag(nd),' ->',0
               ip = idiag(m,n)
               IF (ip.GT.0) ndiag(ip,bi,bj) = 0
@@ -114,7 +111,7 @@ c             IF (ndiag(nd).NE.0) WRITE(0,*) myIter,nd,ndiag(nd),' ->',0
           ELSE
 C--       switch OFF diagnostics of output-stream # n
             DO m=1,nActive(n)
-c             nd = jdiag(m,n)
+c             nd = ABS(jdiag(m,n))
 c             IF (ndiag(nd).NE.-1) WRITE(0,*) myIter,nd,ndiag(nd),' ->',-1
               ip = idiag(m,n)
               IF (ip.GT.0) ndiag(ip,bi,bj) = -1

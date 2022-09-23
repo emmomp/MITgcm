@@ -1,5 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/pkg/monitor/MONITOR.h,v 1.11 2016/07/18 16:45:21 jmc Exp $
-C $Name:  $
 C
 
 CBOP
@@ -9,7 +7,7 @@ C     !INTERFACE:
 C     #include "MONITOR.h"
 
 C     !DESCRIPTION:
-C     Contains the state (parameters) for the ``monitor'' package.
+C     Contains the state (parameters) for the "monitor" package.
 C
 C     Monitor routines (prefixed MON\_) provide a simple set of
 C     utilities for outputting useful runtime diagnostic

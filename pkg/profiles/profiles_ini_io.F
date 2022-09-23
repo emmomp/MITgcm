@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/pkg/profiles/profiles_ini_io.F,v 1.5 2017/02/18 16:11:37 gforget Exp $
-C $Name:  $
-
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
 
 #include "PROFILES_OPTIONS.h"
@@ -34,7 +31,9 @@ C     !FUNCTIONS
       EXTERNAL ILNBLNK
 
 C     !LOCAL VARIABLES:
+#ifndef HAVE_SYSTEM
       CHARACTER*(MAX_LEN_MBUF) msgBuf
+#endif
       CHARACTER*(MAX_LEN_FNAM) namBuf
       INTEGER iL, pIL
 CEOP

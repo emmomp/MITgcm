@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/pkg/kpp/kpp_transport_t.F,v 1.20 2014/05/06 15:50:14 jmc Exp $
-C $Name:  $
-
 #include "KPP_OPTIONS.h"
 #ifdef ALLOW_GMREDI
 #include "GMREDI_OPTIONS.h"
@@ -80,7 +77,7 @@ C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
      &          *( KPPdiffKzT(i,j,k,bi,bj) + tmpFac*Kwz(i,j,k,bi,bj) )
      &          *KPPghat(i,j,km1,bi,bj)
      &          *( surfaceForcingT(i,j,bi,bj)
-     &            +surfaceForcingTice(i,j,bi,bj)
+     &            +adjustColdSST_diag(i,j,bi,bj)
      &            -Qsw(i,j,bi,bj)*recip_Cp*recip_rhoConst
      &            *(1.-KPPfrac(i,j,bi,bj))
      &           )
@@ -95,7 +92,7 @@ C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
      &          *KPPdiffKzT(i,j,k,bi,bj)
      &          *KPPghat(i,j,km1,bi,bj)
      &          *( surfaceForcingT(i,j,bi,bj)
-     &            +surfaceForcingTice(i,j,bi,bj)
+     &            +adjustColdSST_diag(i,j,bi,bj)
      &            -Qsw(i,j,bi,bj)*recip_Cp*recip_rhoConst
      &            *(1.-KPPfrac(i,j,bi,bj))
      &           )

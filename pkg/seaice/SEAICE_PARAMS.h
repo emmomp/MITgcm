@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/pkg/seaice/SEAICE_PARAMS.h,v 1.133 2017/04/03 16:09:41 mlosch Exp $
-C $Name:  $
-
 C     *==========================================================*
 C     | SEAICE_PARAMS.h
 C     | o Basic parameter header for sea ice model.
@@ -13,12 +10,12 @@ C                          default is to use dynamics.
 C     SEAICEuseFREEDRIFT :: If True use free drift velocity instead of EVP
 C                           or LSR
 C     SEAICEuseStrImpCpl:: If true use strongly implicit coupling formulation
-C                          for LSR solver (Hutchings et al 2004, 
+C                          for LSR solver (Hutchings et al 2004,
 C                          Ocean Modelling, eq.44)
 C     SEAICEuseEVP      :: If true use elastic viscous plastic solver
-C     SEAICEuseEVPstar  :: If true use modified elastic viscous plastic 
+C     SEAICEuseEVPstar  :: If true use modified elastic viscous plastic
 C                          solver (EVP*) by Lemieux et al (2012)
-C     SEAICEuseEVPrev   :: If true use "revisited" elastic viscous plastic 
+C     SEAICEuseEVPrev   :: If true use "revisited" elastic viscous plastic
 C                          solver following Bouillon et al. (2013), very similar
 C                          to EVP*, but uses fewer implicit terms and drops
 C                          one 1/e^2 in equations for sigma2 and sigma12
@@ -28,39 +25,55 @@ C                          Applied only if SEAICEuseEVP=.TRUE.
 C     SEAICEuseMultiTileSolver :: in LSR, use full domain tri-diagonal solver
 C     SEAICEuseLSR      :: If true, use default Picard solver with Line-
 C                          Successive(-over)-Relaxation, can also be true
-C                          if LSR is used as a preconditioner for the 
+C                          if LSR is used as a preconditioner for the
 C                          non-linear JFNK solver
-C     SEAICEusePicardAsPrecon :: If true, allow SEAICEuseLSR = .TRUE. as a 
+C     SEAICEusePicardAsPrecon :: If true, allow SEAICEuseLSR = .TRUE. as a
 C                          preconditioner for non-linear JFNK problem (def. = F)
 C     SEAICEuseKrylov   :: If true, use matrix-free Krylov solver with Picard
 C                          solver instead of LSR (default: false)
 C     SEAICEuseJFNK     :: If true, use Jacobi-free Newton-Krylov solver
 C                          instead of LSR (default: false)
 C     SEAICEuseIMEX     :: use IMplicit/EXplicit scheme with JFNK
-C     SEAICEuseTEM      :: to use truncated ellipse method (see Geiger et al.
+C     SEAICEuseTEM      :: to use the truncated ellipse method (see Geiger et al.
 C                          1998) set this parameter to true, default is false
+C     SEAICEuseMCS      :: to use the Mohr-Coulomb yield curve with a shear
+C                          only flow rule (Ip et al 1991), set this parameter to
+C                          true, default is false
+C     SEAICEuseMCE      :: to use the Mohr-Coulomb yield curve with elliptical
+C                          plastic potential (similarly to Hibler and Schulson
+C                          2000 without the elliptical cap) set this parameter
+C                          to true, default is false
+C     SEAICEuseTD       :: to use the teardrop yield curve (Zhang and Rothrock,
+C                          2005) set this parameter to true, default is false
+C     SEAICEusePL       :: to use the parabolic lens yield curve (Zhang and
+C                          Rothrock, 2005) set this parameter to true,
+C                          default is false
 C     SEAICEuseTilt     :: If true then include surface tilt term in dynamics
 C     SEAICEuseMetricTerms :: use metric terms for dynamics solver
 C                          (default = .true. )
 C     SEAICE_no_slip    :: apply no slip boundary conditions to seaice velocity
+C     SEAICE_2ndOrderBC :: apply 2nd order no slip boundary conditions (works
+C                          only with EVP, JFNK or KRYLOV solver, default=F)
 C     SEAICE_maskRHS    :: mask the RHS of the solver where there is no ice
 C     SEAICE_clipVelocities :: clip velocities to +/- 40cm/s
 C     SEAICEaddSnowMass :: in computing seaiceMass, add snow contribution
-C                          default is .FALSE. for historical reasons
+C                          default is .TRUE.
 C     useHB87stressCoupling :: use an intergral over ice and ocean surface
 C                          layer to define surface stresses on ocean
 C                          following Hibler and Bryan (1987, JPO)
+C     SEAICEupdateOceanStress :: If TRUE, update ocean surface stress
+C                                accounting for seaice cover (default= T)
 C     SEAICEuseBDF2     :: use 2nd-order backward difference approach
 C                          for momentum equations as described in
 C                          Lemieux et al. 2014, JCP
 C                          so far only implemented for JFNK-solver
-C     useHibler79IceStrength :: if true original ice strength parameterization 
+C     useHibler79IceStrength :: if true original ice strength parameterization
 C                          other use Rothrock (1975) parameterization based
 C                          on energetics and an ice thickness distribution
 C                          (default = .true.)
 C     SEAICEscaleSurfStress :: if TRUE, scale ice-ocean and ice-atmosphere
 C                          stress on ice by concenration (AREA) following
-C                          Connolley et al. (2004), JPO. (default = .false.)
+C                          Connolley et al. (2004), JPO. (default = .TRUE.)
 C     SEAICEsimpleRidging :: use Hibler(1979) ridging (default=.true.)
 C     SEAICEuseLinRemapITD :: use linear remapping (Lipscomb et al. 2001)
 C                             .TRUE. by default
@@ -75,11 +88,19 @@ C     SEAICEadvSnow     :: turn on advection of snow (does not work with
 C                          non-default Leap-frog scheme for advection)
 C     SEAICEadvSalt     :: turn on advection of salt (does not work with
 C                          non-default Leap-frog scheme for advection)
+C     SEAICEmultiDimAdvection:: internal flag, set to false if any sea ice
+C                          variable uses a non-multi-dimensional advection
+C                          scheme
+C     SEAICEmomAdvection:: turn on advection of momentum (default = .false.)
+C     SEAICEhighOrderVorticity :: momentum advection parameters analogous to
+C     SEAICEupwindVorticity    :: highOrderVorticity, upwindVorticity,
+C     SEAICEuseAbsVorticity    :: useAbsVorticity, useJamartMomAdv for vector
+C     SEAICEuseJamartMomAdv    :: invariant momentum in the ocean
 C - thermodynamics:
 C     usePW79thermodynamics :: use "0-layer" thermodynamics as described in
 C                           Parkinson and Washington (1979) and Hibler (1979)
-C     SEAICE_useMultDimSnow :: use same fixed pdf for snow as for 
-C                              MULITCATEGORY ice
+C     SEAICE_useMultDimSnow :: use same fixed pdf for snow as for
+C                              multi-thickness-category ice (default=.TRUE.)
 C     SEAICEuseFlooding  :: turn on scheme to convert submerged snow into ice
 C     SEAICEheatConsFix  :: If true then fix ocn<->seaice advective heat flux.
 C     useMaykutSatVapPoly :: use Maykut Polynomial for saturation vapor pressure
@@ -90,7 +111,7 @@ C     SEAICE_doOpenWaterGrowth :: use open water heat flux directly to grow ice
 C                           (when false cool ocean, and grow later if needed)
 C     SEAICE_doOpenWaterMelt   :: use open water heat flux directly to melt ice
 C                           (when false warm ocean, and melt later if needed)
-C     SEAICE_growMeltByConv :: grow/melt according to convergence of turbulence 
+C     SEAICE_growMeltByConv :: grow/melt according to convergence of turbulence
 C                              and conduction, rather than in two steps (default)
 C     SEAICE_salinityTracer    :: use SItracer to exchange and trace ocean
 C                           salt in ice
@@ -115,13 +136,18 @@ C     SEAICE_mon_mnc    :: write monitor to netcdf file
      &     SEAICEuseJFNK, SEAICEuseIMEX, SEAICEuseBDF2,
      &     SEAICEusePicardAsPrecon,
      &     useHibler79IceStrength, SEAICEsimpleRidging,
-     &     SEAICEuseLinRemapITD,
+     &     SEAICEuseLinRemapITD, SEAICEuseTD, SEAICEusePL,
      &     SEAICEuseTEM, SEAICEuseTilt, SEAICEuseMetricTerms,
-     &     SEAICE_no_slip, SEAICE_maskRHS, SEAICEscaleSurfStress,
-     &     SEAICE_clipVelocities, useHB87stressCoupling, 
-     &     SEAICEaddSnowMass,
+     &     SEAICEuseMCS, SEAICEuseMCE,
+     &     SEAICE_no_slip, SEAICE_2ndOrderBC,
+     &     SEAICE_maskRHS, SEAICEscaleSurfStress,
+     &     SEAICE_clipVelocities, SEAICEaddSnowMass,
+     &     useHB87stressCoupling, SEAICEupdateOceanStress,
      &     SEAICEuseFluxForm, SEAICEadvHeff, SEAICEadvArea,
-     &     SEAICEadvSnow, SEAICEadvSalt,
+     &     SEAICEmultiDimAdvection,
+     &     SEAICEadvSnow, SEAICEadvSalt, SEAICEmomAdvection,
+     &     SEAICEhighOrderVorticity, SEAICEupwindVorticity,
+     &     SEAICEuseAbsVorticity, SEAICEuseJamartMomAdv,
      &     usePW79thermodynamics,
      &     SEAICE_useMultDimSnow, SEAICEuseFlooding, SEAICEheatConsFix,
      &     useMaykutSatVapPoly, SEAICE_mcPheeStepFunc,
@@ -137,16 +163,21 @@ C     SEAICE_mon_mnc    :: write monitor to netcdf file
      &     SEAICEuseEVPpickup,
      &     SEAICEuseMultiTileSolver,
      &     SEAICEuseLSR, SEAICEuseKrylov,
-     &     SEAICEuseJFNK, SEAICEuseIMEX, SEAICEuseBDF2, 
+     &     SEAICEuseJFNK, SEAICEuseIMEX, SEAICEuseBDF2,
      &     SEAICEusePicardAsPrecon,
      &     useHibler79IceStrength, SEAICEsimpleRidging,
-     &     SEAICEuseLinRemapITD,
+     &     SEAICEuseLinRemapITD, SEAICEuseTD, SEAICEusePL,
      &     SEAICEuseTEM, SEAICEuseTilt, SEAICEuseMetricTerms,
-     &     SEAICE_no_slip, SEAICE_maskRHS, SEAICEscaleSurfStress,
-     &     SEAICE_clipVelocities, useHB87stressCoupling,
-     &     SEAICEaddSnowMass,
+     &     SEAICEuseMCS, SEAICEuseMCE,
+     &     SEAICE_no_slip, SEAICE_2ndOrderBC,
+     &     SEAICE_maskRHS, SEAICEscaleSurfStress,
+     &     SEAICE_clipVelocities, SEAICEaddSnowMass,
+     &     useHB87stressCoupling, SEAICEupdateOceanStress,
      &     SEAICEuseFluxForm, SEAICEadvHeff, SEAICEadvArea,
-     &     SEAICEadvSnow, SEAICEadvSalt,
+     &     SEAICEadvSnow, SEAICEadvSalt, SEAICEmomAdvection,
+     &     SEAICEmultiDimAdvection,
+     &     SEAICEhighOrderVorticity, SEAICEupwindVorticity,
+     &     SEAICEuseAbsVorticity, SEAICEuseJamartMomAdv,
      &     usePW79thermodynamics,
      &     SEAICE_useMultDimSnow, SEAICEuseFlooding, SEAICEheatConsFix,
      &     useMaykutSatVapPoly, SEAICE_mcPheeStepFunc,
@@ -158,12 +189,12 @@ C     SEAICE_mon_mnc    :: write monitor to netcdf file
      &     SEAICE_tave_mnc,   SEAICE_dump_mnc,   SEAICE_mon_mnc
 
 C--   COMMON /SEAICE_PARM_I/ Integer valued parameters of sea ice model.
-C     IMAX_TICE         :: number of iterations for ice surface temp 
+C     IMAX_TICE         :: number of iterations for ice surface temp
 C                          (default=10)
-C     postSolvTempIter :: select flux calculation after surf. temp solver 
+C     postSolvTempIter :: select flux calculation after surf. temp solver
 C                         iteration
 C                         0 = none, i.e., from last iter
-C                         1 = use linearized approx (consistent with tsurf 
+C                         1 = use linearized approx (consistent with tsurf
 C                             finding)
 C                         2 = full non-lin form
 C     SOLV_NCHECK         :: iteration interval for LSR-solver convergence test
@@ -178,15 +209,17 @@ C     SEAICEmomStartBDF   :: number of previous u/vIce time levels available
 C                          to start (or restart) BDF2 scheme.
 C     SEAICE_JFNK_lsIter  :: number of Newton iterations after which the
 C                            line search is started
+C     SEAICE_JFNK_lsLmax  :: max. number line search iterations (default = 4)
 C     SEAICE_JFNK_tolIter :: number of Newton iterations after which the
 C                            the tolerance is relaxed again (default = 100)
-C     SEAICE_OLx/y      :: overlaps for LSR-preconditioner in JFNK solver;
-C                          for 0 < SEAICE_OLx/y 0 <= OLx/y-2 
-C                          the preconditioner is a restricted additive
-C                           Schwarz method (default = OLx/y-2).
-C     LSR_mixIniGuess   :: control mixing of free-drift sol. into LSR initial 
+C     SEAICE_OLx/y      :: overlaps for LSR-solver and for the
+C                          LSR-preconditioner in JFNK and KRYLOV solver;
+C                          for 0 < SEAICE_OLx/y 0 <= OLx/y-2 the LSR solver
+C                          and preconditioner use a restricted additive
+C                          Schwarz method (default = OLx/y-2).
+C     LSR_mixIniGuess   :: control mixing of free-drift sol. into LSR initial
 C                          guess
-C                       :: =0 : nothing; =1 : no mix, but print free-drift 
+C                       :: =0 : nothing; =1 : no mix, but print free-drift
 C                          resid.;
 C                       :: =2,4 : mix with (1/local-residual)^2,4 factor
 C     SEAICEpresPow0    :: HEFF exponent for ice strength below SEAICEpresH0
@@ -196,12 +229,15 @@ C     SEAICEpartFunc    :: =0 use Thorndyke et al (1975) participation function
 C                       :: =1 use Lipscomb et al (2007) participation function
 C     SEAICEredistFunc  :: =0 assume ridged ice is uniformly distributed
 C                             (Hibler, 1980)
-C                          =1 Following Lipscomb et al. (2007), ridged ice is 
+C                          =1 Following Lipscomb et al. (2007), ridged ice is
 C                             distributed following an exponentially
 C                             decaying function
 C     SEAICEridgingIterMax :: maximum number of ridging iterations
 C     end ridging parameters
+C     SEAICEselectKEscheme   :: momentum advection parameters analogous
+C     SEAICEselectVortScheme :: to selectKEscheme and selectVortScheme
 C     SEAICEadvScheme   :: sets the advection scheme for thickness and area
+C                          (default = 77)
 C     SEAICEadvSchArea  :: sets the advection scheme for area
 C     SEAICEadvSchHeff  :: sets the advection scheme for effective thickness
 C                         (=volume), snow thickness, and salt if available
@@ -212,14 +248,14 @@ C     SEAICE_areaLossFormula :: selects formula for ice cover loss from melt
 C                        :: 1=from all but only melt conributions by ATM and OCN
 C                        :: 2=from net melt-growth>0 by ATM and OCN
 C                        :: 3=from predicted melt by ATM
-C     SEAICE_areaGainFormula :: selects formula for ice cover gain from open 
+C     SEAICE_areaGainFormula :: selects formula for ice cover gain from open
 C                               water growth
 C                        :: 1=from growth by ATM
 C                        :: 2=from predicted growth by ATM
 C     SEAICEetaZmethod   :: determines how shear-viscosity eta is computed at
 C                           Z-points
 C                           0=simple averaging from C-points (default and old)
-C                           3=weighted averaging of squares of strain rates 
+C                           3=weighted averaging of squares of strain rates
 C                             (recommended for energy conservation)
 C     SEAICE_multDim     :: number of ice categories
 C     SEAICE_debugPointI :: I,J index for seaice-specific debuggin
@@ -233,7 +269,9 @@ C
       INTEGER SEAICEnEVPstarSteps
       INTEGER SEAICEmomStartBDF
       INTEGER SEAICE_JFNK_lsIter, SEAICE_JFNK_tolIter
+      INTEGER SEAICE_JFNK_lsLmax
       INTEGER SEAICE_OLx, SEAICE_OLy
+      INTEGER SEAICEselectKEscheme, SEAICEselectVortScheme
       INTEGER SEAICEadvScheme
       INTEGER SEAICEadvSchArea
       INTEGER SEAICEadvSchHeff
@@ -257,9 +295,10 @@ C
      &     SEAICEnEVPstarSteps,
      &     SEAICEmomStartBDF,
      &     SEAICE_JFNK_lsIter, SEAICE_OLx, SEAICE_OLy,
-     &     SEAICE_JFNK_tolIter,
+     &     SEAICE_JFNK_lsLmax, SEAICE_JFNK_tolIter,
      &     SEAICEpresPow0, SEAICEpresPow1,
-     &     SEAICEpartFunc, SEAICEredistFunc, SEAICEridgingIterMax, 
+     &     SEAICEpartFunc, SEAICEredistFunc, SEAICEridgingIterMax,
+     &     SEAICEselectKEscheme, SEAICEselectVortScheme,
      &     SEAICEadvScheme,
      &     SEAICEadvSchArea,
      &     SEAICEadvSchHeff,
@@ -310,13 +349,14 @@ C     SEAICEaEVPcoeff    :: main coefficent for adaptive EVP (largest
 C                           stabilized frequency)
 C     SEAICEaEVPcStar    :: multiple of stabilty factor: alpha*beta=cstar*gamma
 C     SEAICEaEVPalphaMin :: lower limit of alpha and beta, regularisation
-C                           to prevent singularities of system matrix, 
+C                           to prevent singularities of system matrix,
 C                           e.g. when ice concentration is too low.
 C     SEAICEnonLinTol    :: non-linear tolerance parameter for implicit solvers
 C     JFNKgamma_lin_min/max :: tolerance parameters for linear JFNK solver
 C     JFNKres_t          :: tolerance parameter for FGMRES residual
 C     JFNKres_tFac       :: if set, JFNKres_t=JFNKres_tFac*(initial residual)
 C     SEAICE_JFNKepsilon :: step size for the FD-gradient in s/r seaice_jacvec
+C     SEAICE_JFNK_lsGamma:: reduction factor for line search (default 0.5)
 C     SEAICE_JFNKphi     :: [0,1] parameter for inexact Newton Method (def = 1)
 C     SEAICE_JFNKalpha   :: (1,2] parameter for inexact Newton Method (def = 1)
 C     SEAICE_zetaMaxFac  :: factor determining the maximum viscosity    (s)
@@ -331,11 +371,14 @@ C     SEAICE_rhoAir      :: density of air                              (kg/m^3)
 C     SEAICE_rhoIce      :: density of sea ice                          (kg/m^3)
 C     SEAICE_rhoSnow     :: density of snow                             (kg/m^3)
 C     ICE2WATR           :: ratio of sea ice density to water density
-C     OCEAN_drag         :: air-ocean drag coefficient
 C     SEAICE_cpAir       :: specific heat of air                        (J/kg/K)
 C
-C     SEAICE_drag        :: air-ice drag coefficient
-C     SEAICE_waterDrag   :: water-ice drag coefficient * water density
+C     OCEAN_drag         :: unitless air-ocean drag coefficient (default 0.001)
+C     SEAICE_drag        :: unitless air-ice drag coefficient   (default 0.001)
+C     SEAICE_waterDrag   :: unitless water-ice drag coefficient (default 0.0055)
+C     SEAICEdWatMin      :: minimum linear water-ice drag applied to DWATN
+C                           (default 0.25 m/s)
+C
 C     SEAICE_dryIceAlb   :: winter albedo
 C     SEAICE_wetIceAlb   :: summer albedo
 C     SEAICE_drySnowAlb  :: dry snow albedo
@@ -360,12 +403,12 @@ C     SEAICE_drySnowAlb_south :: Southern Ocean SEAICE_drySnowAlb
 C     SEAICE_wetSnowAlb_south :: Southern Ocean SEAICE_wetSnowAlb
 C     HO_south                :: Southern Ocean HO
 C
-C     Parameters for basal drag of grounded ice following 
+C     Parameters for basal drag of grounded ice following
 C     Lemieux et al. (2015), doi:10.1002/2014JC010678
 C     SEAICE_cBasalStar (default = SEAICE_cStar)
 C     SEAICEbasalDragU0 (default = 5e-5)
 C     SEAICEbasalDragK1 (default = 8)
-C     SEAICEbasalDragK2  :: if > 0, turns on basal drag 
+C     SEAICEbasalDragK2  :: if > 0, turns on basal drag
 C                           (default = 0, Lemieux suggests 15)
 C
 C     SEAICE_wetAlbTemp  :: Temp (deg.C) above which wet-albedo values are used
@@ -378,6 +421,7 @@ C     SEAICEpressReplFac :: interpolator between PRESS0 and regularized PRESS
 C                           1. (default): pure pressure replace method (PRESS)
 C                           0.          : pure Hibler (1979) method (PRESS0)
 C     SEAICE_eccen       :: sea-ice eccentricity of the elliptical yield curve
+C     SEAICE_eccfr       :: sea-ice eccentricity of the elliptical flow rule
 C     SEAICE_lhFusion    :: latent heat of fusion for ice and snow (J/kg)
 C     SEAICE_lhEvap      :: latent heat of evaporation for water (J/kg)
 C     SEAICE_dalton      :: Dalton number (= sensible heat transfer coefficient)
@@ -405,10 +449,12 @@ C                           anomalies (relative to the local freezing point)
 C                           may contribute as frazil over one time step.
 C     SEAICE_tempFrz0    :: sea water freezing point is
 C     SEAICE_dTempFrz_dS :: tempFrz = SEAICE_tempFrz0 + salt*SEAICE_dTempFrz_dS
-C     SEAICE_PDF         :: prescribed sea-ice distribution within grid box 
+C     SEAICE_PDF         :: prescribed sea-ice distribution within grid box
 C     SEAICEstressFactor :: factor by which ice affects wind stress (default=1)
 C     LSR_ERROR          :: sets accuracy of LSR solver
 C     DIFF1              :: parameter used in advect.F
+C     SEAICEtdMU         :: slope parameter for the teardrop and parabolic lens
+C                           yield curves
 C     SEAICE_deltaMin    :: small number used to reduce singularities of Delta
 C     SEAICE_area_max    :: usually set to 1. Seeting areaMax below 1 specifies
 C                           the minimun amount of leads (1-areaMax) in the
@@ -439,6 +485,9 @@ C     SEAICEmuRidging :: tuning parameter similar to hStar for Lipcomb et al
 C                        (2007)-scheme
 C     SEAICEmaxRaft   :: regularization parameter (default=1)
 C     SEAICEsnowFracRidge :: fraction of snow that remains on ridged
+C     SINegFac        :: SIADV over/undershoot factor in FW/Adjoint
+C     SEAICEmcMu      :: parameter for MC yield curve for useMCE, useMCS and
+C                        useTEM options, default is one
 C
       _RL SEAICE_deltaTtherm, SEAICE_deltaTdyn, SEAICE_deltaTevp
       _RL SEAICE_LSRrelaxU, SEAICE_LSRrelaxV
@@ -446,8 +495,9 @@ C
       _RL SEAICE_initialHEFF
       _RL SEAICE_rhoAir, SEAICE_rhoIce, SEAICE_rhoSnow, ICE2WATR
       _RL SEAICE_cpAir
-      _RL SEAICE_drag, SEAICE_waterDrag, SEAICE_dryIceAlb
-      _RL SEAICE_wetIceAlb, SEAICE_drySnowAlb, SEAICE_wetSnowAlb, HO
+      _RL SEAICE_drag, SEAICE_waterDrag, SEAICEdWatMin
+      _RL SEAICE_dryIceAlb, SEAICE_wetIceAlb
+      _RL SEAICE_drySnowAlb, SEAICE_wetSnowAlb, HO
       _RL SEAICE_drag_south, SEAICE_waterDrag_south
       _RL SEAICE_dryIceAlb_south, SEAICE_wetIceAlb_south
       _RL SEAICE_drySnowAlb_south, SEAICE_wetSnowAlb_south, HO_south
@@ -455,7 +505,9 @@ C
       _RL SEAICEbasalDragK1, SEAICEbasalDragK2
       _RL SEAICE_wetAlbTemp, SEAICE_waterAlbedo
       _RL SEAICE_strength, SEAICE_cStar, SEAICEpressReplFac
-      _RL SEAICE_tensilFac, SEAICE_tensilDepth, SEAICE_eccen
+      _RL SEAICE_tensilFac, SEAICE_tensilDepth
+      _RL SEAICE_eccen, SEAICE_eccfr
+      _RL SEAICEmcMu, SEAICEtdMU
       _RL SEAICE_lhFusion, SEAICE_lhEvap
       _RL SEAICE_dalton
       _RL SEAICE_iceConduct, SEAICE_snowConduct
@@ -471,6 +523,7 @@ C
       _RL OCEAN_drag, LSR_ERROR, DIFF1
       _RL SEAICEnonLinTol, JFNKres_t, JFNKres_tFac
       _RL JFNKgamma_lin_min, JFNKgamma_lin_max, SEAICE_JFNKepsilon
+      _RL SEAICE_JFNK_lsGamma
       _RL SEAICE_JFNKphi, SEAICE_JFNKalpha
       _RL SEAICE_deltaMin
       _RL SEAICE_area_reg, SEAICE_hice_reg
@@ -487,6 +540,7 @@ C
       _RL SEAICEgStar, SEAICEhStar, SEAICEaStar, SEAICEshearParm
       _RL SEAICEmuRidging, SEAICEmaxRaft, SEAICE_cf
       _RL SEAICEsnowFracRidge
+      _RL SINegFac
 
       COMMON /SEAICE_PARM_RL/
      &    SEAICE_deltaTtherm, SEAICE_deltaTdyn,
@@ -499,16 +553,18 @@ C
      &    SEAICE_monFreq, SEAICE_dumpFreq, SEAICE_taveFreq,
      &    SEAICE_initialHEFF,
      &    SEAICE_rhoAir, SEAICE_rhoIce, SEAICE_rhoSnow, ICE2WATR,
-     &    SEAICE_drag, SEAICE_waterDrag, SEAICE_dryIceAlb,
-     &    SEAICE_wetIceAlb, SEAICE_drySnowAlb, SEAICE_wetSnowAlb, HO,
+     &    SEAICE_drag, SEAICE_waterDrag, SEAICEdWatMin,
+     &    SEAICE_dryIceAlb, SEAICE_wetIceAlb,
+     &    SEAICE_drySnowAlb, SEAICE_wetSnowAlb, HO,
      &    SEAICE_drag_south, SEAICE_waterDrag_south,
      &    SEAICE_dryIceAlb_south, SEAICE_wetIceAlb_south,
      &    SEAICE_drySnowAlb_south, SEAICE_wetSnowAlb_south, HO_south,
      &    SEAICE_cBasalStar, SEAICEbasalDragU0,
      &    SEAICEbasalDragK1, SEAICEbasalDragK2,
      &    SEAICE_wetAlbTemp, SEAICE_waterAlbedo,
-     &    SEAICE_strength, SEAICE_cStar, SEAICE_eccen,
-     &    SEAICEpressReplFac, SEAICE_tensilFac, SEAICE_tensilDepth, 
+     &    SEAICE_strength, SEAICE_cStar, SEAICE_eccen, SEAICE_eccfr,
+     &    SEAICEtdMU, SEAICEmcMu,
+     &    SEAICEpressReplFac, SEAICE_tensilFac, SEAICE_tensilDepth,
      &    SEAICE_lhFusion, SEAICE_lhEvap,
      &    SEAICE_dalton, SEAICE_cpAir,
      &    SEAICE_iceConduct, SEAICE_snowConduct,
@@ -523,7 +579,7 @@ C
      &    OCEAN_drag, LSR_ERROR, DIFF1,
      &    SEAICEnonLinTol, JFNKres_t, JFNKres_tFac,
      &    JFNKgamma_lin_min, JFNKgamma_lin_max, SEAICE_JFNKepsilon,
-     &    SEAICE_JFNKphi, SEAICE_JFNKalpha,
+     &    SEAICE_JFNK_lsGamma, SEAICE_JFNKphi, SEAICE_JFNKalpha,
      &    SEAICE_deltaMin, SEAICE_area_reg, SEAICE_hice_reg,
      &    SEAICE_area_floor, SEAICE_area_max,
      &    SEAICEdiffKhArea, SEAICEdiffKhHeff, SEAICEdiffKhSnow,
@@ -531,6 +587,7 @@ C
      &    SEAICE_airTurnAngle, SEAICE_waterTurnAngle,
      &    SEAICEgStar, SEAICEhStar, SEAICEaStar, SEAICEshearParm,
      &    SEAICEmuRidging, SEAICEmaxRaft, SEAICE_cf,
+     &    SINegFac,
      &    SEAICEsnowFracRidge
 
 C--   COMMON /SEAICE_BOUND_RL/ Various bounding values
@@ -547,9 +604,9 @@ C
      &     SEAICE_EPS, SEAICE_EPS_SQ
 
 #ifdef SEAICE_ITD
-C     Hlimit            :: ice thickness category limits (m), array of 
+C     Hlimit            :: ice thickness category limits (m), array of
 C                          size nITD+1
-C     Hlimit_c1,_c2,_c3 :: coefficients set in seaice_readparams.F to 
+C     Hlimit_c1,_c2,_c3 :: coefficients set in seaice_readparams.F to
 C                          calculate Hlimit in seaice_init_fixed.F
       _RL Hlimit(0:nITD)
       _RL Hlimit_c1, Hlimit_c2, Hlimit_c3

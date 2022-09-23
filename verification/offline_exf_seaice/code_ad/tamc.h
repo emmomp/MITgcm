@@ -1,8 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/verification/offline_exf_seaice/code_ad/tamc.h,v 1.6 2013/05/03 13:38:18 jmc Exp $
-C $Name:  $
-
-#include "PACKAGES_CONFIG.h"
-
 c     ================================================================
 c     HEADER TAMC
 c     ================================================================
@@ -17,11 +12,9 @@ c                common blocks in the undef ALLOW_TAMC_CHECKPOINTING case
 c              - nhreads_chkpt was declared at the wrong place
 c              - new keys, separate for different packages
 
-
 c     ================================================================
 c     HEADER TAMC
 c     ================================================================
-
 
 c     TAMC checkpointing parameters:
 c     ==============================
@@ -102,7 +95,8 @@ c     and writing data.
       integer iloop_daily
 
       INTEGER    isbyte
-      PARAMETER( isbyte      = 4 )
+C     For more accurate but larger tapes replace 4 by 8.
+      PARAMETER( isbyte      = 8 )
       INTEGER    maximpl
       PARAMETER( maximpl     = 6 )
 #ifndef ALLOW_PTRACERS
@@ -110,15 +104,8 @@ c     and writing data.
       PARAMETER( maxpass     = 3 )
 #endif
       INTEGER    maxcube
-      PARAMETER( maxcube     = 3 )
-
-      INTEGER act0, act1, act2, act3, act4
-      INTEGER max0, max1, max2, max3
-      INTEGER iikey, kkey, passkey, igadkey,
-     &        itdkey, idynkey, igmkey, iptrkey
+      PARAMETER( maxcube     = 2 )
 
 c     ================================================================
 c     END OF HEADER TAMC
 c     ================================================================
-
-

@@ -1,10 +1,6 @@
-C $Header: /u/gcmpack/MITgcm/pkg/ecco/ecco_init_varia.F,v 1.2 2014/09/29 16:47:50 gforget Exp $
-C $Name:  $
-
 #include "ECCO_OPTIONS.h"
-#include "AD_CONFIG.h"
 
-      subroutine ecco_init_varia( mythid )
+      SUBROUTINE ECCO_INIT_VARIA( myThid )
 
 c     ==================================================================
 c     SUBROUTINE ecco_init_varia
@@ -16,26 +12,25 @@ c     ==================================================================
 c     SUBROUTINE ecco_cost_init_varia
 c     ==================================================================
 
-      implicit none
+      IMPLICIT NONE
 
 c     == global variables ==
 
 #include "EEPARAMS.h"
 #include "SIZE.h"
+#include "PARAMS.h"
 #include "GRID.h"
-
-#include "ecco_cost.h"
+#include "ECCO_SIZE.h"
+#include "ECCO.h"
 #ifdef ALLOW_COST
 # include "cost.h"
 #endif
 
 c     == routine arguments ==
 
-      integer mythid
+      INTEGER myThid
 
 c     == local variables ==
-
-c     == external functions ==
 
 c     == end of interface ==
 
@@ -44,7 +39,7 @@ c     == end of interface ==
       VOLsumGlob_0=0. _d 0
 #endif
 
-      CALL ECCO_PHYS( myThid )
+      CALL ECCO_PHYS( startTime, -1, myThid )
 
 #ifdef ALLOW_PSBAR_STERIC
       RHOsumGlob_0=RHOsumGlob
@@ -55,6 +50,5 @@ c     == end of interface ==
 
       _BARRIER
 
-      return
-      end
-
+      RETURN
+      END

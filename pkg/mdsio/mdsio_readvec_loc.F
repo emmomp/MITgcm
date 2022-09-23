@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/pkg/mdsio/mdsio_readvec_loc.F,v 1.4 2012/09/11 22:13:29 jmc Exp $
-C $Name:  $
-
 #include "MDSIO_OPTIONS.h"
 
 CBOP
@@ -180,7 +177,7 @@ C--   Open the file:
           ENDIF
           length_of_rec = MDS_RECLEN( filePrec, nSize, myThid )
           OPEN( dUnit, file=dataFname, status=_OLD_STATUS,
-     &          access='direct', recl=length_of_rec )
+     &          _READONLY_ACTION access='direct', recl=length_of_rec )
           fileIsOpen=.TRUE.
         ELSE
           fileIsOpen=.FALSE.

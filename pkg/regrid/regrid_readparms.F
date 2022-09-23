@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/pkg/regrid/regrid_readparms.F,v 1.2 2014/05/28 00:13:16 jmc Exp $
-C $Name:  $
-
 #include "REGRID_OPTIONS.h"
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
@@ -80,7 +77,11 @@ C     Read parameters from open data file
       CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
      &     SQUEEZE_RIGHT , 1)
 C     Close the open data file
+#ifdef SINGLE_DISK_IO
       CLOSE(iUnit)
+#else
+      CLOSE(iUnit,STATUS='DELETE')
+#endif /* SINGLE_DISK_IO */
 
 C     Make sure that we locally honor the global MNC on/off flag
       REGRID_MNC = REGRID_MNC .AND. useMNC

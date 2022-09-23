@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/pkg/exf/EXF_OPTIONS.h,v 1.41 2017/04/14 23:14:48 jmc Exp $
-C $Name:  $
-
 CBOP
 C !ROUTINE: EXF_OPTIONS.h
 C !INTERFACE:
@@ -94,6 +91,9 @@ C       If defined, atmospheric pressure can be read-in from files.
 C   WARNING: this flag is set (define/undef) in CPP_OPTIONS.h
 C            and cannot be changed here (in EXF_OPTIONS.h)
 C
+C   >>> EXF_ALLOW_TIDES <<<
+C       If defined, 2-D tidal geopotential can be read-in from files
+C
 C   >>> EXF_SEAICE_FRACTION <<<
 C       If defined, seaice fraction can be read-in from files (areaMaskFile)
 C
@@ -172,7 +172,10 @@ C-  Bulk formulae related flags.
 #ifdef ALLOW_ATM_TEMP
 C Note: To use ALLOW_BULKFORMULAE or EXF_READ_EVAP, needs #define ALLOW_ATM_TEMP
 # define ALLOW_BULKFORMULAE
+C use Large and Yeager (2004) modification to Large and Pond bulk formulae
 # undef  ALLOW_BULK_LARGEYEAGER04
+C use drag formulation of Large and Yeager (2009), Climate Dyn., 33, pp 341-364
+# undef  ALLOW_DRAG_LARGEYEAGER09
 # undef  EXF_READ_EVAP
 # ifndef ALLOW_BULKFORMULAE
 C  Note: To use ALLOW_READ_TURBFLUXES, ALLOW_ATM_TEMP needs to
@@ -206,6 +209,9 @@ C   unless to reproduce old results (obtained with inconsistent old code)
 C-  Relaxation to monthly climatologies.
 #define ALLOW_CLIMSST_RELAXATION
 #define ALLOW_CLIMSSS_RELAXATION
+
+C-  Allows to read-in (2-d) tidal geopotential forcing
+#undef EXF_ALLOW_TIDES
 
 C-  Allows to read-in seaice fraction from files (areaMaskFile)
 #undef EXF_SEAICE_FRACTION

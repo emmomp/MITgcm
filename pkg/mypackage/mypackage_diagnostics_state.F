@@ -1,10 +1,7 @@
-C $Header: /u/gcmpack/MITgcm/pkg/mypackage/mypackage_diagnostics_state.F,v 1.3 2011/08/08 14:55:55 jmc Exp $
-C $Name:  $
-
 #include "MYPACKAGE_OPTIONS.h"
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
-CBOP 0
+CBOP
 C !ROUTINE: MYPACKAGE_DIAGNOSTICS_STATE
 
 C !INTERFACE:
@@ -16,6 +13,7 @@ C     Fill-in diagnostics array for MYPACKAGE state variables
 
 C     !USES:
       IMPLICIT NONE
+C     == Global variables ===
 #include "SIZE.h"
 #include "EEPARAMS.h"
 #include "PARAMS.h"

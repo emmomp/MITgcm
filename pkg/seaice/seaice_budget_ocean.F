@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/pkg/seaice/seaice_budget_ocean.F,v 1.19 2012/11/09 22:15:18 heimbach Exp $
-C $Name:  $
-
 #include "SEAICE_OPTIONS.h"
 
 CStartOfInterface
@@ -145,7 +142,7 @@ C     Salt flux from Precipitation and Evaporation.
 #  ifdef ALLOW_RUNOFF
         sflux(i,j,bi,bj) = sflux(i,j,bi,bj) - runoff(i,j,bi,bj)
 #  endif
-        sflux(i,j,bi,bj) = sflux(i,j,bi,bj)*maskC(i,j,1,bi,bj)
+        sflux(i,j,bi,bj) = sflux(i,j,bi,bj)!*HEFFM(i,j,bi,bj)
         empmr(i,j,bi,bj) = sflux(i,j,bi,bj)*rhoConstFresh
 # endif /* ALLOW_DOWNWARD_RADIATION */
 #endif /* SEAICE_EXTERNAL_FLUXES */

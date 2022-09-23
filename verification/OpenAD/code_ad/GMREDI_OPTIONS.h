@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/verification/OpenAD/code_ad/GMREDI_OPTIONS.h,v 1.6 2011/12/24 01:17:54 jmc Exp $
-C $Name:  $
-
 C CPP options file for GM/Redi package
 C Use this file for selecting options within the GM/Redi package
 
@@ -21,11 +18,21 @@ C -- exclude the clipping/tapering part of the code that is not used
 #undef GM_EXCLUDE_TAPERING
 #define GM_EXCLUDE_SUBMESO
 
+C Allows to read-in background 3-D Redi and GM diffusivity coefficients
+C Note: need these to be defined for use as control (pkg/ctrl) parameters
+#undef GM_READ_K3D_REDI
+#define GM_READ_K3D_GM
+
 C This allows to use Visbeck et al formulation to compute K_GM+Redi
 #undef GM_VISBECK_VARIABLE_K
 C Use old calculation (before 2007/05/24) of Visbeck etal K_GM+Redi
 C (which depends on tapering scheme)
 #undef OLD_VISBECK_CALC
+
+C This allows the Bates et al formulation to calculate the
+C bolus transport and K for Redi
+#undef GM_BATES_K3D
+#undef GM_BATES_PASSIVE
 
 C This allows the leading diagonal (top two rows) to be non-unity
 C (a feature required when tapering adiabatically).
@@ -41,6 +48,9 @@ C  instead of the Skew-Flux form (=default)
 
 C Allows to use the Boundary-Value-Problem method to evaluate GM Bolus transport
 #undef GM_BOLUS_BVP
+
+C Allow QG Leith variable viscosity to be added to GMRedi coefficient
+#undef ALLOW_GM_LEITH_QG
 
 #endif /* ALLOW_GMREDI */
 #endif /* GMREDI_OPTIONS_H */

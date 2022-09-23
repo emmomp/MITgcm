@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/pkg/streamice/streamice_adv_front.F,v 1.5 2016/10/24 14:13:12 dgoldberg Exp $
-C $Name:  $
-
 #include "STREAMICE_OPTIONS.h"
 #ifdef ALLOW_AUTODIFF
 # include "AUTODIFF_OPTIONS.h"
@@ -44,7 +41,11 @@ C     === Global variables ===
       INTEGER i, j, bi, bj, k, iter_count, iter_rpt
       INTEGER Gi, Gj
       INTEGER new_partial(4)
+#ifdef ALLOW_AUTODIFF_TAMC
+      INTEGER act1, act2, act3, act4
+      INTEGER max1, max2, max3
       INTEGER ikey_front, ikey_1
+#endif
       _RL iter_flag
       _RL n_flux_1, n_flux_2
       _RL href, rho, partial_vol, tot_flux, hpot

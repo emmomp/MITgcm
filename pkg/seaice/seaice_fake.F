@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/pkg/seaice/seaice_fake.F,v 1.3 2014/01/09 19:36:27 gforget Exp $
-C $Name:  $
-
 #include "SEAICE_OPTIONS.h"
 #ifdef ALLOW_EXF
 # include "EXF_OPTIONS.h"
@@ -59,7 +56,7 @@ c shielding effect
             qsw(i,j,bi,bj) = qsw(i,j,bi,bj) * fac
 #if (defined ALLOW_EXF) && (defined ALLOW_ATM_TEMP)
 c the fresh water flux at the top of the ice
-            EmPmR(i,j,bi,bj)  = maskC(i,j,1,bi,bj)*(
+            EmPmR(i,j,bi,bj)  = HEFFM(i,j,bi,bj)*(
      &         fac * EVAP(i,j,bi,bj)
      &             - PRECIP(i,j,bi,bj)
 #ifdef ALLOW_RUNOFF

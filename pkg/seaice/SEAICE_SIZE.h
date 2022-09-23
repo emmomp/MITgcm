@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/pkg/seaice/SEAICE_SIZE.h,v 1.12 2015/01/28 15:14:35 mlosch Exp $
-C $Name:  $
-
 #ifdef ALLOW_SEAICE
 
 CBOP
@@ -32,7 +29,6 @@ C-    Maximum Number of tracers
       PARAMETER(SItrMaxNum = 3 )
 
 #ifdef ALLOW_AUTODIFF
-      INTEGER iicekey
       INTEGER nEVPstepMax
       PARAMETER ( nEVPstepMax=180 )
       INTEGER NMAX_TICE

@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/eesupp/src/eeboot.F,v 1.24 2017/01/28 18:39:06 jmc Exp $
-C $Name:  $
-
 #include "CPP_EEOPTIONS.h"
 #include "PACKAGES_CONFIG.h"
 
@@ -92,12 +89,21 @@ C                     the threads are running.
        ioErrorCount(I)              = 0
       ENDDO
       standardMessageUnit = 6
+#ifdef HACK_FOR_GMAO_CPL
+      scrUnit1            = 31
+      scrUnit2            = 32
+      eeDataUnit          = 33
+      modelDataUnit       = 34
+      errorMessageUnit    = 35
+      standardMessageUnit = 36
+#else
       scrUnit1            = 11
       scrUnit2            = 12
       eeDataUnit          = 13
       modelDataUnit       = 14
       errorMessageUnit    = 15
 cph   errorMessageUnit = 0 is not allowed on some platforms, e.g. SP3
+#endif
 
 C--   Start minimal environment so that we can do I/O to report errors.
 C     Notes
@@ -122,7 +128,7 @@ C--   Now we can write a startup message
 
 C--   Initialise parameters associated with execution environment.
       doReport = .TRUE.
-      CALL EESET_PARMS ( doReport )
+      CALL EESET_PARMS ( myProcId, doReport )
       IF ( eeBootError ) GOTO 999
 
 C--   Write summary of execution environment configuration for this run

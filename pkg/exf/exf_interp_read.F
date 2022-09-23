@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/pkg/exf/exf_interp_read.F,v 1.16 2017/03/10 00:14:27 jmc Exp $
-C $Name:  $
-
 #include "EXF_OPTIONS.h"
 
 CBOP
@@ -133,8 +130,8 @@ C--   master thread of process 0, only, opens a global file
 
         CALL MDSFINDUNIT( ioUnit, myThid )
         length_of_rec=MDS_RECLEN( filePrec, nx_in*ny_in, myThid )
-        OPEN( ioUnit, file=infile, status='old', access='direct',
-     &       recl=length_of_rec )
+        OPEN( ioUnit, file=infile, status='old', _READONLY_ACTION
+     &       access='direct', recl=length_of_rec )
         IF ( filePrec .EQ. 32 ) THEN
 #ifdef EXF_INTERP_USE_DYNALLOC
           READ(ioUnit,rec=irecord)  buffer_r4

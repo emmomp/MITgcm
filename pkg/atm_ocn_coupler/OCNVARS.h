@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/pkg/atm_ocn_coupler/OCNVARS.h,v 1.8 2016/01/06 00:28:14 jmc Exp $
-C $Name:  $
-
 C     *==========================================================*
 C     | OCNVARS.h Declare arrays for holding data on the ocean
 C     |           grid. Arrays may need adding or removing
@@ -13,7 +10,7 @@ C                       =0 : full ocean grid-point);
 C--   fields received from OCN:
 C     OcMxlD_ocn     ::- Ocean mixed-layer depths on ocean grid (m)
 C     SST_ocn        :: Sea surface temperature on ocean grid ( oC).
-C     SSS_ocn        :: Sea surface temperature on ocean grid (psu).
+C     SSS_ocn        :: Sea surface salinity on ocean grid (g/kg).
 C     vSq_ocn        :: Sea surface velocity square on ocean grid (m2/s2)
 C-    optionally received:
 C     fluxCO2_ocn    :: flux of CO2 from ocn->Atm on ocean grid (mol/m2/s)

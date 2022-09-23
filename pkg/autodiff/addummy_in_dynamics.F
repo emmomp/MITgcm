@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/pkg/autodiff/addummy_in_dynamics.F,v 1.9 2017/03/24 23:34:13 jmc Exp $
-C $Name:  $
-
 #include "AUTODIFF_OPTIONS.h"
 #ifdef ALLOW_CTRL
 # include "CTRL_OPTIONS.h"
@@ -64,7 +61,7 @@ c     == local variables ==
 C     suff   :: Hold suffix part of a filename
 C     msgBuf :: Error message buffer
       CHARACTER*(10) suff
-      CHARACTER*(MAX_LEN_MBUF) msgBuf
+c     CHARACTER*(MAX_LEN_MBUF) msgBuf
 #ifdef ALLOW_AUTODIFF_MONITOR_DIAG
       _RL var3Du(1-OLx:sNx+OLx,1-OLy:sNy+OLy,Nr,nSx,nSy)
       _RS dumRS(1)

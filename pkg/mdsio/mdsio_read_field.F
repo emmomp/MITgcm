@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/pkg/mdsio/mdsio_read_field.F,v 1.18 2014/08/12 17:38:11 jmc Exp $
-C $Name:  $
-
 #include "MDSIO_OPTIONS.h"
 
 CBOP
@@ -270,7 +267,7 @@ C If global file is visible to process 0, then open it here.
 C Otherwise stop program.
          IF ( globalFile) THEN
           length_of_rec = MDS_RECLEN( filePrec, xSize*ySize, myThid )
-          OPEN( dUnit, file=dataFName, status='old',
+          OPEN( dUnit, file=dataFName, status='old', _READONLY_ACTION
      &         access='direct', recl=length_of_rec )
          ELSE
           WRITE(msgBuf,'(2A)')
@@ -382,7 +379,7 @@ C Only do I/O if I am the master thread
 C If we are reading from a global file then we open it here
         IF (globalFile) THEN
          length_of_rec = MDS_RECLEN( filePrec, sNx, myThid )
-         OPEN( dUnit, file=dataFName, status='old',
+         OPEN( dUnit, file=dataFName, status='old', _READONLY_ACTION
      &        access='direct', recl=length_of_rec )
          fileIsOpen=.TRUE.
         ENDIF
@@ -465,7 +462,7 @@ C (This is a place-holder for the active/passive mechanism
      &                        SQUEEZE_RIGHT, myThid)
             ENDIF
             length_of_rec = MDS_RECLEN( filePrec, sNx*sNy*nNz, myThid )
-            OPEN( dUnit, file=dataFName, status='old',
+            OPEN( dUnit, file=dataFName, status='old', _READONLY_ACTION
      &            access='direct', recl=length_of_rec )
             fileIsOpen=.TRUE.
            ELSE

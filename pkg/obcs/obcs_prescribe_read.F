@@ -1,7 +1,4 @@
-C $Header: /u/gcmpack/MITgcm/pkg/obcs/obcs_prescribe_read.F,v 1.31 2014/11/02 21:23:40 gforget Exp $
-C $Name:  $
-
-# include "OBCS_OPTIONS.h"
+#include "OBCS_OPTIONS.h"
 
 CBOP
 C     !ROUTINE: OBCS_PRESCRIBE_READ
@@ -13,9 +10,9 @@ C     !DESCRIPTION: \bv
 C     *============================================================*
 C     | SUBROUTINE OBCS_PRESCRIBE_READ
 C     *============================================================*
-C     | read open boundary conditions from file                           
-C     | N.B.: * uses exf and cal routines for file/record handling        
-C     |       * uses ctrl routines for control variable handling          
+C     | read open boundary conditions from file
+C     | N.B.: * uses exf and cal routines for file/record handling
+C     |       * uses ctrl routines for control variable handling
 C     *============================================================*
 C     \ev
 
@@ -53,26 +50,6 @@ cph#else
 cph       STOP 'PH HAS DISABLED THIS RUNTIME OPTION FOR ALLOW_EXF'
 cph#endif
       ENDIF
-
-#ifdef ALLOW_CTRL
-
-# ifdef ALLOW_OBCSN_CONTROL
-      if (useCTRL) CALL CTRL_GETOBCSN ( myTime, myIter, mythid )
-# endif
-
-# ifdef ALLOW_OBCSS_CONTROL
-      if (useCTRL) CALL CTRL_GETOBCSS ( myTime, myIter, mythid )
-# endif
-
-# ifdef ALLOW_OBCSW_CONTROL
-      if (useCTRL) CALL CTRL_GETOBCSW ( myTime, myIter, myThid )
-# endif
-
-# ifdef ALLOW_OBCSE_CONTROL
-      if (useCTRL) CALL CTRL_GETOBCSE ( myTime, myIter, myThid )
-# endif
-
-#endif /* ALLOW_CTRL */
 
 #endif /* ALLOW_OBCS_PRESCRIBE */
 

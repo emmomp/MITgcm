@@ -1,6 +1,3 @@
-C $Header: /u/gcmpack/MITgcm/pkg/thsice/thsice_get_ocean.F,v 1.3 2013/05/02 20:03:12 jmc Exp $
-C $Name:  $
-
 #include "THSICE_OPTIONS.h"
 #ifdef ALLOW_SEAICE
 # include "SEAICE_OPTIONS.h"
@@ -90,6 +87,15 @@ C--     Mixed layer thickness: take the 1rst layer
            ENDDO
           ENDDO
         ENDIF
+
+#ifdef ALLOW_SHELFICE
+C--   Prevent seaice to form where Ice-Shelf is present
+        IF ( useShelfIce ) THEN
+          CALL SHELFICE_MASK_SEAICE(
+     U                  hOceMxL,
+     I                  bi, bj, myIter, myThid )
+        ENDIF
+#endif /* ALLOW_SHELFICE */
 
         DO j=1-OLy,sNy+OLy
          DO i=1-OLx,sNx+OLx
