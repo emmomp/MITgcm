@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/ptracers/PTRACERS_TAVE.h,v 1.1 2010/01/02 23:45:46 jmc Exp $
+C $Name:  $
+
 #ifdef ALLOW_PTRACERS
 #ifdef ALLOW_TIMEAVE
 

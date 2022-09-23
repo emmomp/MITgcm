@@ -1,3 +1,5 @@
+C $Header: /u/gcmpack/MITgcm/eesupp/src/bar_check.F,v 1.2 2006/08/02 02:24:22 jmc Exp $
+C $Name:  $
 #include "CPP_EEOPTIONS.h"
 
 CBOP

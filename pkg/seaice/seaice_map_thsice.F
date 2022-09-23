@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/seaice/seaice_map_thsice.F,v 1.5 2014/10/20 03:20:57 gforget Exp $
+C $Name:  $
+
 #include "SEAICE_OPTIONS.h"
 #ifdef ALLOW_THSICE
 # include "THSICE_OPTIONS.h"
@@ -27,6 +30,7 @@ C     === Global variables ===
 #endif /* ALLOW_THSICE */
 #ifdef ALLOW_AUTODIFF_TAMC
 # include "tamc.h"
+# include "tamc_keys.h"
 #endif
 
 C     === Routine arguments ===

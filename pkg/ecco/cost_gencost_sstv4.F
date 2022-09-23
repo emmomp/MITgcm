@@ -1,7 +1,11 @@
+C $Header: /u/gcmpack/MITgcm/pkg/ecco/cost_gencost_sstv4.F,v 1.15 2016/09/20 15:27:54 gforget Exp $
+C $Name:  $
+
 #include "ECCO_OPTIONS.h"
 
+
       subroutine cost_gencost_sstv4(
-     I                     myThid
+     I                     mythid
      &                   )
 
 c     ==================================================================
@@ -29,8 +33,7 @@ c     == global variables ==
 # include "cal.h"
 #endif
 #ifdef ALLOW_ECCO
-# include "ECCO_SIZE.h"
-# include "ECCO.h"
+# include "ecco.h"
 #endif
 #ifdef ALLOW_SMOOTH
 # include "SMOOTH.h"
@@ -38,7 +41,7 @@ c     == global variables ==
 
 c     == routine arguments ==
 
-      integer myThid
+      integer mythid
 
 #ifdef ALLOW_SMOOTH
 #ifdef ALLOW_GENCOST_CONTRIBUTION
@@ -57,13 +60,14 @@ c     == local variables ==
       logical ladinit
 
       _RL mydummy
-      _RL mybar(1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
-      _RL anom_sst(1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
-      _RL obs_sst (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
-      _RL nb_sst (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
-      _RL msk_sst (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
-      _RL tmp_sst (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
+      _RL mybar(1-olx:snx+olx,1-oly:sny+oly,nsx,nsy)
+      _RL anom_sst(1-olx:snx+olx,1-oly:sny+oly,nsx,nsy)
+      _RL obs_sst (1-olx:snx+olx,1-oly:sny+oly,nsx,nsy)
+      _RL nb_sst (1-olx:snx+olx,1-oly:sny+oly,nsx,nsy)
+      _RL msk_sst (1-olx:snx+olx,1-oly:sny+oly,nsx,nsy)
+      _RL tmp_sst (1-olx:snx+olx,1-oly:sny+oly,nsx,nsy)
       _RL spval
+
 
       _RL junk,junkweight
 
@@ -94,7 +98,6 @@ c     == local variables ==
       integer md, dd, sd, ld, wd
 
       integer kgen, kgen_lsc
-      logical dosumsq
 
 c     == external functions ==
 
@@ -103,14 +106,14 @@ c     == external functions ==
 
 c     == end of interface ==
 
-      jtlo = myByLo(myThid)
-      jthi = myByHi(myThid)
-      itlo = myBxLo(myThid)
-      ithi = myBxHi(myThid)
+      jtlo = mybylo(mythid)
+      jthi = mybyhi(mythid)
+      itlo = mybxlo(mythid)
+      ithi = mybxhi(mythid)
       jmin = 1
-      jmax = sNy
+      jmax = sny
       imin = 1
-      imax = sNx
+      imax = snx
 
 #ifdef ALLOW_ECCO_DEBUG
       ioUnit=standardMessageUnit
@@ -131,23 +134,18 @@ c-- detect the relevant gencost indices
       enddo
 
       if (kgen.NE.0) then
-c ------
+c ------ 
 
-      dosumsq=.TRUE.
-      call ecco_zero( gencost_weight(1-OLx,1-OLy,1,1,kgen),
-     &                1, zeroRL, myThid )
-      call ecco_zero( gencost_weight(1-OLx,1-OLy,1,1,kgen_lsc),
-     &                1, zeroRL, myThid )
+      call ecco_zero(gencost_weight(:,:,1,1,kgen),1,zeroRL,myThid)
+      call ecco_zero(gencost_weight(:,:,1,1,kgen_lsc),1,zeroRL,myThid)
       if ( gencost_errfile(kgen) .NE. ' ' )
-     &   call ecco_readwei( gencost_errfile(kgen),
-     &     gencost_weight(1-OLx,1-OLy,1,1,kgen),
-     &     1, 1, 1, dosumsq, myThid )
+     &     call ecco_readwei(gencost_errfile(kgen),
+     &     gencost_weight(:,:,1,1,kgen),1,1,mythid)
       if ( gencost_errfile(kgen_lsc) .NE. ' ' )
-     &   call ecco_readwei( gencost_errfile(kgen_lsc),
-     &     gencost_weight(1-OLx,1-OLy,1,1,kgen_lsc),
-     &     1, 1, 1, dosumsq, myThid )
+     &     call ecco_readwei(gencost_errfile(kgen_lsc),
+     &     gencost_weight(:,:,1,1,kgen_lsc),1,1,mythid)
 
-      call cal_FullDate(19920101,0,locstartdate,myThid)
+      call cal_FullDate(19920101,0,locstartdate,mythid)
 
 c--   First, read tiled data.
       doglobalread = .false.
@@ -160,10 +158,11 @@ c--   First, read tiled data.
 
       spval = gencost_spmin(kgen)
       mydummy = gencost_dummy(kgen)
-
+ 
 cgf =======================================================
 cgf PART 1: compute smooth SST cost term
 cgf =======================================================
+
 
       ndaysave=7
       ndaysaveRL=ndaysave
@@ -193,7 +192,7 @@ c ------------------------------------------------------
 c get modeled sst:
 #ifdef ALLOW_AUTODIFF
              call active_read_xy( fname, mybar, krec, doglobalread,
-     &                       ladinit, eccoiter, myThid,
+     &                       ladinit, eccoiter, mythid,
      &                       mydummy )
 #else
              CALL READ_REC_XY_RL( fname, mybar, kRec, 1, myThid )
@@ -202,19 +201,19 @@ c get modeled sst:
 c get observed sst:
              daytime = FLOAT(secondsperday*(krec-1)) + modelstart
              dayiter = hoursperday*(krec-1)+modeliter0
-             call cal_getdate( dayiter, daytime, daydate, myThid )
-             call cal_convdate( daydate,yday,md,dd,sd,ld,wd,myThid )
+             call cal_getdate( dayiter, daytime, daydate, mythid )
+             call cal_convdate( daydate,yday,md,dd,sd,ld,wd,mythid )
              ymod = locstartdate(1)/10000
              if ( ymod .GE. yday ) then
                middate(1)=1
-               call cal_FullDate(locstartdate(1),0,middate,myThid)
+               call cal_FullDate(locstartdate(1),0,middate,mythid)
              else
                middate(1)=1
                tempDate_1 = yday*10000+100+1
-               call cal_FullDate( tempDate_1, 0, middate, myThid)
+               call cal_FullDate( tempDate_1, 0, middate, mythid)
              endif
-             call cal_TimePassed( middate, daydate, difftime, myThid )
-             call cal_ToSeconds( difftime, diffsecs, myThid )
+             call cal_TimePassed( middate, daydate, difftime, mythid )
+             call cal_ToSeconds( difftime, diffsecs, mythid )
 c             localrec = floor(diffsecs/86400.) + 1
              localrec = int(diffsecs/86400.) + 1
 
@@ -228,14 +227,14 @@ c             localrec = floor(diffsecs/86400.) + 1
      &      yday,' ',ymod,' ',localrec,' ',diffsecs
         CALL PRINT_MESSAGE( msgBuf, ioUnit, SQUEEZE_RIGHT, myThid )
 c
-        CALL CAL_PRINTDATE(middate,myThid)
-        CALL CAL_PRINTDATE(daydate,myThid)
-        CALL CAL_PRINTDATE(difftime,myThid)
+        CALL CAL_PRINTDATE(middate,mythid)
+        CALL CAL_PRINTDATE(daydate,mythid)
+        CALL CAL_PRINTDATE(difftime,mythid)
 #endif
 
              if ( ( localrec .GT. 0 ).AND.(diffsecs .GT. 0.d0) ) then
-               CALL READ_REC_3D_RL( fname2, cost_iprec, 1,
-     &                              tmp_sst, localrec, 1, myThid )
+               call mdsreadfield( fname2, cost_iprec, cost_yftype, 1,
+     &           tmp_sst, localrec, mythid )
              else
               do bj = jtlo,jthi
                 do bi = itlo,ithi
@@ -285,35 +284,38 @@ c average obs and misfit:
           enddo
          enddo
 
+
 c PART 1.2: smooth anom_sst in space
 c ----------------------------------------
 
 #ifdef ALLOW_GENCOST_SSTV4_OUTPUT
          write(fname2(1:80),'(1a)') 'sstdiff_raw'
-         CALL WRITE_REC_3D_RL( fname2, precFloat32, 1,
-     &                         anom_sst, irec, 1, myThid )
+         call mdswritefield(fname2,32,.false.,'RL',
+     &     1,anom_sst,irec,1,mythid)
+
          write(fname2(1:80),'(1a)') 'sstobs_raw'
-         CALL WRITE_REC_3D_RL( fname2, precFloat32, 1,
-     &                         obs_sst, irec, 1, myThid )
+         call mdswritefield(fname2,32,.false.,'RL',
+     &     1,obs_sst,irec,1,mythid)
 #endif
 
          if ( useSMOOTH.AND.(k2_lsc.GT.0) )
-     &     call smooth_hetero2d(anom_sst,maskInC,
+     &     call smooth_hetero2d(anom_sst,maskc,
      &     gencost_posproc_c(k2_lsc,kgen_lsc),
-     &     gencost_posproc_i(k2_lsc,kgen_lsc),myThid)
+     &     gencost_posproc_i(k2_lsc,kgen_lsc),mythid)
 
 #ifdef ALLOW_GENCOST_SSTV4_OUTPUT
          if ( useSMOOTH.AND.(k2_lsc.GT.0) )
-     &     call smooth_hetero2d(obs_sst,maskInC,
+     &     call smooth_hetero2d(obs_sst,maskc,
      &     gencost_posproc_c(k2_lsc,kgen_lsc),
-     &     gencost_posproc_i(k2_lsc,kgen_lsc),myThid)
+     &     gencost_posproc_i(k2_lsc,kgen_lsc),mythid)
 
          write(fname2(1:80),'(1a)') 'sstdiff_smooth'
-         CALL WRITE_REC_3D_RL( fname2, precFloat32, 1,
-     &                         anom_sst, irec, 1, myThid )
+         call mdswritefield(fname2,32,.false.,'RL',
+     &     1,anom_sst,irec,1,mythid)
+
          write(fname2(1:80),'(1a)') 'sstobs_smooth'
-         CALL WRITE_REC_3D_RL( fname2, precFloat32, 1,
-     &                         obs_sst, irec, 1, myThid )
+         call mdswritefield(fname2,32,.false.,'RL',
+     &     1,obs_sst,irec,1,mythid)
 #endif
 
 c PART 1.3: compute cost function term
@@ -326,12 +328,12 @@ c ------------------------------------
              junk = anom_sst(i,j,bi,bj)
              junkweight = gencost_weight(i,j,bi,bj,kgen_lsc)*
      &          maskc(i,j,1,bi,bj)
-             objf_gencost(bi,bj,kgen_lsc) =
-     &          objf_gencost(bi,bj,kgen_lsc)
+             objf_gencost(kgen_lsc,bi,bj) =
+     &          objf_gencost(kgen_lsc,bi,bj)
      &            +junk*junk*junkweight/ndaysaveRL
              if ( (junkweight.GT.0.).AND.(nb_sst(i,j,bi,bj).GT.0.) )
-     &          num_gencost(bi,bj,kgen_lsc) =
-     &          num_gencost(bi,bj,kgen_lsc) + 1. _d 0 /ndaysaveRL
+     &          num_gencost(kgen_lsc,bi,bj) =
+     &          num_gencost(kgen_lsc,bi,bj) + 1. _d 0 /ndaysaveRL
             enddo
            enddo
           enddo
@@ -348,7 +350,7 @@ cgf =======================================================
 c get modeled sst:
 #ifdef ALLOW_AUTODIFF
         call active_read_xy( fname, mybar, irec, doglobalread,
-     &                       ladinit, eccoiter, myThid,
+     &                       ladinit, eccoiter, mythid,
      &                       mydummy )
 #else
         CALL READ_REC_XY_RL( fname, mybar, iRec, 1, myThid )
@@ -357,19 +359,19 @@ c get modeled sst:
 c get observed sst:
              daytime = FLOAT(secondsperday*(irec-1)) + modelstart
              dayiter = hoursperday*(irec-1)+modeliter0
-             call cal_getdate( dayiter, daytime, daydate, myThid )
-             call cal_convdate( daydate,yday,md,dd,sd,ld,wd,myThid )
+             call cal_getdate( dayiter, daytime, daydate, mythid )
+             call cal_convdate( daydate,yday,md,dd,sd,ld,wd,mythid )
              ymod = locstartdate(1)/10000
              if ( ymod .GE. yday ) then
                middate(1)=1
-               call cal_FullDate(locstartdate(1),0,middate,myThid)
+               call cal_FullDate(locstartdate(1),0,middate,mythid)
              else
                middate(1)=1
                tempDate_1 = yday*10000+100+1
-               call cal_FullDate( tempDate_1, 0, middate, myThid)
+               call cal_FullDate( tempDate_1, 0, middate, mythid)
              endif
-             call cal_TimePassed( middate, daydate, difftime, myThid )
-             call cal_ToSeconds( difftime, diffsecs, myThid )
+             call cal_TimePassed( middate, daydate, difftime, mythid )
+             call cal_ToSeconds( difftime, diffsecs, mythid )
 c             localrec = floor(diffsecs/86400.) + 1
              localrec = int(diffsecs/86400.) + 1
 
@@ -383,14 +385,14 @@ c             localrec = floor(diffsecs/86400.) + 1
      &      yday,' ',ymod,' ',localrec,' ',diffsecs
         CALL PRINT_MESSAGE( msgBuf, ioUnit, SQUEEZE_RIGHT, myThid )
 c
-        CALL CAL_PRINTDATE(middate,myThid)
-        CALL CAL_PRINTDATE(daydate,myThid)
-        CALL CAL_PRINTDATE(difftime,myThid)
+        CALL CAL_PRINTDATE(middate,mythid)
+        CALL CAL_PRINTDATE(daydate,mythid)
+        CALL CAL_PRINTDATE(difftime,mythid)
 #endif
 
              if ( ( localrec .GT. 0 ).AND.(diffsecs .GT. 0.d0) ) then
-               call READ_REC_3D_RL( fname2, cost_iprec, 1,
-     &                              tmp_sst, localrec, 1, myThid )
+               call mdsreadfield( fname2, cost_iprec, cost_yftype, 1,
+     &           tmp_sst, localrec, mythid )
              else
               do bj = jtlo,jthi
                 do bi = itlo,ithi
@@ -424,8 +426,8 @@ c compute misfit:
 
 #ifdef ALLOW_GENCOST_SSTV4_OUTPUT
          write(fname2(1:80),'(1a)') 'sstdiff_point'
-         CALL WRITE_REC_3D_RL( fname2, precFloat32, 1,
-     &                         anom_sst, irec, 1, myThid )
+         call mdswritefield(fname2,32,.false.,'RL',
+     &     1,anom_sst,irec,1,mythid)
 #endif
 
 c compute cost:
@@ -437,11 +439,11 @@ c compute cost:
              junk = anom_sst(i,j,bi,bj)
              junkweight = gencost_weight(i,j,bi,bj,kgen)*
      &          maskc(i,j,1,bi,bj)*msk_sst(i,j,bi,bj)
-             objf_gencost(bi,bj,kgen) =
-     &          objf_gencost(bi,bj,kgen)+junk*junk*junkweight
+             objf_gencost(kgen,bi,bj) =
+     &          objf_gencost(kgen,bi,bj)+junk*junk*junkweight
              if (junkweight.GT.0.)
-     &          num_gencost(bi,bj,kgen) =
-     &          num_gencost(bi,bj,kgen) + 1. _d 0
+     &          num_gencost(kgen,bi,bj) =
+     &          num_gencost(kgen,bi,bj) + 1. _d 0
             enddo
            enddo
           enddo
@@ -455,5 +457,4 @@ c ------
 #endif /* ifdef ALLOW_GENCOST_CONTRIBUTION */
 #endif /* ifdef ALLOW_SMOOTH */
 
-      RETURN
-      END
+      end

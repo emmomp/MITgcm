@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/diagnostics/DIAGNOSTICS.h,v 1.22 2017/01/11 20:49:30 jmc Exp $
+C $Name:  $
+
 C ======================================================================
 C  Common blocks for diagnostics package.
 C  - DIAG_DEFINE contains the definition of all available diagnostics
@@ -98,9 +101,6 @@ C     jdiag(:,n)  :: short-list (active diag.) to long-list (available diag.) po
 C     flds(:,n)   :: list of field names in output stream # n
 C     fnames(n)   :: output file name for output stream # n
 C     fflags(n)   :: character string with per-file flags
-C                 :: 1rst: file precision ('R','D' or ' ' to use default outp prec)
-C                 :: 2nd: 'I'; integrate vertically ; 'P': interpolate vertically
-C                 :: 3rd: 'h'; cumulate thickness weighted field (if permitted)
 C useMissingValue :: put MissingValue where mask = 0 (NetCDF output only)
 
       _RL freq(numLists), phase(numLists)
@@ -137,13 +137,11 @@ c    &   , misValInt
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
 
 C  - DIAG_PARAMS common block:
-C    useDiag4AdjOutp :: use diagnostics pkg for Adjoint variables
 C    diagLoc_ioUnit :: internal parameter: I/O unit for local diagnostics output
 C    dumpAtLast :: always write time-ave (freq>0) diagnostics at the end of the run
 C    diagMdsDir :: directory where diagnostics will be written when using mds
 C    diagMdsDirCreate :: system call to mkdir to create diagMdsDir
       INTEGER diagLoc_ioUnit
-      LOGICAL useDiag4AdjOutp
       LOGICAL dumpAtLast,              diagMdsDirCreate
       LOGICAL diag_pickup_read,        diag_pickup_write
       LOGICAL diag_pickup_read_mdsio,  diag_pickup_write_mdsio
@@ -152,7 +150,7 @@ C    diagMdsDirCreate :: system call to mkdir to create diagMdsDir
 
       COMMON / DIAG_PARAMS_I /
      &     diagLoc_ioUnit
-      COMMON / DIAG_PARAMS_L /      useDiag4AdjOutp,
+      COMMON / DIAG_PARAMS_L /
      &     dumpAtLast,              diagMdsDirCreate,
      &     diag_pickup_read,        diag_pickup_write,
      &     diag_pickup_read_mdsio,  diag_pickup_write_mdsio,

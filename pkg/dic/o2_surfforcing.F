@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/dic/o2_surfforcing.F,v 1.22 2010/03/22 02:25:20 jmc Exp $
+C $Name:  $
+
 #include "DIC_OPTIONS.h"
 
 CBOP

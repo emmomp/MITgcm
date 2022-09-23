@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/verification/halfpipe_streamice/code_oad/CPP_OPTIONS.h,v 1.2 2014/04/06 21:42:11 jmc Exp $
+C $Name:  $
+
 #ifndef CPP_OPTIONS_H
 #define CPP_OPTIONS_H
 

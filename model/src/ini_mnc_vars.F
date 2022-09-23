@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/model/src/ini_mnc_vars.F,v 1.12 2013/07/26 14:22:22 jmc Exp $
+C $Name:  $
+
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
 
 #include "PACKAGES_CONFIG.h"
@@ -205,11 +208,11 @@ C     Create MNC definitions for DYNVARS.h variables  ----------------
 #ifdef ALLOW_CAL
       IF ( useCAL ) THEN
        CALL CAL_GETDATE( -1, startTime, locDate, myThid )
-C     format: seconds since 1992-01-01 00:00:00
+C     format: seconds since 1992-01-01, 00:00:00
        WRITE(timeUnits,'(A,I4.4,5(A,I2.2))')
      &      'seconds since ', locDate(1)/10000,       '-',
      &      (locDate(1) - locDate(1)/10000*10000)/100,'-',
-     &      (locDate(1) - locDate(1)/100*100),        ' ',
+     &      (locDate(1) - locDate(1)/100*100),        ', ',
      &       locDate(2)/10000,                        ':',
      &      (locDate(2) - locDate(2)/10000*10000)/100,':',
      &      (locDate(2) - locDate(2)/100*100)
@@ -403,7 +406,8 @@ C     Define variables from FFIELDS.h
      &     'Net upward freshwater flux', myThid)
 
       CALL MNC_CW_ADD_VNAME('saltFlux', 'Cen_xy_Hn__-__t', 3,4, myThid)
-      CALL MNC_CW_ADD_VATTR_TEXT('saltFlux','units','g/m^2/s', myThid)
+      CALL MNC_CW_ADD_VATTR_TEXT('saltFlux','units',
+     &     'psu.kg/m^2/s', myThid)
       CALL MNC_CW_ADD_VATTR_TEXT('saltFlux','description',
      &     'Net upward salt flux', myThid)
 
@@ -413,7 +417,7 @@ C     Define variables from FFIELDS.h
      &     ' Sea surface temperature for relaxation', myThid)
 
       CALL MNC_CW_ADD_VNAME('SSS', 'Cen_xy_Hn__-__t', 3,4, myThid)
-      CALL MNC_CW_ADD_VATTR_TEXT('SSS','units','g/kg', myThid)
+      CALL MNC_CW_ADD_VATTR_TEXT('SSS','units','psu', myThid)
       CALL MNC_CW_ADD_VATTR_TEXT('SSS','description',
      &     'Sea surface salinity for relaxation', myThid)
 

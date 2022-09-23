@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/ecco/cost_obcse.F,v 1.12 2014/10/20 03:16:12 gforget Exp $
+C $Name:  $
+
 #include "ECCO_OPTIONS.h"
 #ifdef ALLOW_CTRL
 # include "CTRL_OPTIONS.h"
@@ -11,7 +14,8 @@ C     !INTERFACE:
      I                       mytime,
      I                       startrec,
      I                       endrec,
-     I                       mythid )
+     I                       mythid
+     &                     )
 
 C     !DESCRIPTION: \bv
 c     ==================================================================
@@ -30,6 +34,7 @@ C     !USES:
       implicit none
 
 c     == global variables ==
+
 #include "EEPARAMS.h"
 #include "SIZE.h"
 #include "PARAMS.h"
@@ -51,11 +56,12 @@ c#endif
 
 C     !INPUT/OUTPUT PARAMETERS:
 c     == routine arguments ==
+
       integer myiter
       _RL     mytime
+      integer mythid
       integer startrec
       integer endrec
-      integer mythid
 
 #if (defined (ALLOW_CTRL) && defined (ALLOW_OBCS))
 
@@ -67,33 +73,49 @@ c     == external functions ==
 
 C     !LOCAL VARIABLES:
 c     == local variables ==
+
       integer bi,bj
       integer j,k
+      integer itlo,ithi
+      integer jtlo,jthi
       integer jmin,jmax
+      integer imin,imax
       integer irec
+      integer il
       integer iobcs
+c     integer i, ip1
       integer nrec
       integer ilfld
       integer igg
+
       _RL fctile
       _RL fcthread
       _RL dummy
       _RL gg
       _RL tmpx
 cgg(
-      _RL tmpfield (1-OLy:sNy+OLy,Nr,nSx,nSy)
-      _RL maskyz   (1-OLy:sNy+OLy,Nr,nSx,nSy)
+      _RL tmpfield (1-oly:sny+oly,nr,nsx,nsy)
+      _RL maskyz   (1-oly:sny+oly,nr,nsx,nsy)
+
       character*(80) fnamefld
+
       logical doglobalread
       logical ladinit
+
 #ifdef ECCO_VERBOSE
       character*(MAX_LEN_MBUF) msgbuf
 #endif
 c     == end of interface ==
 CEOP
 
+      jtlo = mybylo(mythid)
+      jthi = mybyhi(mythid)
+      itlo = mybxlo(mythid)
+      ithi = mybxhi(mythid)
       jmin = 1
-      jmax = sNy
+      jmax = sny
+      imin = 1
+      imax = snx
 
 c--   Read tiled data.
       doglobalread = .false.
@@ -147,8 +169,8 @@ cgg    Need to solve for iobcs would have been.
      &                         mythid, dummy )
 
 c--     Loop over this thread s tiles.
-        do bj = myByLo(myThid), myByHi(myThid)
-          do bi = myBxLo(myThid), myBxHi(myThid)
+        do bj = jtlo,jthi
+          do bi = itlo,ithi
 
 c--         Determine the weights to be used.
             fctile = 0. _d 0

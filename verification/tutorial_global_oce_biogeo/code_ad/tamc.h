@@ -1,3 +1,8 @@
+C $Header: /u/gcmpack/MITgcm/verification/tutorial_global_oce_biogeo/code_ad/tamc.h,v 1.1 2009/10/16 16:20:04 heimbach Exp $
+C $Name:  $
+
+#include "PACKAGES_CONFIG.h"
+
 c     ================================================================
 c     HEADER TAMC
 c     ================================================================
@@ -100,8 +105,11 @@ c     and writing data.
       integer iloop_daily
 
       INTEGER    isbyte
-C     For smaller tapes replace 8 by 4.
+#ifdef ALLOW_TAMC_SINGLEPREC_COMLEV
+      PARAMETER( isbyte      = 4 )
+#else
       PARAMETER( isbyte      = 8 )
+#endif
       INTEGER    maximpl
       PARAMETER( maximpl     = 6 )
 #ifdef ALLOW_PTRACERS
@@ -115,6 +123,13 @@ cph      PARAMETER( maxpass     = PTRACERS_num + 2 )
       INTEGER    maxcube
       PARAMETER( maxcube     = 1 )
 
+      INTEGER act0, act1, act2, act3, act4
+      INTEGER max0, max1, max2, max3
+      INTEGER iikey, kkey, passkey, igadkey, 
+     &        itdkey, idynkey, igmkey
+
 c     ================================================================
 c     END OF HEADER TAMC
 c     ================================================================
+
+

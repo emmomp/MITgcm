@@ -1,3 +1,7 @@
+C $Header: /u/gcmpack/MITgcm/verification/vermix/code/DIAGNOSTICS_SIZE.h,v 1.1 2009/11/10 02:59:14 dfer Exp $
+C $Name:  $
+
+
 C     Diagnostics Array Dimension
 C     ---------------------------
 C     ndiagMax   :: maximum total number of available diagnostics

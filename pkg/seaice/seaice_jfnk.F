@@ -1,4 +1,10 @@
+C $Header: /u/gcmpack/MITgcm/pkg/seaice/seaice_jfnk.F,v 1.30 2016/01/28 12:54:12 mlosch Exp $
+C $Name:  $
+
 #include "SEAICE_OPTIONS.h"
+#ifdef ALLOW_AUTODIFF
+# include "AUTODIFF_OPTIONS.h"
+#endif
 
 C--  File seaice_jfnk.F: seaice jfnk dynamical solver S/R:
 C--   Contents
@@ -36,6 +42,10 @@ C     === Global variables ===
 #include "SEAICE_SIZE.h"
 #include "SEAICE_PARAMS.h"
 #include "SEAICE.h"
+
+#ifdef ALLOW_AUTODIFF_TAMC
+# include "tamc.h"
+#endif
 
 C     !INPUT/OUTPUT PARAMETERS:
 C     === Routine arguments ===
@@ -131,7 +141,7 @@ C     backward difference extrapolation factors
         bdfFac = 0.5 _d 0
        ENDIF
       ENDIF
-      bdfAlpha = 1. _d 0 + bdfFac
+      bdfAlpha = 1. _d 0 + bdfFac 
 
       DO bj=myByLo(myThid),myByHi(myThid)
        DO bi=myBxLo(myThid),myBxHi(myThid)
@@ -146,9 +156,9 @@ C     backward difference extrapolation factors
 C     cycle ice velocities
         DO J=1-OLy,sNy+OLy
          DO I=1-OLx,sNx+OLx
-          duIcNm1(I,J,bi,bj) = uIce(I,J,bi,bj) * bdfAlpha
+          duIcNm1(I,J,bi,bj) = uIce(I,J,bi,bj) * bdfAlpha 
      &         + ( uIce(I,J,bi,bj) - uIceNm1(I,J,bi,bj) ) * bdfFac
-          dvIcNm1(I,J,bi,bj) = vIce(I,J,bi,bj) * bdfAlpha
+          dvIcNm1(I,J,bi,bj) = vIce(I,J,bi,bj) * bdfAlpha 
      &         + ( vIce(I,J,bi,bj) - vIceNm1(I,J,bi,bj) ) * bdfFac
           uIceNm1(I,J,bi,bj) = uIce(I,J,bi,bj)
           vIceNm1(I,J,bi,bj) = vIce(I,J,bi,bj)
@@ -218,7 +228,6 @@ C     in that routine
        iCode         = 0
 
        JFNKconverged = JFNKresidual.LT.JFNKtol
-     &      .OR.JFNKresidual.EQ.0. _d 0
 
 C     do Krylov loop only if convergence is not reached
 
@@ -248,13 +257,13 @@ C     map preconditioner results or Jacobian times vector,
 C     stored in du/vIce to wk2, for iCode=0, wk2 is set to zero,
 C     because du/vIce = 0
          CALL SEAICE_MAP2VEC(nVec,duIce,dvIce,wk2,.TRUE.,myThid)
-
+C
          CALL SEAICE_FGMRES (nVec,im,rhs,sol,ifgmres,krylovIter,
      U        vv,w,wk1,wk2,
      I        FGMRESeps,SEAICElinearIterMax,iOutFGMRES,
      U        iCode,
      I        myThid)
-
+C     
          IF ( iCode .EQ. 0 ) THEN
 C     map sol(ution) vector to du/vIce
           CALL SEAICE_MAP2VEC(nVec,duIce,dvIce,sol,.FALSE.,myThid)
@@ -345,9 +354,7 @@ C     end of Newton iterate
 C--   Output diagnostics
 
       IF ( SEAICE_monFreq .GT. 0. _d 0 ) THEN
-C     Only Master Thread updates counters in common block:
-      _BEGIN_MASTER(myThid)
-C     Cumulate some diagnostic counters for the JFNK solver
+C     Count iterations
        totalJFNKtimeSteps = totalJFNKtimeSteps + 1
        totalNewtonIters   = totalNewtonIters + newtonIter
        totalKrylovIters   = totalKrylovIters + totalKrylovItersLoc
@@ -356,7 +363,6 @@ C     Record failure
        IF ( newtonIter .EQ. SEAICEnonLinIterMax ) THEN
         totalNewtonFails = totalNewtonFails + 1
        ENDIF
-       _END_MASTER( myThid )
       ENDIF
 C     Decide whether it is time to dump and reset the counter
       writeNow = DIFFERENT_MULTIPLE(SEAICE_monFreq,
@@ -366,7 +372,7 @@ C     Decide whether it is time to dump and reset the counter
        CALL CAL_TIME2DUMP(
      I      zeroRL, SEAICE_monFreq,  deltaTClock,
      U      writeNow,
-     I      myTime+deltaTClock, myIter+1, myThid )
+     I      myTime+deltaTclock, myIter+1, myThid )
       ENDIF
 #endif
       IF ( writeNow ) THEN
@@ -417,13 +423,13 @@ C     Decide whether it is time to dump and reset the counter
      &' // ======================================================='
        CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
      &      SQUEEZE_RIGHT, myThid )
-C     Reset and start again
+       _END_MASTER( myThid )
+C     reset and start again
        totalJFNKtimeSteps = 0
        totalNewtonIters   = 0
        totalKrylovIters   = 0
        totalKrylovFails   = 0
        totalNewtonFails   = 0
-       _END_MASTER( myThid )
       ENDIF
 
 C     Print more debugging information
@@ -537,14 +543,6 @@ C     Initialise some local variables
       facLS = 1. _d 0
       doLineSearch = .TRUE.
       DO WHILE ( doLineSearch )
-C     The computation of the line search factor is complicated because
-C     we overwrite the solution, so that we have to reconstruct what
-C     should be just u_l = u_0 + (1-gamma)**l *du. Instead, after adding
-C     du/vIce in the first iteration (l=0), we substract a decreasing
-C     part of du/vIce from u/vIce in the next iterations until the
-C     residual is smaller than the initial residual.
-       IF ( l .GT. 0 ) facLS = - SEAICE_JFNK_lsGamma
-     &       *(1. _d 0 - SEAICE_JFNK_lsGamma)**(l-1)
 C     Create update
        DO bj=myByLo(myThid),myByHi(myThid)
         DO bi=myBxLo(myThid),myBxHi(myThid)
@@ -569,19 +567,20 @@ C     product that SEAICE_FGMRES does
        resLoc = SQRT(resLoc)
 C     Determine, if we need more iterations
        doLineSearch = resLoc .GE. JFNKresidual
-C     Limit the maximum number of iterations arbitrarily to
-C     SEAICE_JFNK_lsLmax (default is 4)
-       doLineSearch = doLineSearch .AND. l .LE. SEAICE_JFNK_lsLmax
+C     Limit the maximum number of iterations arbitrarily to four
+       doLineSearch = doLineSearch .AND. l .LT. 4
 C     For the first iteration du/vIce = 0 and there will be no
 C     improvement of the residual possible, so we do only the first
 C     iteration
        IF ( newtonIter .EQ. 1 ) doLineSearch = .FALSE.
 C     Only start a linesearch after some Newton iterations
        IF ( newtonIter .LE. SEAICE_JFNK_lsIter ) doLineSearch = .FALSE.
+C     Increment counter
+       l = l + 1
 C     some output diagnostics
        IF ( debugLevel.GE.debLevA .AND. doLineSearch ) THEN
         _BEGIN_MASTER( myThid )
-        WRITE(msgBuf,'(2A,2(1XI6),1X,3E12.5)')
+        WRITE(msgBuf,'(2A,2(1XI6),3E12.5)')
      &       ' S/R SEAICE_JFNK_UPDATE: Newton iter, LSiter, ',
      &       'facLS, JFNKresidual, resLoc = ',
      &        newtonIter, l, facLS, JFNKresidual, resLoc
@@ -589,8 +588,10 @@ C     some output diagnostics
      &       SQUEEZE_RIGHT, myThid )
         _END_MASTER( myThid )
        ENDIF
-C     Increment counter
-       l = l + 1
+C     Get ready for the next iteration: after adding du/vIce in the first
+C     iteration, we substract 0.5*du/vIce from u/vIce in the next
+C     iterations, 0.25*du/vIce in the second, etc.
+       facLS = - 0.5 _d 0 * ABS(facLS)
       ENDDO
 C     This is the new residual
       JFNKresidual = resLoc

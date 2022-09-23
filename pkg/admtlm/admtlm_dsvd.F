@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/admtlm/admtlm_dsvd.F,v 1.7 2012/08/12 18:29:25 jmc Exp $
+C $Name:  $
+
 #include "ADMTLM_OPTIONS.h"
 
       subroutine admtlm_dsvd ( mythid )
@@ -140,9 +143,7 @@ C     == Global variables ===
 #include "EEPARAMS.h"
 #include "PARAMS.h"
 #ifdef ALLOW_ADMTLM
-# ifdef ALLOW_AUTODIFF_TAMC
-#  include "tamc.h"
-# endif
+# include "tamc.h"
 # include "ctrl.h"
 # include "optim.h"
 # include "cost.h"

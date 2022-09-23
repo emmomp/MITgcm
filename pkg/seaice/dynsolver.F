@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/seaice/dynsolver.F,v 1.45 2015/01/07 13:27:10 mlosch Exp $
+C $Name:  $
+
 #include "SEAICE_OPTIONS.h"
 #ifdef ALLOW_AUTODIFF
 # include "AUTODIFF_OPTIONS.h"
@@ -174,7 +177,7 @@ C-    add atmospheric loading and Sea-Ice loading
            DO i=1-OLx,sNx+OLx
             phiSurf(i,j) = phiSurf(i,j)
      &                   + ( pload(i,j,bi,bj)
-     &                      +sIceLoad(i,j,bi,bj)*gravity*sIceLoadFac
+     &                      +sIceLoad(i,j,bi,bj)*gravity
      &                     )*recip_rhoConst
            ENDDO
           ENDDO
@@ -192,13 +195,13 @@ C-    add atmospheric loading and Sea-Ice loading
 C--   NOW ADD IN TILT
           FORCEX(I,J,bi,bj)=FORCEX(I,J,bi,bj)
      &      -AMASS(I,J,bi,bj)
-     &         *( (phiSurf(i, j )-phiSurf(i-1, j ))*SIMaskU(i, j ,bi,bj)
-     &           +(phiSurf(i,j-1)-phiSurf(i-1,j-1))*SIMaskV(i,j-1,bi,bj)
+     &         *( (phiSurf(i, j )-phiSurf(i-1, j ))*maskW(i, j ,1,bi,bj)
+     &           +(phiSurf(i,j-1)-phiSurf(i-1,j-1))*maskW(i,j-1,1,bi,bj)
      &          )*HALF*_recip_dxV(I,J,bi,bj)
           FORCEY(I,J,bi,bj)=FORCEY(I,J,bi,bj)
      &      -AMASS(I,J,bi,bj)
-     &         *( (phiSurf( i ,j)-phiSurf( i ,j-1))*SIMaskV( i ,j,bi,bj)
-     &           +(phiSurf(i-1,j)-phiSurf(i-1,j-1))*SIMaskV(i-1,j,bi,bj)
+     &         *( (phiSurf( i ,j)-phiSurf( i ,j-1))*maskS( i ,j,1,bi,bj)
+     &           +(phiSurf(i-1,j)-phiSurf(i-1,j-1))*maskS(i-1,j,1,bi,bj)
      &          )*HALF*_recip_dyU(I,J,bi,bj)
 C NOW KEEP FORCEX0
           FORCEX0(I,J,bi,bj)=FORCEX(I,J,bi,bj)

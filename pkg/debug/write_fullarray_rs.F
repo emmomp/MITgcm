@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/debug/write_fullarray_rs.F,v 1.2 2012/08/11 18:13:24 jmc Exp $
+C $Name:  $
+
 #include "CPP_EEOPTIONS.h"
 
 CBOP
@@ -16,11 +19,8 @@ C     | Only used for debugging purpose.
 C     |  can write local array (with no bi,bj) corresponding to
 C     |      tile biArg,bjArg
 C     |  or global array (with bi,bj) (called with biArg=bjArg=0)
-C     | Warning:
-C     |   1) does not explicitly do the byte-swapping unless
-C     |      specified by compiler option.
-C     |   2) ignores writeBinaryPrec and just write output with
-C     |      same precision as input array (float32/float64)
+C     | Warning: does not explicitly do the byte-swapping
+C     |          (=> write little-endian binary file).
 C     *==========================================================*
 C     \ev
 C     !USES:
@@ -38,7 +38,7 @@ C     == Routine arguments ==
       INTEGER iRec
       INTEGER myIter
       INTEGER myThid
-      _RS fld(1-OLx:sNx+OLx,1-OLy:sNy+OLy,kSize,nSx,nSy)
+      _RS fld(1-Olx:sNx+Olx,1-Oly:sNy+Oly,kSize,nSx,nSy)
 
 C     !FUNCTIONS:
 C     ==  Functions ==
@@ -87,18 +87,18 @@ C--   Write full global array:
 c        OPEN( dUnit, file=fullName, status='unknown',
 c    &         form='unformatted')
 c        WRITE(dUnit) ((( fld(i,j,k,bi,bj),
-c    &                        i=1-OLx,sNx+OLx),
-c    &                        j=1-OLy,sNy+OLy),
+c    &                        i=1-Olx,sNx+Olx),
+c    &                        j=1-Oly,sNy+Oly),
 c    &                        k=1,kSize)
          length_of_rec = MDS_RECLEN(
-     &                   filePrec, (sNx+2*OLx)*(sNy+2*OLy), myThid )
+     &                   filePrec, (sNx+2*Olx)*(sNy+2*Oly), myThid )
          OPEN( dUnit, file=fullName, status='unknown',
      &         access='direct', recl=length_of_rec )
          DO k = 1,kSize
            kRec = k + (iRec-1)*kSize
            WRITE(dUnit,rec=kRec) (( fld(i,j,k,bi,bj),
-     &                                i=1-OLx,sNx+OLx),
-     &                                j=1-OLy,sNy+OLy )
+     &                                i=1-Olx,sNx+Olx),
+     &                                j=1-Oly,sNy+Oly )
          ENDDO
          CLOSE(dUnit)
 
@@ -121,18 +121,18 @@ C--   Write local array:
 c        OPEN( dUnit, file=fullName, status='unknown',
 c    &         form='unformatted')
 c        WRITE(dUnit) ((( fld(i,j,k,1,1),
-c    &                       i=1-OLx,sNx+OLx),
-c    &                       j=1-OLy,sNy+OLy),
+c    &                       i=1-Olx,sNx+Olx),
+c    &                       j=1-Oly,sNy+Oly),
 c    &                       k=1,kSize)
          length_of_rec = MDS_RECLEN(
-     &                   filePrec, (sNx+2*OLx)*(sNy+2*OLy), myThid )
+     &                   filePrec, (sNx+2*Olx)*(sNy+2*Oly), myThid )
          OPEN( dUnit, file=fullName, status='unknown',
      &         access='direct', recl=length_of_rec )
          DO k = 1,kSize
            kRec = k + (iRec-1)*kSize
            WRITE(dUnit,rec=kRec) (( fld(i,j,k,1,1),
-     &                                i=1-OLx,sNx+OLx),
-     &                                j=1-OLy,sNy+OLy )
+     &                                i=1-Olx,sNx+Olx),
+     &                                j=1-Oly,sNy+Oly )
          ENDDO
          CLOSE(dUnit)
 

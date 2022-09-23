@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/atm_phys/ATM_PHYS_OPTIONS.h,v 1.1 2013/05/08 22:14:14 jmc Exp $
+C $Name:  $
+
 #ifndef ATM_PHYS_OPTIONS_H
 #define ATM_PHYS_OPTIONS_H
 #include "PACKAGES_CONFIG.h"

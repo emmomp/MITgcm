@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/verification/OpenAD/code_oad/CTRL_OPTIONS.h,v 1.3 2016/08/20 03:11:40 heimbach Exp $
+C $Name:  $
+
 CBOP
 C !ROUTINE: CTRL_OPTIONS.h
 C !INTERFACE:

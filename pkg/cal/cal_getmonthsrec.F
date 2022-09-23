@@ -1,8 +1,11 @@
+C $Header: /u/gcmpack/MITgcm/pkg/cal/cal_getmonthsrec.F,v 1.3 2012/04/13 18:03:11 jmc Exp $
+C $Name:  $
+
 #include "CAL_OPTIONS.h"
 
       subroutine cal_GetMonthsRec(
      O                             fac, first, changed,
-     O                             month0, month1, year0, year1,
+     O                             count0, count1,
      I                             mytime, myiter, mythid
      &                           )
 
@@ -20,7 +23,7 @@ c              - ported from the external forcing package and slightly
 c                modified (10 --> nmonthyear-2, 12 --> nmonthyear).
 c
 c     changed: Patrick Heimbach heimbach@mit.edu 15-Jun-2000
-c              - fixed bug for month1 = nmonthyear
+c              - fixed bug for count1 = nmonthyear
 c
 c     ==================================================================
 c     SUBROUTINE cal_GetMonthsRec
@@ -37,10 +40,8 @@ c     == routine arguments ==
       _RL     fac
       logical first
       logical changed
-      integer month0
-      integer month1
-      integer year0
-      integer year1
+      integer count0
+      integer count1
       _RL     mytime
       integer myiter
       integer mythid
@@ -62,8 +63,7 @@ c     == local variables ==
       integer startofmonth(4)
       integer endofmonth(4)
       integer difftime(4)
-      integer presentmonth
-      integer presentyear
+      integer present
       integer previous
       integer next
       integer prevcount
@@ -90,15 +90,14 @@ ce    --> Include a check whether the right calendar is used.
 c     Determine the current date and the current month.
       call cal_GetDate( myiter, mytime, currentdate, mythid )
 
-      presentyear     = currentdate(1)/10000
-      presentmonth    = mod(currentdate(1)/100,100)
+      present         = mod(currentdate(1)/100,100)
       startofmonth_1  = (currentdate(1)/100)*100 + 1
       startofmonth_2  = 0
       call cal_FullDate( startofmonth_1, startofmonth_2,
      &                   startofmonth, mythid )
 
       endofmonth_1    = (currentdate(1)/100)*100 +
-     &                  ndaymonth(presentmonth,currentdate(3))
+     &                  ndaymonth(present,currentdate(3))
       endofmonth_2    = 235959
       call cal_FullDate( endofmonth_1, endofmonth_2,
      &                   endofmonth, mythid )
@@ -110,7 +109,7 @@ c     Determine middle of current month.
      &              mod(currentdate(2)/100,100)*secondsperminute +
      &              mod(currentdate(2),100)
      &              )
-      midsecs     = float(ndaymonth(presentmonth,currentdate(3))*
+      midsecs     = float(ndaymonth(present,currentdate(3))*
      &                    secondsperday/2)
 
       call cal_TimeInterval( midsecs, 'secs', midtime, mythid )
@@ -133,10 +132,8 @@ c--   Set switches for reading new records.
 
       if ( currentsecs .lt. midsecs ) then
 
-        month0 = mod(presentmonth+nmonthyear-2,nmonthyear)+1
-        year0 = presentyear
-        if (month0 .EQ. 12) year0 = year0 - 1
-        prevcount = month0
+        count0    = mod(present+nmonthyear-2,nmonthyear)+1
+        prevcount = count0
 
         shifttime(1) = -shifttime(1)
         call cal_AddTime( startofmonth, shifttime, middate0, mythid )
@@ -153,8 +150,7 @@ c--   Set switches for reading new records.
         call cal_TimeInterval( midsecs_np, 'secs', midtime, mythid )
         call cal_AddTime( tempDate, midtime, middate0, mythid )
 
-        month1 = presentmonth
-        year1 = presentyear
+        count1 = present
 
         middate1(1) = middate(1)
         middate1(2) = middate(2)
@@ -163,13 +159,12 @@ c--   Set switches for reading new records.
 
       else
 
-        month0 = presentmonth
-        year0 = presentyear
+        count0 = present
 
         if ( prevsecs .lt. midsecs ) then
-          prevcount = mod(presentmonth+nmonthyear-2,nmonthyear)+1
+          prevcount = mod(present+nmonthyear-2,nmonthyear)+1
         else
-          prevcount = presentmonth
+          prevcount = present
         endif
 
         middate0(1) = middate(1)
@@ -177,9 +172,8 @@ c--   Set switches for reading new records.
         middate0(3) = middate(3)
         middate0(4) = middate(4)
 
-        month1 = mod(presentmonth, nmonthyear) + 1
-        year1 = presentyear
-        if ( month1 .EQ. 1 ) year1 = year1 + 1
+        count1 = mod(present+1,nmonthyear)
+        if ( count1 .EQ. 0 ) count1 = nmonthyear
 
         call cal_AddTime( endofmonth, shifttime, middate1, mythid )
         middate1_1  = (middate1(1)/100)*100 + 1
@@ -199,8 +193,7 @@ c--   Set switches for reading new records.
       call cal_ToSeconds( difftime, diffsecs, mythid )
 
 c     Set counters, switches, and the linear interpolation factor.
-c     only check month, not year, as it will always change
-      if ( (.not. first) .and. (prevcount .ne. month0) ) then
+      if ( (.not. first) .and. (prevcount .ne. count0) ) then
         changed = .true.
       else
         changed = .false.

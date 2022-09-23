@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/gmredi/GMREDI_OPTIONS.h,v 1.19 2014/05/18 02:49:52 m_bates Exp $
+C $Name:  $
+
 C CPP options file for GM/Redi package
 C Use this file for selecting options within the GM/Redi package
 
@@ -24,10 +27,10 @@ C Use old calculation (before 2007/05/24) of Visbeck etal K_GM+Redi
 C (which depends on tapering scheme)
 #undef OLD_VISBECK_CALC
 
-C This allows the Bates et al formulation to calculate the
+C This allows the Bates et al formulation to calculate the 
 C bolus transport and K for Redi
-#undef GM_BATES_K3D
-#undef GM_BATES_PASSIVE
+#undef GM_K3D
+#undef GM_K3D_PASSIVE
 
 C This allows the leading diagonal (top two rows) to be non-unity
 C (a feature required when tapering adiabatically).
@@ -43,9 +46,6 @@ C  instead of the Skew-Flux form (=default)
 
 C Allows to use the Boundary-Value-Problem method to evaluate GM Bolus transport
 #define GM_BOLUS_BVP
-
-C Allow QG Leith variable viscosity to be added to GMRedi coefficient
-#undef ALLOW_GM_LEITH_QG
 
 #endif /* ALLOW_GMREDI */
 #endif /* GMREDI_OPTIONS_H */

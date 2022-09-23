@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/gmredi/gmredi_calc_tensor.F,v 1.45 2015/10/15 23:06:36 gforget Exp $
+C $Name:  $
+
 #include "GMREDI_OPTIONS.h"
 #ifdef ALLOW_AUTODIFF
 # include "AUTODIFF_OPTIONS.h"
@@ -45,9 +48,11 @@ C     == Global variables ==
 
 #ifdef ALLOW_AUTODIFF_TAMC
 #include "tamc.h"
+#include "tamc_keys.h"
 #endif /* ALLOW_AUTODIFF_TAMC */
 
 C     !INPUT/OUTPUT PARAMETERS:
+C     == Routine arguments ==
 C     bi, bj    :: tile indices
 C     myTime    :: Current time in simulation
 C     myIter    :: Current iteration number in simulation
@@ -66,9 +71,8 @@ CEOP
 #ifdef ALLOW_GMREDI
 
 C     !LOCAL VARIABLES:
-C     maskFk    :: 2-D mask for vertical interface k (between level k-1 & k)
+C     == Local variables ==
       INTEGER i,j,k
-      _RS maskFk(1-OLx:sNx+OLx,1-OLy:sNy+OLy)
       _RL SlopeX(1-OLx:sNx+OLx,1-OLy:sNy+OLy)
       _RL SlopeY(1-OLx:sNx+OLx,1-OLy:sNy+OLy)
       _RL dSigmaDx(1-OLx:sNx+OLx,1-OLy:sNy+OLy)
@@ -98,9 +102,8 @@ C     maskFk    :: 2-D mask for vertical interface k (between level k-1 & k)
 #ifdef OLD_VISBECK_CALC
       _RL Ssq(1-OLx:sNx+OLx,1-OLy:sNy+OLy)
 #else
-      INTEGER ks
-      _RL dSigmaH, dSigmaR, Sloc, rTop
-c     _RL M2loc
+      _RL dSigmaH, dSigmaR
+      _RL Sloc, M2loc
 #endif
       _RL recipMaxSlope
       _RL deltaH, integrDepth
@@ -116,25 +119,20 @@ c     _RL M2loc
       _RL tmp1k(1-OLx:sNx+OLx,1-OLy:sNy+OLy)
 #endif
 #endif /* ALLOW_DIAGNOSTICS */
-#ifdef ALLOW_AUTODIFF_TAMC
-      INTEGER act1, act2, act3, act4
-      INTEGER max1, max2, max3
-      INTEGER igmkey, kkey
-#endif
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
 
 #ifdef ALLOW_AUTODIFF_TAMC
-      act1 = bi - myBxLo(myThid)
-      max1 = myBxHi(myThid) - myBxLo(myThid) + 1
-      act2 = bj - myByLo(myThid)
-      max2 = myByHi(myThid) - myByLo(myThid) + 1
-      act3 = myThid - 1
-      max3 = nTx*nTy
-      act4 = ikey_dynamics - 1
-      igmkey = (act1 + 1) + act2*max1
-     &                    + act3*max1*max2
-     &                    + act4*max1*max2*max3
+          act1 = bi - myBxLo(myThid)
+          max1 = myBxHi(myThid) - myBxLo(myThid) + 1
+          act2 = bj - myByLo(myThid)
+          max2 = myByHi(myThid) - myByLo(myThid) + 1
+          act3 = myThid - 1
+          max3 = nTx*nTy
+          act4 = ikey_dynamics - 1
+          igmkey = (act1 + 1) + act2*max1
+     &                      + act3*max1*max2
+     &                      + act4*max1*max2*max3
 #endif /* ALLOW_AUTODIFF_TAMC */
 
 #ifdef ALLOW_DIAGNOSTICS
@@ -235,8 +233,10 @@ C-    Just initialize to zero (not use anyway)
          Kwx(i,j,k,bi,bj)  = 0. _d 0
          Kwy(i,j,k,bi,bj)  = 0. _d 0
          Kwz(i,j,k,bi,bj)  = 0. _d 0
+# ifdef GM_NON_UNITY_DIAGONAL
          Kux(i,j,k,bi,bj)  = 0. _d 0
          Kvy(i,j,k,bi,bj)  = 0. _d 0
+# endif
 # ifdef GM_EXTRA_DIAGONAL
          Kuz(i,j,k,bi,bj)  = 0. _d 0
          Kvz(i,j,k,bi,bj)  = 0. _d 0
@@ -273,46 +273,30 @@ C--   Initialise Mixed Layer related array:
        ENDDO
       ENDIF
 
-#ifdef GM_BATES_K3D
-      IF (GM_useBatesK3d) THEN
-C     Calculate the 3D diffusivity as per Bates et al. (JPO, 2014)
-        CALL TIMER_START('GMREDI_CALC_BATES_K [GMREDI_CALC_TENSOR]',
+#ifdef GM_K3D
+      IF (GM_useK3D) THEN
+C     Calculate the 3D diffusivity as per Bates et al. (2013)
+        CALL TIMER_START('GMREDI_K3D      [GMREDI_CALC_TENSOR]',
      &                    myThid)
-        CALL GMREDI_CALC_BATES_K(
+
+        CALL GMREDI_K3D(
      I       iMin, iMax, jMin, jMax,
      I       sigmaX, sigmaY, sigmaR,
-     I       bi, bj, myTime, myIter, myThid )
-        CALL TIMER_STOP('GMREDI_CALC_BATES_K [GMREDI_CALC_TENSOR]',
+     I       bi, bj, myTime, myThid)
+
+        CALL TIMER_STOP('GMREDI_K3D      [GMREDI_CALC_TENSOR]',
      &                  myThid)
       ENDIF
 #endif
-
-#ifdef ALLOW_GM_LEITH_QG
-# ifdef ALLOW_AUTODIFF
-      DO k=1,Nr
-       DO j=1-OLy,sNy+OLy
-        DO i=1-OLx,sNx+OLx
-          GM_LeithQG_K(i,j,k,bi,bj) = 0. _d 0
-        ENDDO
-       ENDDO
-      ENDDO
-# endif
-      IF ( GM_useLeithQG ) THEN
-C   Use Leith QG viscosity in GMRedi scheme
-        CALL GMREDI_CALC_QGLEITH(
-     O                GM_LeithQG_K(1-OLx,1-OLy,1,bi,bj),
-     I                bi, bj, myTime, myIter, myThid )
-      ENDIF
-#endif /* ALLOW_GM_LEITH_QG */
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
 C-- 1rst loop on k : compute Tensor Coeff. at W points.
 
       DO k=Nr,2,-1
 
+#ifdef ALLOW_AUTODIFF
        DO j=1-OLy,sNy+OLy
         DO i=1-OLx,sNx+OLx
-#ifdef ALLOW_AUTODIFF
          SlopeX(i,j)       = 0. _d 0
          SlopeY(i,j)       = 0. _d 0
          dSigmaDx(i,j)     = 0. _d 0
@@ -320,20 +304,19 @@ C-- 1rst loop on k : compute Tensor Coeff. at W points.
          dSigmaDr(i,j)     = 0. _d 0
          SlopeSqr(i,j)     = 0. _d 0
          taperFct(i,j)     = 0. _d 0
-#endif /* ALLOW_AUTODIFF */
-         maskFk(i,j)       = maskC(i,j,k-1,bi,bj)*maskC(i,j,k,bi,bj)
         ENDDO
        ENDDO
+#endif /* ALLOW_AUTODIFF */
 
        DO j=1-OLy+1,sNy+OLy-1
         DO i=1-OLx+1,sNx+OLx-1
 C      Gradient of Sigma at rVel points
          dSigmaDx(i,j)=op25*( sigmaX(i+1,j,k-1)+sigmaX(i,j,k-1)
      &                       +sigmaX(i+1,j, k )+sigmaX(i,j, k )
-     &                      )*maskFk(i,j)
+     &                      )*maskC(i,j,k,bi,bj)
          dSigmaDy(i,j)=op25*( sigmaY(i,j+1,k-1)+sigmaY(i,j,k-1)
      &                       +sigmaY(i,j+1, k )+sigmaY(i,j, k )
-     &                      )*maskFk(i,j)
+     &                      )*maskC(i,j,k,bi,bj)
 c        dSigmaDr(i,j)=sigmaR(i,j,k)
         ENDDO
        ENDDO
@@ -357,28 +340,22 @@ C       in the "variable K" parameterisaton:
 C       compute depth average from surface down to the bottom or
 C       GM_Visbeck_depth, whatever is the shallower.
 
-        rTop = rF(1)
         DO j=1-OLy+1,sNy+OLy-1
          DO i=1-OLx+1,sNx+OLx-1
-          IF ( maskFk(i,j).NE.zeroRS ) THEN
-           ks = kSurfC(i,j,bi,bj)
-C-      If dry-cell @ top (e.g., under ice-shelf), integrate over Visbeck_depth
-C       as relative to top solid BC (as below) or stop integral if deeper (in
-C       absolute sense) than Visbeck_depth (just comment "rTop =" line below):
-           rTop = Ro_surf(i,j,bi,bj)
-           integrDepth = rTop - rC( kLowC(i,j,bi,bj) )
+          IF ( maskC(i,j,k,bi,bj).NE.0. ) THEN
+           integrDepth = -rC( kLowC(i,j,bi,bj) )
 C-      in 2 steps to avoid mix of RS & RL type in min fct. arguments
            integrDepth = MIN( integrDepth, GM_Visbeck_depth )
 C-      to recover "old-visbeck" form with Visbeck_minDepth = Visbeck_depth
            integrDepth = MAX( integrDepth, GM_Visbeck_minDepth )
 C       Distance between level center above and the integration depth
-           deltaH = integrDepth - rTop + rC(k-1)
+           deltaH = integrDepth + rC(k-1)
 C       If negative then we are below the integration level
 C       (cannot be the case with 2 conditions on maskC & -rC(k-1))
 C       If positive we limit this to the distance from center above
            deltaH = MIN( deltaH, drC(k) )
 C       Now we convert deltaH to a non-dimensional fraction
-           deltaH = deltaH/( integrDepth - rTop + rC(ks) )
+           deltaH = deltaH/( integrDepth+rC(1) )
 
 C--      compute: ( M^2 * S )^1/2   (= S*N since S=M^2/N^2 )
 C        a 5 points average gives a more "homogeneous" formulation
@@ -389,10 +366,10 @@ C        (same stencil and same weights as for dSigmaH calculation)
      &               + dSigmaDr(i,j-1)
      &               + dSigmaDr(i,j+1)
      &               )/( 4. _d 0
-     &                 + maskFk(i-1,j)
-     &                 + maskFk(i+1,j)
-     &                 + maskFk(i,j-1)
-     &                 + maskFk(i,j+1)
+     &                 + maskC(i-1,j,k,bi,bj)
+     &                 + maskC(i+1,j,k,bi,bj)
+     &                 + maskC(i,j-1,k,bi,bj)
+     &                 + maskC(i,j+1,k,bi,bj)
      &                 )
            dSigmaH = dSigmaDx(i,j)*dSigmaDx(i,j)
      &             + dSigmaDy(i,j)*dSigmaDy(i,j)
@@ -404,8 +381,10 @@ C-       compute slope, limited by GM_Visbeck_maxSlope:
              ELSE
               Sloc = GM_Visbeck_maxSlope
              ENDIF
-c            M2loc = gravity*recip_rhoConst*dSigmaH
+             M2loc = gravity*recip_rhoConst*dSigmaH
+c            SNloc = SQRT( Sloc*M2loc )
              N2loc = -gravity*recip_rhoConst*dSigmaR
+c            N2loc = -gravity*recip_rhoConst*dSigmaDr(i,j)
              IF ( N2loc.GT.0. _d 0 ) THEN
                SNloc = Sloc*SQRT(N2loc)
              ELSE
@@ -434,11 +413,9 @@ c            M2loc = gravity*recip_rhoConst*dSigmaH
 CADJ STORE dSigmaDx(:,:)       = comlev1_bibj_k, key=kkey, byte=isbyte
 CADJ STORE dSigmaDy(:,:)       = comlev1_bibj_k, key=kkey, byte=isbyte
 CADJ STORE dSigmaDr(:,:)       = comlev1_bibj_k, key=kkey, byte=isbyte
-# ifndef GM_EXCLUDE_FM07_TAP
 CADJ STORE baseSlope(:,:)      = comlev1_bibj_k, key=kkey, byte=isbyte
 CADJ STORE hTransLay(:,:)      = comlev1_bibj_k, key=kkey, byte=isbyte
 CADJ STORE recipLambda(:,:)    = comlev1_bibj_k, key=kkey, byte=isbyte
-# endif
 #endif /* ALLOW_AUTODIFF_TAMC */
 
 C     Calculate slopes for use in tensor, taper and/or clip
@@ -452,16 +429,14 @@ C     Calculate slopes for use in tensor, taper and/or clip
      I             kLowC(1-OLx,1-OLy,bi,bj),
      I             k, bi, bj, myTime, myIter, myThid )
 
-#ifdef GMREDI_MASK_SLOPES
        DO j=1-OLy+1,sNy+OLy-1
         DO i=1-OLx+1,sNx+OLx-1
 C      Mask Iso-neutral slopes
-         SlopeX(i,j)   = SlopeX(i,j)*maskFk(i,j)
-         SlopeY(i,j)   = SlopeY(i,j)*maskFk(i,j)
-         SlopeSqr(i,j) = SlopeSqr(i,j)*maskFk(i,j)
+         SlopeX(i,j)=SlopeX(i,j)*maskC(i,j,k,bi,bj)
+         SlopeY(i,j)=SlopeY(i,j)*maskC(i,j,k,bi,bj)
+         SlopeSqr(i,j)=SlopeSqr(i,j)*maskC(i,j,k,bi,bj)
         ENDDO
        ENDDO
-#endif
 
 #ifdef ALLOW_AUTODIFF_TAMC
 CADJ STORE SlopeX(:,:)       = comlev1_bibj_k, key=kkey, byte=isbyte
@@ -487,29 +462,29 @@ C      Components of Redi/GM tensor
 
 C- note (jmc) : moved here since only used in VISBECK_VARIABLE_K
 C           but do not know if *taperFct (or **2 ?) is necessary
-         Ssq(i,j)=SlopeSqr(i,j)*taperFct(i,j)
+        Ssq(i,j)=SlopeSqr(i,j)*taperFct(i,j)
 
 C--     Depth average of M^2/N^2 * N
 
 C       Calculate terms for mean Richardson number
 C       which is used in the "variable K" parameterisaton.
 C       Distance between interface above layer and the integration depth
-         deltaH=abs(GM_Visbeck_depth)-abs(rF(k))
+        deltaH=abs(GM_Visbeck_depth)-abs(rF(k))
 C       If positive we limit this to the layer thickness
-         integrDepth = drF(k)
-         deltaH=min(deltaH,integrDepth)
+        integrDepth = drF(k)
+        deltaH=min(deltaH,integrDepth)
 C       If negative then we are below the integration level
-         deltaH=max(deltaH, 0. _d 0)
+        deltaH=max(deltaH, 0. _d 0)
 C       Now we convert deltaH to a non-dimensional fraction
-         deltaH=deltaH/GM_Visbeck_depth
+        deltaH=deltaH/GM_Visbeck_depth
 
-         IF ( Ssq(i,j).NE.0. .AND. dSigmaDr(i,j).NE.0. ) THEN
-          N2loc = -gravity*recip_rhoConst*dSigmaDr(i,j)
-          SNloc = SQRT(Ssq(i,j)*N2loc )
-          VisbeckK(i,j,bi,bj) = VisbeckK(i,j,bi,bj)
-     &        +deltaH*GM_Visbeck_alpha
-     &               *GM_Visbeck_length*GM_Visbeck_length*SNloc
-         ENDIF
+        IF ( Ssq(i,j).NE.0. .AND. dSigmaDr(i,j).NE.0. ) THEN
+         N2loc = -gravity*recip_rhoConst*dSigmaDr(i,j)
+         SNloc = SQRT(Ssq(i,j)*N2loc )
+         VisbeckK(i,j,bi,bj) = VisbeckK(i,j,bi,bj)
+     &       +deltaH*GM_Visbeck_alpha
+     &              *GM_Visbeck_length*GM_Visbeck_length*SNloc
+        ENDIF
 
         ENDDO
        ENDDO
@@ -533,19 +508,23 @@ C-     Limit range that KapGM can take
         ENDDO
        ENDDO
       ENDIF
+cph( NEW
 #ifdef ALLOW_AUTODIFF_TAMC
 CADJ STORE VisbeckK(:,:,bi,bj) = comlev1_bibj, key=igmkey, byte=isbyte
 #endif
+cph)
 #endif /* GM_VISBECK_VARIABLE_K */
 
 C-    express the Tensor in term of Diffusivity (= m**2 / s )
       DO k=1,Nr
 #ifdef ALLOW_AUTODIFF_TAMC
-C to avoid few minor recomputations (with KAPREDI_CONTROL, KAPGM_CONTROL ?)
        kkey = (igmkey-1)*Nr + k
+# if (defined (GM_NON_UNITY_DIAGONAL) || \
+      defined (GM_VISBECK_VARIABLE_K))
 CADJ STORE Kwx(:,:,k,bi,bj) = comlev1_bibj_k, key=kkey, byte=isbyte
 CADJ STORE Kwy(:,:,k,bi,bj) = comlev1_bibj_k, key=kkey, byte=isbyte
 CADJ STORE Kwz(:,:,k,bi,bj) = comlev1_bibj_k, key=kkey, byte=isbyte
+# endif
 #endif
        km1 = MAX(k-1,1)
        isopycK = GM_isopycK
@@ -575,15 +554,9 @@ CADJ STORE Kwz(:,:,k,bi,bj) = comlev1_bibj_k, key=kkey, byte=isbyte
 #ifdef GM_VISBECK_VARIABLE_K
      &           + VisbeckK(i,j,bi,bj)*(1. _d 0 + GM_skewflx)
 #endif
-#ifdef ALLOW_GM_LEITH_QG
-     &           + op5*( GM_LeithQG_K(i,j,k,bi,bj)
-     &                 + GM_LeithQG_K(i,j,km1,bi,bj) )
-     &                *(1. _d 0 + GM_skewflx)
-#endif
-#if ((defined GM_BATES_K3D) && ! (defined GM_BATES_PASSIVE))
-     &           + op5*( GM_BatesK3d(i,j,k,bi,bj)
-     &                 + GM_BatesK3d(i,j,km1,bi,bj) )
-     &                *(1. _d 0 + GM_skewflx)
+#if ((defined GM_K3D) && ! (defined GM_K3D_PASSIVE))
+     &           + op5*(K3D(i,j,k,bi,bj)+K3D(i,j,km1,bi,bj))
+     &             *(1. _d 0 + GM_skewflx)
 #endif
          Kwx(i,j,k,bi,bj)= Kgm_tmp*Kwx(i,j,k,bi,bj)
          Kwy(i,j,k,bi,bj)= Kgm_tmp*Kwy(i,j,k,bi,bj)
@@ -600,13 +573,8 @@ CADJ STORE Kwz(:,:,k,bi,bj) = comlev1_bibj_k, key=kkey, byte=isbyte
 #ifdef GM_VISBECK_VARIABLE_K
      &                     + VisbeckK(i,j,bi,bj)
 #endif
-#ifdef ALLOW_GM_LEITH_QG
-     &                     + op5*( GM_LeithQG_K(i,j,k,bi,bj)
-     &                           + GM_LeithQG_K(i,j,km1,bi,bj) )
-#endif
-#if ((defined GM_BATES_K3D) && ! (defined GM_BATES_PASSIVE))
-     &                     + op5*( GM_BatesK3d(i,j,k,bi,bj)
-     &                           + GM_BatesK3d(i,j,km1,bi,bj) )
+#if ((defined GM_K3D) && ! (defined GM_K3D_PASSIVE))
+     &                     + op5*(K3D(i,j,k,bi,bj)+K3D(i,j,km1,bi,bj))
 #endif
      &                     )*Kwz(i,j,k,bi,bj)
         ENDDO
@@ -634,23 +602,23 @@ C--   Calculate Stream-Functions used in Advective Form:
      I             myThid )
        ELSE
 #endif
-#ifndef GM_BATES_PASSIVE
-         IF ( .NOT.GM_useBatesK3d ) THEN
+#ifndef GM_K3D_PASSIVE
+         IF (.NOT. GM_useK3D) THEN
 #endif
-C          If using BatesK3d PsiX and PsiY are calculated in GMREDI_CALC_BATES_K
+C          If using GM_K3D PsiX and PsiY are calculated in gmredi_k3d
            CALL GMREDI_CALC_PSI_B(
      I              bi, bj, iMin, iMax, jMin, jMax,
      I              sigmaX, sigmaY, sigmaR,
      I              ldd97_LrhoW, ldd97_LrhoS,
      I              myThid )
-#ifndef GM_BATES_PASSIVE
+#ifndef GM_K3D_PASSIVE
          ENDIF
 #endif
 #ifdef GM_BOLUS_BVP
        ENDIF
 #endif
       ENDIF
-#endif /* GM_BOLUS_ADVEC */
+#endif
 
 #ifndef GM_EXCLUDE_SUBMESO
       IF ( GM_useSubMeso .AND. GM_AdvForm ) THEN
@@ -719,14 +687,14 @@ C     Gradient of Sigma at U points
        ENDDO
 
 #ifdef ALLOW_AUTODIFF_TAMC
+CADJ STORE SlopeSqr(:,:)       = comlev1_bibj_k, key=kkey, byte=isbyte
 CADJ STORE dSigmaDx(:,:)       = comlev1_bibj_k, key=kkey, byte=isbyte
 CADJ STORE dSigmaDy(:,:)       = comlev1_bibj_k, key=kkey, byte=isbyte
 CADJ STORE dSigmaDr(:,:)       = comlev1_bibj_k, key=kkey, byte=isbyte
-# ifndef GM_EXCLUDE_FM07_TAP
+CADJ STORE locMixLayer(:,:)    = comlev1_bibj_k, key=kkey, byte=isbyte
 CADJ STORE baseSlope(:,:)      = comlev1_bibj_k, key=kkey, byte=isbyte
 CADJ STORE hTransLay(:,:)      = comlev1_bibj_k, key=kkey, byte=isbyte
 CADJ STORE recipLambda(:,:)    = comlev1_bibj_k, key=kkey, byte=isbyte
-# endif
 #endif /* ALLOW_AUTODIFF_TAMC */
 
 C     Calculate slopes for use in tensor, taper and/or clip
@@ -741,6 +709,7 @@ C     Calculate slopes for use in tensor, taper and/or clip
      I             k, bi, bj, myTime, myIter, myThid )
 
 #ifdef ALLOW_AUTODIFF_TAMC
+CADJ STORE SlopeSqr(:,:)       = comlev1_bibj_k, key=kkey, byte=isbyte
 CADJ STORE taperFct(:,:)       = comlev1_bibj_k, key=kkey, byte=isbyte
 #endif /* ALLOW_AUTODIFF_TAMC */
 
@@ -762,11 +731,8 @@ c      IF ( GM_nonUnitDiag ) THEN
 #ifdef GM_VISBECK_VARIABLE_K
      &     +op5*(VisbeckK(i,j,bi,bj)+VisbeckK(i-1,j,bi,bj))
 #endif
-#ifdef ALLOW_GM_LEITH_QG
-     &     +op5*(GM_LeithQG_K(i,j,k,bi,bj)+GM_LeithQG_K(i-1,j,k,bi,bj))
-#endif
-#if ((defined GM_BATES_K3D) && ! (defined GM_BATES_PASSIVE))
-     &     +op5*(GM_BatesK3d(i,j,k,bi,bj)+GM_BatesK3d(i-1,j,k,bi,bj))
+#if ((defined GM_K3D) && ! (defined GM_K3D_PASSIVE))
+     &     +op5*(K3D(i,j,k,bi,bj)+K3D(i-1,j,k,bi,bj))
 #endif
      &     )*taperFct(i,j)
          ENDDO
@@ -788,6 +754,7 @@ c      ENDIF
 
 #ifdef ALLOW_AUTODIFF_TAMC
 CADJ STORE SlopeX(:,:)       = comlev1_bibj_k, key=kkey, byte=isbyte
+CADJ STORE taperFct(:,:)     = comlev1_bibj_k, key=kkey, byte=isbyte
 #endif /* ALLOW_AUTODIFF_TAMC */
        IF ( GM_ExtraDiag ) THEN
         DO j=1-OLy+1,sNy+OLy-1
@@ -816,23 +783,12 @@ CADJ STORE SlopeX(:,:)       = comlev1_bibj_k, key=kkey, byte=isbyte
 #ifdef GM_VISBECK_VARIABLE_K
      &     +op5*(VisbeckK(i,j,bi,bj)+VisbeckK(i-1,j,bi,bj))*GM_advect
 #endif
-#ifdef ALLOW_GM_LEITH_QG
-     &     +op5*( GM_LeithQG_K(i,j,k,bi,bj)
-     &          + GM_LeithQG_K(i-1,j,k,bi,bj) )*GM_advect
-#endif
-#if ((defined GM_BATES_K3D) && ! (defined GM_BATES_PASSIVE))
-     &     +op5*( GM_BatesK3d(i,j,k,bi,bj)
-     &          + GM_BatesK3d(i-1,j,k,bi,bj) )*GM_advect
+#if ((defined GM_K3D) && ! (defined GM_K3D_PASSIVE))
+     &     +op5*(K3D(i,j,k,bi,bj)+K3D(i-1,j,k,bi,bj))*GM_advect
 #endif
      &     )*SlopeX(i,j)*taperFct(i,j)
          ENDDO
         ENDDO
-c      ELSE
-c       DO j=1-OLy+1,sNy+OLy-1
-c        DO i=1-OLx+1,sNx+OLx-1
-c         Kuz(i,j,k,bi,bj) = 0. _d 0
-c        ENDDO
-c       ENDDO
        ENDIF
 #endif /* GM_EXTRA_DIAGONAL */
 
@@ -854,14 +810,10 @@ C         store in tmp1k Kuz_Redi
      &        *op5*(GM_isoFac2d(i-1,j,bi,bj)+GM_isoFac2d(i,j,bi,bj))
 #endif
 #ifdef GM_VISBECK_VARIABLE_K
-     &     +op5*(VisbeckK(i,j,bi,bj)+VisbeckK(i-1,j,bi,bj))
+     &     +(VisbeckK(i,j,bi,bj)+VisbeckK(i-1,j,bi,bj))*0.5 _d 0
 #endif
-#ifdef ALLOW_GM_LEITH_QG
-     &     +op5*( GM_LeithQG_K(i,j,k,bi,bj)
-     &          + GM_LeithQG_K(i-1,j,k,bi,bj) )
-#endif
-#if ((defined GM_BATES_K3D) && ! (defined GM_BATES_PASSIVE))
-     &     +op5*(GM_BatesK3d(i,j,k,bi,bj)+GM_BatesK3d(i-1,j,k,bi,bj))
+#if ((defined GM_K3D) && ! (defined GM_K3D_PASSIVE))
+     &     +op5*(K3D(i,j,k,bi,bj)+K3D(i-1,j,k,bi,bj))
 #endif
      &                 )*SlopeX(i,j)*taperFct(i,j)
          ENDDO
@@ -871,15 +823,15 @@ C         store in tmp1k Kuz_Redi
 C-        Vertical gradients interpolated to U points
           dTdz = (
      &     +recip_drC(k)*
-     &       ( maskC(i-1,j,km1,bi,bj)*maskC(i-1,j,k,bi,bj)*
+     &       ( maskC(i-1,j,k,bi,bj)*
      &           (theta(i-1,j,km1,bi,bj)-theta(i-1,j,k,bi,bj))
-     &        +maskC( i ,j,km1,bi,bj)*maskC( i ,j,k,bi,bj)*
+     &        +maskC( i ,j,k,bi,bj)*
      &           (theta( i ,j,km1,bi,bj)-theta( i ,j,k,bi,bj))
      &       )
      &     +recip_drC(kp1)*
-     &       ( maskC(i-1,j,k,bi,bj)*maskC(i-1,j,kp1,bi,bj)*
+     &       ( maskC(i-1,j,kp1,bi,bj)*
      &           (theta(i-1,j,k,bi,bj)-theta(i-1,j,kp1,bi,bj))
-     &        +maskC( i ,j,k,bi,bj)*maskC( i ,j,kp1,bi,bj)*
+     &        +maskC( i ,j,kp1,bi,bj)*
      &           (theta( i ,j,k,bi,bj)-theta( i ,j,kp1,bi,bj))
      &       )      ) * 0.25 _d 0
            tmp1k(i,j) = dyG(i,j,bi,bj)*drF(k)
@@ -955,11 +907,9 @@ C     Gradient of Sigma at V points
 CADJ STORE dSigmaDx(:,:)       = comlev1_bibj_k, key=kkey, byte=isbyte
 CADJ STORE dSigmaDy(:,:)       = comlev1_bibj_k, key=kkey, byte=isbyte
 CADJ STORE dSigmaDr(:,:)       = comlev1_bibj_k, key=kkey, byte=isbyte
-# ifndef GM_EXCLUDE_FM07_TAP
 CADJ STORE baseSlope(:,:)      = comlev1_bibj_k, key=kkey, byte=isbyte
 CADJ STORE hTransLay(:,:)      = comlev1_bibj_k, key=kkey, byte=isbyte
 CADJ STORE recipLambda(:,:)    = comlev1_bibj_k, key=kkey, byte=isbyte
-# endif
 #endif /* ALLOW_AUTODIFF_TAMC */
 
 C     Calculate slopes for use in tensor, taper and/or clip
@@ -973,9 +923,13 @@ C     Calculate slopes for use in tensor, taper and/or clip
      I             kLow_S,
      I             k, bi, bj, myTime, myIter, myThid )
 
+cph(
 #ifdef ALLOW_AUTODIFF_TAMC
-CADJ STORE taperFct(:,:)       = comlev1_bibj_k, key=kkey, byte=isbyte
+cph(
+CADJ STORE taperfct(:,:)       = comlev1_bibj_k, key=kkey, byte=isbyte
+cph)
 #endif /* ALLOW_AUTODIFF_TAMC */
+cph)
 
 #ifdef GM_NON_UNITY_DIAGONAL
 c      IF ( GM_nonUnitDiag ) THEN
@@ -995,11 +949,8 @@ c      IF ( GM_nonUnitDiag ) THEN
 #ifdef GM_VISBECK_VARIABLE_K
      &     +op5*(VisbeckK(i,j,bi,bj)+VisbeckK(i,j-1,bi,bj))
 #endif
-#ifdef ALLOW_GM_LEITH_QG
-     &     +op5*(GM_LeithQG_K(i,j,k,bi,bj)+GM_LeithQG_K(i,j-1,k,bi,bj))
-#endif
-#if ((defined GM_BATES_K3D) && ! (defined GM_BATES_PASSIVE))
-     &     +op5*(GM_BatesK3d(i,j,k,bi,bj)+GM_BatesK3d(i,j-1,k,bi,bj))
+#if ((defined GM_K3D) && ! (defined GM_K3D_PASSIVE))
+     &     +op5*(K3D(i,j,k,bi,bj)+K3D(i,j-1,k,bi,bj))
 #endif
      &     )*taperFct(i,j)
          ENDDO
@@ -1021,6 +972,7 @@ c      ENDIF
 
 #ifdef ALLOW_AUTODIFF_TAMC
 CADJ STORE SlopeY(:,:)       = comlev1_bibj_k, key=kkey, byte=isbyte
+CADJ STORE taperFct(:,:)     = comlev1_bibj_k, key=kkey, byte=isbyte
 #endif /* ALLOW_AUTODIFF_TAMC */
        IF ( GM_ExtraDiag ) THEN
         DO j=1-OLy+1,sNy+OLy-1
@@ -1049,23 +1001,12 @@ CADJ STORE SlopeY(:,:)       = comlev1_bibj_k, key=kkey, byte=isbyte
 #ifdef GM_VISBECK_VARIABLE_K
      &     +op5*(VisbeckK(i,j,bi,bj)+VisbeckK(i,j-1,bi,bj))*GM_advect
 #endif
-#ifdef ALLOW_GM_LEITH_QG
-     &     +op5*( GM_LeithQG_K(i,j,k,bi,bj)
-     &          + GM_LeithQG_K(i,j-1,k,bi,bj) )*GM_advect
-#endif
-#if ((defined GM_BATES_K3D) && ! (defined GM_BATES_PASSIVE))
-     &     +op5*( GM_BatesK3d(i,j,k,bi,bj)
-     &          + GM_BatesK3d(i,j-1,k,bi,bj) )*GM_advect
+#if ((defined GM_K3D) && ! (defined GM_K3D_PASSIVE))
+     &     +op5*(K3D(i,j,k,bi,bj)+K3D(i,j-1,k,bi,bj))*GM_advect
 #endif
      &     )*SlopeY(i,j)*taperFct(i,j)
          ENDDO
         ENDDO
-c      ELSE
-c       DO j=1-OLy+1,sNy+OLy-1
-c        DO i=1-OLx+1,sNx+OLx-1
-c         Kvz(i,j,k,bi,bj) = 0. _d 0
-c        ENDDO
-c       ENDDO
        ENDIF
 #endif /* GM_EXTRA_DIAGONAL */
 
@@ -1087,14 +1028,10 @@ C         store in tmp1k Kvz_Redi
      &        *op5*(GM_isoFac2d(i,j-1,bi,bj)+GM_isoFac2d(i,j,bi,bj))
 #endif
 #ifdef GM_VISBECK_VARIABLE_K
-     &     +op5*(VisbeckK(i,j,bi,bj)+VisbeckK(i,j-1,bi,bj))
+     &     +(VisbeckK(i,j,bi,bj)+VisbeckK(i,j-1,bi,bj))*0.5 _d 0
 #endif
-#ifdef ALLOW_GM_LEITH_QG
-     &     +op5*( GM_LeithQG_K(i,j,k,bi,bj)
-     &          + GM_LeithQG_K(i,j-1,k,bi,bj) )
-#endif
-#if ((defined GM_BATES_K3D) && ! (defined GM_BATES_PASSIVE))
-     &     +op5*(GM_BatesK3d(i,j,k,bi,bj)+GM_BatesK3d(i,j-1,k,bi,bj))
+#if ((defined GM_K3D) && ! (defined GM_K3D_PASSIVE))
+     &     +op5*(K3D(i,j,k,bi,bj)+K3D(i,j-1,k,bi,bj))
 #endif
      &                 )*SlopeY(i,j)*taperFct(i,j)
          ENDDO
@@ -1104,15 +1041,15 @@ C         store in tmp1k Kvz_Redi
 C-        Vertical gradients interpolated to U points
           dTdz = (
      &     +recip_drC(k)*
-     &       ( maskC(i,j-1,km1,bi,bj)*maskC(i,j-1,k,bi,bj)*
+     &       ( maskC(i,j-1,k,bi,bj)*
      &           (theta(i,j-1,km1,bi,bj)-theta(i,j-1,k,bi,bj))
-     &        +maskC(i, j ,km1,bi,bj)*maskC(i, j ,k,bi,bj)*
+     &        +maskC(i, j ,k,bi,bj)*
      &           (theta(i, j ,km1,bi,bj)-theta(i, j ,k,bi,bj))
      &       )
      &     +recip_drC(kp1)*
-     &       ( maskC(i,j-1,kp1,bi,bj)*maskC(i,j-1,k,bi,bj)*
+     &       ( maskC(i,j-1,kp1,bi,bj)*
      &           (theta(i,j-1,k,bi,bj)-theta(i,j-1,kp1,bi,bj))
-     &        +maskC(i, j ,kp1,bi,bj)*maskC(i, j ,k,bi,bj)*
+     &        +maskC(i, j ,kp1,bi,bj)*
      &           (theta(i, j ,k,bi,bj)-theta(i, j ,kp1,bi,bj))
      &       )      ) * 0.25 _d 0
            tmp1k(i,j) = dxG(i,j,bi,bj)*drF(k)
@@ -1129,68 +1066,31 @@ C-- end 3rd  loop on vertical level index k
 
 #endif /* GM_NON_UNITY_DIAGONAL || GM_EXTRA_DIAGONAL */
 
-#ifndef GM_NON_UNITY_DIAGONAL
-      DO k=1,Nr
-       DO j=1-OLy+1,sNy+OLy-1
-        DO i=1-OLx+1,sNx+OLx-1
-          Kux(i,j,k,bi,bj) = (
-#ifdef ALLOW_KAPREDI_CONTROL
-c#  ifdef ALLOW_KAPREDI_CONTROL_OLD
-c    &       kapRedi(i,j,k,bi,bj)
-     &       op5*(kapRedi(i,j,k,bi,bj)+kapRedi(i-1,j,k,bi,bj))
-#else
-     &       GM_isopycK
-#endif
-#ifdef GM_VISBECK_VARIABLE_K
-     &     + op5*(VisbeckK(i,j,bi,bj)+VisbeckK(i-1,j,bi,bj))
-#endif
-     &                       )
-        ENDDO
-       ENDDO
-       DO j=1-OLy+1,sNy+OLy-1
-        DO i=1-OLx+1,sNx+OLx-1
-          Kvy(i,j,k,bi,bj) = (
-#ifdef ALLOW_KAPREDI_CONTROL
-c#  ifdef ALLOW_KAPREDI_CONTROL_OLD
-c    &       kapRedi(i,j,k,bi,bj)
-     &       op5*(kapRedi(i,j,k,bi,bj)+kapRedi(i,j-1,k,bi,bj))
-#else
-     &       GM_isopycK
-#endif
-#ifdef GM_VISBECK_VARIABLE_K
-     &     + op5*(VisbeckK(i,j,bi,bj)+VisbeckK(i,j-1,bi,bj))
-#endif
-     &                       )
-        ENDDO
-       ENDDO
-      ENDDO
-#endif /* ndef GM_NON_UNITY_DIAGONAL */
-
 #ifdef ALLOW_TIMEAVE
 C--   Time-average
       IF ( taveFreq.GT.0. ) THEN
 
          CALL TIMEAVE_CUMULATE( GM_Kwx_T, Kwx, Nr,
-     &                          deltaTClock, bi, bj, myThid )
+     &                          deltaTclock, bi, bj, myThid )
          CALL TIMEAVE_CUMULATE( GM_Kwy_T, Kwy, Nr,
-     &                          deltaTClock, bi, bj, myThid )
+     &                          deltaTclock, bi, bj, myThid )
          CALL TIMEAVE_CUMULATE( GM_Kwz_T, Kwz, Nr,
-     &                          deltaTClock, bi, bj, myThid )
+     &                          deltaTclock, bi, bj, myThid )
 #ifdef GM_VISBECK_VARIABLE_K
        IF ( GM_Visbeck_alpha.NE.0. ) THEN
          CALL TIMEAVE_CUMULATE( Visbeck_K_T, VisbeckK, 1,
-     &                          deltaTClock, bi, bj, myThid )
+     &                          deltaTclock, bi, bj, myThid )
        ENDIF
 #endif
 #ifdef GM_BOLUS_ADVEC
        IF ( GM_AdvForm ) THEN
          CALL TIMEAVE_CUMULATE( GM_PsiXtave, GM_PsiX, Nr,
-     &                          deltaTClock, bi, bj, myThid )
+     &                          deltaTclock, bi, bj, myThid )
          CALL TIMEAVE_CUMULATE( GM_PsiYtave, GM_PsiY, Nr,
-     &                          deltaTClock, bi, bj, myThid )
+     &                          deltaTclock, bi, bj, myThid )
        ENDIF
 #endif
-       GM_timeAve(bi,bj) = GM_timeAve(bi,bj)+deltaTClock
+       GM_timeAve(bi,bj) = GM_timeAve(bi,bj)+deltaTclock
 
       ENDIF
 #endif /* ALLOW_TIMEAVE */
@@ -1249,15 +1149,9 @@ C     !LOCAL VARIABLES:
       DO k=1,Nr
        DO j=1-OLy+1,sNy+OLy-1
         DO i=1-OLx+1,sNx+OLx-1
-         Kwx(i,j,k,bi,bj) = 0. _d 0
-         Kwy(i,j,k,bi,bj) = 0. _d 0
-         Kwz(i,j,k,bi,bj) = 0. _d 0
-         Kux(i,j,k,bi,bj) = 0. _d 0
-         Kvy(i,j,k,bi,bj) = 0. _d 0
-# ifdef GM_EXTRA_DIAGONAL
-         Kuz(i,j,k,bi,bj) = 0. _d 0
-         Kvz(i,j,k,bi,bj) = 0. _d 0
-# endif
+         Kwx(i,j,k,bi,bj) = 0.0
+         Kwy(i,j,k,bi,bj) = 0.0
+         Kwz(i,j,k,bi,bj) = 0.0
         ENDDO
        ENDDO
       ENDDO

@@ -1,8 +1,11 @@
 C
+C $Header: /u/gcmpack/MITgcm/pkg/ctrl/ctrl_set_globfld_xy.F,v 1.14 2012/08/10 19:38:57 jmc Exp $
+C $Name:  $
+
 #include "CTRL_OPTIONS.h"
 
       subroutine ctrl_set_globfld_xy(
-     I     fname, ivartype, myThid )
+     I     fname, ivartype, mythid )
 
 c     ==================================================================
 c     SUBROUTINE ctrl_set_globfld_xy
@@ -26,6 +29,7 @@ c     == global variables ==
 #include "EEPARAMS.h"
 #include "SIZE.h"
 #include "PARAMS.h"
+#include "GRID.h"
 
 #include "ctrl.h"
 #include "optim.h"
@@ -34,63 +38,74 @@ c     == routine arguments ==
 
       character*( 80)   fname
       integer ivartype
-      integer myThid
+      integer mythid
 
 c     == local variables ==
 
       integer bi,bj
+      integer ip,jp
       integer i,j,k
       integer itlo,ithi
       integer jtlo,jthi
+      integer jmin,jmax
+      integer imin,imax
       integer irec,nrec_nl
 
-      _RL globfld2d(1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
-      _RL globfld3d(1-OLx:sNx+OLx,1-OLy:sNy+OLy,nr,nSx,nSy)
+      _RL globfld2d(1-oLx:sNx+oLx,1-oLy:sNy+oLy,nSx,nSy)
+      _RL globfld3d(1-oLx:sNx+oLx,1-oLy:sNy+oLy,nr,nSx,nSy)
 
 c     == external ==
 
 c     == end of interface ==
 
-      jtlo = myByLo(myThid)
-      jthi = myByHi(myThid)
-      itlo = myBxLo(myThid)
-      ithi = myBxHi(myThid)
+      jtlo = 1
+      jthi = nsy
+      itlo = 1
+      ithi = nsx
+      jmin = 1-oLy
+      jmax = sny+oLy
+      imin = 1-oLx
+      imax = snx+oLx
 
 c     Initialise temporary file
       do bj = jtlo,jthi
-        do bi = itlo,ithi
-           do j = 1-OLy,sNy+OLy
-             do i = 1-OLx,sNx+OLx
-                globfld2d(i,j,bi,bj) = 0. _d 0
-             enddo
-           enddo
-        enddo
-      enddo
-c     Initialise temporary file
-      do bj = jtlo,jthi
-        do bi = itlo,ithi
-          do k = 1,nr
-            do j = 1-OLy,sNy+OLy
-              do i = 1-OLx,sNx+OLx
-                globfld3d(i,j,k,bi,bj) = 0. _d 0
-              enddo
+         do bi = itlo,ithi
+            do j = jmin,jmax
+               do i = imin,imax
+                  globfld2d(i,j,bi,bj) = 0. _d 0
+               enddo
             enddo
-          enddo
-        enddo
+         enddo
+      enddo
+c     Initialise temporary file
+      do bj = jtlo,jthi
+         do bi = itlo,ithi
+            do k = 1,nr
+               do j = jmin,jmax
+                  do i = imin,imax
+                     globfld3d(i,j,k,bi,bj) = 0. _d 0
+                  enddo
+               enddo
+            enddo
+         enddo
       enddo
 
-      nrec_nl = int(ncvarrecs(ivartype)/Nr)
+c--   Only the master thread will do I/O.
+      _BEGIN_MASTER( mythid )
+
+      nrec_nl=int(ncvarrecs(ivartype)/Nr)
       do irec = 1,  nrec_nl
-        CALL WRITE_REC_3D_RL( fname, ctrlprec, Nr,
-     &                        globfld3d,
-     &                        irec, optimcycle, myThid )
+         call MDSWRITEFIELD( fname, ctrlprec, .FALSE., 'RL',
+     &        Nr, globfld3d,
+     &        irec,   optimcycle,  mythid)
       enddo
 
       do irec = nrec_nl*Nr+1, ncvarrecs(ivartype)
-        CALL WRITE_REC_3D_RL( fname, ctrlprec, 1,
-     &                        globfld2d,
-     &                        irec, optimcycle, myThid )
+         call MDSWRITEFIELD( fname, ctrlprec, .FALSE., 'RL',
+     &        1, globfld2d,
+     &        irec,   optimcycle,  mythid)
       enddo
 
-      RETURN
-      END
+      _END_MASTER( mythid )
+
+      end

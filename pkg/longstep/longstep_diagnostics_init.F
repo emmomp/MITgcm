@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/longstep/longstep_diagnostics_init.F,v 1.3 2010/01/12 23:55:48 jahn Exp $
+C $Name:  $
+
 #include "LONGSTEP_OPTIONS.h"
 
 CBOP
@@ -68,7 +71,7 @@ C--   Add diagnostics to the (long) list
 
       diagName  = 'LSsalt  '
       diagTitle = 'Salinity'
-      diagUnits = 'g/kg            '
+      diagUnits = 'psu             '
       diagCode  = 'SMR     MR      '
       CALL DIAGNOSTICS_ADDTOLIST( diagNum,
      I          diagName, diagCode, diagUnits, diagTitle, 0, myThid )
@@ -147,3 +150,4 @@ C--   Add diagnostics to the (long) list
 
       RETURN
       END
+

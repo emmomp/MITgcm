@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/seaice/seaice_monitor.F,v 1.28 2013/04/09 21:01:52 jmc Exp $
+C $Name:  $
+
 #include "SEAICE_OPTIONS.h"
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|

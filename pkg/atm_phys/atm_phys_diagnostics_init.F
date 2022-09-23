@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/atm_phys/atm_phys_diagnostics_init.F,v 1.3 2015/12/11 21:16:10 jmc Exp $
+C $Name:  $
+
 #include "ATM_PHYS_OPTIONS.h"
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
@@ -202,18 +205,16 @@ C--     Radiation & Surface fluxes:
      I          diagName, diagCode, diagUnits, diagTitle, 0, myThid )
         diagName  = 'AtPhTauX'
         diagTitle = 'ATM_PHYS: Zonal comp of surface stress'
-        diagUnits = 'N/m^2           '
-        diagCode  = 'UM      L1      '
-        diagMate  = diagNum + 2
+        diagUnits = 'unit            '
+        diagCode  = 'SM      L1      '
         CALL DIAGNOSTICS_ADDTOLIST( diagNum,
-     I   diagName, diagCode, diagUnits, diagTitle, diagMate, myThid )
+     I          diagName, diagCode, diagUnits, diagTitle, 0, myThid )
         diagName  = 'AtPhTauY'
         diagTitle = 'ATM_PHYS: Meridional comp of surface stress'
-        diagUnits = 'N/m^2           '
-        diagCode  = 'VM      L1      '
-        diagMate  = diagNum
+        diagUnits = 'unit            '
+        diagCode  = 'SM      L1      '
         CALL DIAGNOSTICS_ADDTOLIST( diagNum,
-     I   diagName, diagCode, diagUnits, diagTitle, diagMate, myThid )
+     I          diagName, diagCode, diagUnits, diagTitle, 0, myThid )
 
 C--     Dargan BettsMiller Convection:
         diagName  = 'AtPhCAPE'

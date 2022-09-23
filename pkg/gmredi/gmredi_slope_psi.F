@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/gmredi/gmredi_slope_psi.F,v 1.14 2014/09/09 22:34:06 jmc Exp $
+C $Name:  $
+
 #include "GMREDI_OPTIONS.h"
 #ifdef ALLOW_AUTODIFF
 # include "AUTODIFF_OPTIONS.h"
@@ -8,12 +11,12 @@ CStartOfInterface
      O             taperX, taperY,
      U             SlopeX, SlopeY,
      U             dSigmaDrW,dSigmaDrS,
-     I             LrhoW, LrhoS, depthZ, k,
+     I             LrhoW, LrhoS, depthZ, K,
      I             bi,bj, myThid )
-C     *==========================================================*
+C     /==========================================================\
 C     | SUBROUTINE GMREDI_SLOPE_PSI                              |
 C     | o Calculate slopes for use in GM/Redi tensor             |
-C     *==========================================================*
+C     |==========================================================|
 C     | On entry:                                                |
 C     |            dSigmaDrW,S  contains the d/dz Sigma          |
 C     |            SlopeX/Y     contains X/Y gradients of sigma  |
@@ -23,7 +26,7 @@ C     |            dSigmaDrW,S  contains the effective dSig/dz   |
 C     |            SlopeX/Y     contains X/Y slopes              |
 C     |            taperFct     contains tapering funct. value ; |
 C     |                         = 1 when using no tapering       |
-C     *==========================================================*
+C     \==========================================================/
       IMPLICIT NONE
 
 C     == Global variables ==
@@ -34,6 +37,7 @@ C     == Global variables ==
 
 #ifdef ALLOW_AUTODIFF_TAMC
 #include "tamc.h"
+#include "tamc_keys.h"
 #endif /* ALLOW_AUTODIFF_TAMC */
 
 C     == Routine arguments ==
@@ -47,7 +51,7 @@ C
       _RL LrhoW(1-OLx:sNx+OLx,1-OLy:sNy+OLy)
       _RL LrhoS(1-OLx:sNx+OLx,1-OLy:sNy+OLy)
       _RS depthZ
-      INTEGER k,bi,bj,myThid
+      INTEGER K,bi,bj,myThid
 CEndOfInterface
 
 #ifdef ALLOW_GMREDI
@@ -63,11 +67,6 @@ C     == Local variables ==
       INTEGER i,j
 #ifdef GMREDI_WITH_STABLE_ADJOINT
       _RL slopeTmpSpec,slopeMaxSpec
-#endif
-#ifdef ALLOW_AUTODIFF_TAMC
-      INTEGER act1, act2, act3, act4
-      INTEGER max1, max2, max3
-      INTEGER igmkey, kkey
 #endif
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
@@ -283,8 +282,7 @@ C-      Simplest adiabatic tapering = Smax/Slope (linear)
          ENDDO
         ENDDO
 
-       ELSEIF ( GM_taper_scheme.EQ.'gkw91' .OR.
-     &          GM_taper_scheme.EQ.'ac02' ) THEN
+       ELSEIF (GM_taper_scheme.EQ.'gkw91') THEN
 
 C-      Gerdes, Koberle and Willebrand, Clim. Dyn. 1991
         maxSlopeSqr = GM_maxSlope*GM_maxSlope

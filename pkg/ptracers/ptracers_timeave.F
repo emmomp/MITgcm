@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/ptracers/ptracers_timeave.F,v 1.2 2010/01/03 03:11:21 jmc Exp $
+C $Name:  $
+
 #include "PTRACERS_OPTIONS.h"
 
 CBOP

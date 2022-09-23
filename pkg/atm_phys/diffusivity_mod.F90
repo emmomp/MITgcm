@@ -1,3 +1,6 @@
+! $Header: /u/gcmpack/MITgcm/pkg/atm_phys/diffusivity_mod.F90,v 1.1 2013/05/08 22:14:14 jmc Exp $
+! $Name:  $
+
 module diffusivity_mod
 
 !=======================================================================
@@ -8,6 +11,7 @@ module diffusivity_mod
 !       planetary boundary layer and in the free atmosphere
 !
 !=======================================================================
+
 
 use gcm_params_mod, only: gcm_LEN_MBUF, gcm_SQZ_R, gcm_stdMsgUnit
 use constants_mod, only : grav, vonkarm, cp_air, rdgas, rvgas
@@ -90,9 +94,10 @@ private
 !
 !=======================================================================
 
+
 !--------------------- version number ----------------------------------
 
-character(len=128) :: version = '$Id: diffusivity_mod.F90,v 1.2 2017/08/11 20:48:50 jmc Exp $'
+character(len=128) :: version = '$Id: diffusivity_mod.F90,v 1.1 2013/05/08 22:14:14 jmc Exp $'
 character(len=128) :: tag = '$Name:  $'
 
 !=======================================================================
@@ -141,6 +146,7 @@ real    :: rbop2  = 1.405
 
 real, parameter :: d608 = (rvgas-rdgas)/rdgas
 
+
 contains
 
 !=======================================================================
@@ -174,11 +180,7 @@ CHARACTER*(gcm_LEN_MBUF) :: msgBuf
           'DIFFUSIVITY_INIT: finished reading data.atm_gray'
      CALL PRINT_MESSAGE( msgBuf, gcm_stdMsgUnit, gcm_SQZ_R, myThid )
 !    Close the open data file
-#ifdef SINGLE_DISK_IO
      CLOSE(iUnit)
-#else
-     CLOSE(iUnit,STATUS='DELETE')
-#endif /* SINGLE_DISK_IO */
 
 !     if (file_exist('input.nml')) then
 !        unit = open_namelist_file ()
@@ -308,6 +310,7 @@ else
    z_surf(:,:) = z_half(:,:,nlev+1)
 end if
 
+
 !compute density profile, and heights relative to surface
 do k = 1, nlev
 
@@ -322,6 +325,7 @@ do k = 1, nlev
 
 end do
 z_half_ag(:,:,nlev+1) = z_half(:,:,nlev+1) - z_surf(:,:)
+
 
 if(fixed_depth)  then
    h = depth_0
@@ -351,12 +355,14 @@ if(entr_ratio .gt. 0. .and. .not. fixed_depth) &
 if(background_m.gt.0.0) k_m = max(k_m,background_m)
 if(background_t.gt.0.0) k_t = max(k_t,background_t)
 
+
 return
 end subroutine diffusivity
 
 !=======================================================================
 
 subroutine pbl_depth(t, u, v, z, u_star, b_star, h, myThid, kbot)
+
 
 real,   intent(in) ,           dimension(:,:,:) :: t, u, v, z
 real,   intent(in) ,           dimension(:,:)   :: u_star,b_star
@@ -390,6 +396,7 @@ else
     tbot(:,:) = t(:,:,nlev)
 end if
 
+
 !compute richardson number for use in pbl depth of neutral/stable side
 do k = 1,nlev
   rich(:,:,k) =  z(:,:,k)*grav*(t(:,:,k)-tbot(:,:))/tbot(:,:)&
@@ -403,6 +410,7 @@ end do
 h_inner(:,:)=frac_inner*znom
 call mo_diff(h_inner, u_star, b_star, ws, k_t_ref, myThid )
 ws = max(small,ws/vonkarm/h_inner)
+
 
 do j = 1, nlat
  do i = 1, nlon
@@ -469,6 +477,7 @@ real, dimension(size(t,1),size(t,2),size(t,3)+1)  :: zm
 real                                              :: h_inner_max
 integer                                           :: i,j, k, kk, nlev
 
+
 nlev = size(t,3)
 
 !assign z_half to zm, and set to zero any values of zm < 0.
@@ -531,6 +540,7 @@ real :: h_ss
 real, dimension(size(z_full,1),size(z_full,2)) :: sig_half, z_half_ss, elmix_ss
 
 !  htcrit_ss = height at which mixing length is a maximum (75m)
+
 
 !  h_ss   = height at which mixing length vanishes (4900m)
 !  elmix_ss   = mixing length
@@ -685,6 +695,7 @@ do k = 2, size(t,3)
   end if
 end do
 
+
 end subroutine diffusivity_free
 
 !=======================================================================
@@ -713,7 +724,11 @@ integer, intent(in)                     :: myThid
       k_m(:,:,1) = 0.0
       k_t(:,:,1) = 0.0
 
+
+
 end subroutine molecular_diff
+
+
 
 !=======================================================================
 

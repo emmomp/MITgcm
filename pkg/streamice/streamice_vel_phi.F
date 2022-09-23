@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/streamice/streamice_vel_phi.F,v 1.2 2015/03/23 14:07:17 dgoldberg Exp $
+C $Name:  $
+
 #include "STREAMICE_OPTIONS.h"
 #ifdef ALLOW_AUTODIFF
 # include "AUTODIFF_OPTIONS.h"
@@ -6,11 +9,11 @@
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
 
 CBOP
-      SUBROUTINE STREAMICE_VEL_PHI (
-     I           myThid,
-     I           maxNLIter,
-     I           maxCGiter,
-     I           cgtol,
+      SUBROUTINE STREAMICE_VEL_PHI ( 
+     I           myThid, 
+     I           maxNLIter, 
+     I           maxCGiter, 
+     I           cgtol, 
      O           cg_iters,
      O           max_err)
 C     /============================================================\
@@ -31,6 +34,10 @@ C     === Global variables ===
 !#include "finclude/petsc.h"
 !#endif
 
+#ifdef ALLOW_AUTODIFF_TAMC
+# include "tamc.h"
+#endif
+
 C     !INPUT/OUTPUT ARGUMENTS
       INTEGER myThid
       INTEGER maxNLIter
@@ -40,7 +47,8 @@ C     !INPUT/OUTPUT ARGUMENTS
       INTEGER cg_iters
       _RL max_err
 
-#ifdef ALLOW_STREAMICE_OAD_FP
+#ifdef ALLOW_STREAMICE
+#if (defined (ALLOW_STREAMICE_OAD_FP))
 
 C     LOCAL VARIABLES
 
@@ -60,12 +68,13 @@ C     LOCAL VARIABLES
 
        CALL STREAMICE_GET_VEL_RESID_ERR_OAD (max_err,myThid)
 
+
        DO bj = myByLo(myThid), myByHi(myThid)
         DO bi = myBxLo(myThid), myBxHi(myThid)
          DO j=1-OLy,sNy+OLy
           DO i=1-OLx,sNx+OLx
            u_new_SI(i,j,bi,bj) = U_streamice(i,j,bi,bj)
-           v_new_SI(i,j,bi,bj) = V_streamice(i,j,bi,bj)
+           v_new_SI(i,j,bi,bj) = V_streamice(i,j,bi,bj) 
           ENDDO
          ENDDO
         ENDDO
@@ -85,6 +94,7 @@ C     LOCAL VARIABLES
         CALL STREAMICE_TAUB (myThid)
 #endif
 
-#endif /* ALLOW_STREAMICE_OAD_FP */
+#endif
+#endif
       RETURN
       END

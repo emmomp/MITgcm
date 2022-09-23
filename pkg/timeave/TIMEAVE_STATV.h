@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/timeave/TIMEAVE_STATV.h,v 1.18 2009/12/28 02:43:52 jmc Exp $
+C $Name:  $
+
 #include "TIMEAVE_OPTIONS.h"
 
 #ifdef ALLOW_TIMEAVE
@@ -34,7 +37,7 @@ C     uVeltave     :: zonal velocity (m/s, i=1 held at western face)
 C     vVeltave     :: meridional velocity (m/s, j=1 held at southern face)
 C     wVeltave     :: vertical velocity ([r]/s, i.e.: ocean:m/s atmos:Pa/s)
 C     thetatave    :: potential temperature (oC, held at pressure/tracer point)
-C     salttave     :: salinity (g/kg, held at pressure/tracer point)
+C     salttave     :: salinity (ppt, held at pressure/tracer point)
 C     Eta2tave     :: eta * eta
 C     TTtave       :: theta * theta
 C     UUtave       :: uVel * uVel (used to compute the averaged KE)

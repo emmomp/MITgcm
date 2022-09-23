@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/atm_compon_interf/cpl_readparms.F,v 1.12 2016/01/06 00:45:23 jmc Exp $
+C $Name:  $
+
 #include "ATM_CPL_OPTIONS.h"
 
 CBOP
@@ -103,11 +106,7 @@ C-    Parameters for coupling interface:
       CALL PRINT_MESSAGE( msgBuf,standardMessageUnit,SQUEEZE_RIGHT,1 )
 
 C--   Close the open data file
-#ifdef SINGLE_DISK_IO
       CLOSE(iUnit)
-#else
-      CLOSE(iUnit,STATUS='DELETE')
-#endif /* SINGLE_DISK_IO */
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
 C--   Check for retired parameters:

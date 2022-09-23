@@ -1,3 +1,4 @@
+
 # *******************
 # ECCO gradient check
 # *******************
@@ -6,5 +7,5 @@
  nbeg             = 1,
  nstep            = 3,
  nend             = 25,
- grdchkvarindex   = 101,
- &
+ grdchkvarindex   = 20,
+ /

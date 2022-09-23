@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/offline/offline_check.F,v 1.2 2015/07/16 21:21:18 jmc Exp $
+C $Name:  $
+
 #include "OFFLINE_OPTIONS.h"
 #ifdef ALLOW_DIC
 #include "DIC_OPTIONS.h"

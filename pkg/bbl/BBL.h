@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/bbl/BBL.h,v 1.3 2013/08/27 21:34:21 dimitri Exp $
+C $Name:  $
+
 #ifdef ALLOW_BBL
 
 C     bbl_wvel    :: default vertical entrainment velocity (m/s)

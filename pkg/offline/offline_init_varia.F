@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/offline/offline_init_varia.F,v 1.7 2015/07/18 21:48:38 jmc Exp $
+C $Name:  $
+
 #include "OFFLINE_OPTIONS.h"
 
 C !INTERFACE: ==========================================================

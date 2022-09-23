@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/cal/cal_monthsperyear.F,v 1.2 2003/10/09 04:19:19 edhill Exp $
+C $Name:  $
+
 #include "CAL_OPTIONS.h"
 
       subroutine cal_MonthsPerYear(

@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/down_slope/DWNSLP_SIZE.h,v 1.1 2008/08/17 02:01:27 jmc Exp $
+C $Name:  $
+
 c#ifdef ALLOW_DOWN_SLOPE
 
 C-    dimension parameters :

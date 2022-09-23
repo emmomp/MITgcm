@@ -1,7 +1,7 @@
+C $Header: /u/gcmpack/MITgcm/pkg/thsice/thsice_step_temp.F,v 1.16 2013/06/01 14:49:50 heimbach Exp $
+C $Name:  $
+
 #include "THSICE_OPTIONS.h"
-#ifdef ALLOW_AUTODIFF
-# include "AUTODIFF_OPTIONS.h"
-#endif
 
 CBOP
 C     !ROUTINE: THSICE_STEP_TEMP
@@ -27,8 +27,10 @@ C     === Global variables ===
 #include "THSICE_SIZE.h"
 #include "THSICE_PARAMS.h"
 #include "THSICE_VARS.h"
+#include "THSICE_TAVE.h"
 #ifdef ALLOW_AUTODIFF_TAMC
 # include "tamc.h"
+# include "tamc_keys.h"
 #endif
 
       INTEGER siLo, siHi, sjLo, sjHi
@@ -74,11 +76,6 @@ C Note: dTsrf & tmpFlx are not used here; just allocate enough space for dTsrf.
       _RL opFrac, icFrac
       LOGICAL dBugFlag
 
-#ifdef ALLOW_AUTODIFF_TAMC
-      INTEGER act1, act2, act3, act4
-      INTEGER max1, max2, max3
-      INTEGER ticekey
-#endif
 C-    define grid-point location where to print debugging values
 #include "THSICE_DEBUG.h"
 
@@ -97,9 +94,7 @@ C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
       ticekey = (act1 + 1) + act2*max1
      &                     + act3*max1*max2
      &                     + act4*max1*max2*max3
-#endif /* ALLOW_AUTODIFF_TAMC */
-
-#ifdef ALLOW_AUTODIFF
+C
 C Initialize certain arrays
       tmpFlx(1) = 0. _d 0
       tmpFlx(2) = 0. _d 0
@@ -108,7 +103,7 @@ C Initialize certain arrays
           dTsrf(i,j) = 0. _d 0
        ENDDO
       ENDDO
-#endif /* ALLOW_AUTODIFF */
+#endif /* ALLOW_AUTODIFF_TAMC */
 
       dBugFlag = debugLevel.GE.debLevC
 C-    Initialise flxAtm,evpAtm

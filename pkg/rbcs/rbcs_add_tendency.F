@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/rbcs/rbcs_add_tendency.F,v 1.12 2015/10/24 21:20:09 jmc Exp $
+C $Name:  $
+
 #include "RBCS_OPTIONS.h"
 
 CBOP

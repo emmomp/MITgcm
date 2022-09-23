@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/debug/debug_leave.F,v 1.2 2003/10/09 04:19:19 edhill Exp $
+C $Name:  $
+
 #include "DEBUG_OPTIONS.h"
 
       SUBROUTINE DEBUG_LEAVE(

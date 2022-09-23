@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/seaice/seaice_fgmres.F,v 1.22 2016/09/27 05:34:46 mlosch Exp $
+C $Name:  $
+
 #include "SEAICE_OPTIONS.h"
 
 C--   File seaice_fgmres.F: seaice fgmres dynamical (linear) solver S/R:
@@ -523,7 +526,7 @@ CML      endif
 C
 C     determine res. norm. and test for convergence
 C
-      hh(i,i,myThid) = c(i,myThid)*hh(i, i,myThid)
+      hh(i,i,myThid) = c(i,myThid)*hh(i, i,myThid) 
      &     +           s(i,myThid)*hh(i1,i,myThid)
       ro = abs(rs(i1,myThid))
       if (iout .gt. 0) then
@@ -536,7 +539,7 @@ C
 CML   The original code uses only im as the maximum allowed iterations, but
 CML   I want no more than maxits iterations, so we change the code here.
 CML      if (i .lt. im .and. (ro .gt. eps1(myThid)))  goto 4
-      if (i .lt. im .and. its .lt. maxits
+      if (i .lt. im .and. its .lt. maxits 
      &     .and. (ro .gt. eps1(myThid))) goto 4
 C
 C     now compute solution. first solve upper triangular system.

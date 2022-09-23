@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/verification/fizhi-gridalt-hs/code/CPP_OPTIONS.h,v 1.1 2004/04/27 17:43:40 molod Exp $
+C $Name:  $
+
 #ifndef CPP_OPTIONS_H
 #define CPP_OPTIONS_H
 

@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/obcs/OBCS_PARAMS.h,v 1.6 2014/11/25 01:07:23 jmc Exp $
+C $Name:  $
+
 #ifdef ALLOW_OBCS
 
 CBOP
@@ -64,10 +67,7 @@ C useLinearSponge  :: use linear instead of exponential sponge (def=false)
 C
 C useOBCSbalance   :: balance the volume flux through boundary
 C                     at every time step
-C OBCSbalanceSurf  :: also include surface flux of mass into balance
 C useOBCStides     :: modify OB normal flow to add tidal forcing
-C                     NOTE that at the moment tidal forcing is applied
-C                     only to "normal" flow.                                                     
 C useOBCSprescribe :: read boundary conditions from a file
 C                      (overrides Orlanski and other boundary values)
 C OBCSprintDiags   :: print boundary values to STDOUT (def=true)
@@ -86,7 +86,7 @@ C                     across boundaries (def=true)
      & OBCSsponge_UatNS, OBCSsponge_UatEW,
      & OBCSsponge_VatNS, OBCSsponge_VatEW,
      & OBCSsponge_Theta, OBCSsponge_Salt, useLinearSponge,
-     & useOBCSbalance, OBCSbalanceSurf, useOBCStides, useOBCSprescribe,
+     & useOBCSbalance, useOBCStides, useOBCSprescribe,
      & OBCSprintDiags,
      & OBCSfixTopo
       LOGICAL useOrlanskiNorth
@@ -112,7 +112,6 @@ C                     across boundaries (def=true)
       LOGICAL OBCSsponge_Salt
       LOGICAL useLinearSponge
       LOGICAL useOBCSbalance
-      LOGICAL OBCSbalanceSurf
       LOGICAL useOBCStides
       LOGICAL useOBCSprescribe
       LOGICAL OBCSprintDiags

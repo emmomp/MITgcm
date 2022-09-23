@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/shelfice/shelfice_cost_shifwflx.F,v 1.5 2014/09/09 22:59:55 jmc Exp $
+C $Name:  $
+
 #include "SHELFICE_OPTIONS.h"
 #ifdef ALLOW_COST
 # include "COST_OPTIONS.h"
@@ -70,7 +73,6 @@ c     == local variables ==
       _RL fctile
       _RL fcthread
       _RL tmpx
-      _RL tmpfld2d(1-olx:snx+olx,1-oly:sny+oly,nsx,nsy)
 
       character*(80) fnamefld
 
@@ -105,16 +107,6 @@ c     Number of records to be used.
       nrec = endrec-startrec+1
 
       fcthread = 0. _d 0
-
-      do bj = jtlo,jthi
-        do bi = itlo,ithi
-          do j = 1-oly,sny+oly
-            do i = 1-olx,snx+olx
-              tmpfld2d(i,j,bi,bj) = 0. _d 0
-            enddo
-          enddo
-        enddo
-      enddo
 
 #ifdef ECCO_VERBOSE
       _BEGIN_MASTER( myThid )

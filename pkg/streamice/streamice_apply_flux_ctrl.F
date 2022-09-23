@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/streamice/streamice_apply_flux_ctrl.F,v 1.2 2015/01/24 15:34:32 dgoldberg Exp $
+C $Name:  $
+
 #include "STREAMICE_OPTIONS.h"
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|

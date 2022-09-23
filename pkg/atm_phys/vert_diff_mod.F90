@@ -1,3 +1,6 @@
+! $Header: /u/gcmpack/MITgcm/pkg/atm_phys/vert_diff_mod.F90,v 1.1 2013/05/08 22:14:15 jmc Exp $
+! $Name:  $
+
 module vert_diff_mod
 
 !=======================================================================

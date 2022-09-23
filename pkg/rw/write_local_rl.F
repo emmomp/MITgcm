@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/rw/write_local_rl.F,v 1.8 2009/09/01 19:28:24 jmc Exp $
+C $Name:  $
+
 #include "RW_OPTIONS.h"
 
 CBOP

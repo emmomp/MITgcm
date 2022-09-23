@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/atm_compon_interf/atm_import_ocnconfig.F,v 1.4 2015/11/12 01:01:57 jmc Exp $
+C $Name:  $
+
 #include "ATM_CPL_OPTIONS.h"
 
 CBOP 0
@@ -38,7 +41,7 @@ C     i,j,bi,bj :: Loop counters
 
 C-    Initialise mixed-layer depth
       DO bj=myByLo(myThid),myByHi(myThid)
-       DO bi=myBxLo(myThid),myBxHi(myThid)
+       DO bi=myBxLo(myThid),myByLo(myThid)
         DO j=1-OLy,sNy+OLy
          DO i=1-OLx,sNx+OLx
           ocMxlD (i,j,bi,bj) = 0.

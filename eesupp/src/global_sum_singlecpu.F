@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/eesupp/src/global_sum_singlecpu.F,v 1.5 2012/09/03 19:36:29 jmc Exp $
+C $Name:  $
+
 #include "PACKAGES_CONFIG.h"
 #include "CPP_EEOPTIONS.h"
 

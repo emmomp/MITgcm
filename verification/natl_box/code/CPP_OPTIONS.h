@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/verification/natl_box/code/CPP_OPTIONS.h,v 1.12 2014/08/11 18:27:43 jmc Exp $
+C $Name:  $
+
 #ifndef CPP_OPTIONS_H
 #define CPP_OPTIONS_H
 

@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/ctrl/ctrl_init.F,v 1.69 2015/12/25 15:24:51 gforget Exp $
+C $Name:  $
+
 #include "CTRL_OPTIONS.h"
 #ifdef ALLOW_EXF
 # include "EXF_OPTIONS.h"
@@ -50,7 +53,16 @@ c     == local variables ==
 
       integer bi,bj
       integer i,j,k
+      integer itlo,ithi
+      integer jtlo,jthi
+      integer jmin,jmax
+      integer imin,imax
+
       integer ivar
+      integer startrec
+      integer endrec
+      integer diffrec
+      integer iarr
 
       _RL dummy
       _RL loctmp3d (1-olx:snx+olx,1-oly:sny+oly,Nr,nsx,nsy)
@@ -61,27 +73,26 @@ c     == local variables ==
       EXTERNAL MDS_RECLEN
 #endif
 
-#if ( defined ALLOW_GENTIM2D_CONTROL || \
-      defined ALLOW_GENARR2D_CONTROL || \
-      defined ALLOW_GENARR3D_CONTROL )
-      INTEGER iarr
-      CHARACTER*(1) ncvargrdtmp
-#endif
 #ifdef ALLOW_GENTIM2D_CONTROL
       CHARACTER*(MAX_LEN_FNAM) fnamegen
       INTEGER ilgen, k2, diffrecFull, endrecFull
-      INTEGER diffrec, startrec, endrec
-#elif ( defined ALLOW_OBCS_CONTROL || defined ECCO_CTRL_DEPRECATED )
-      INTEGER diffrec, startrec, endrec
 #endif
 
 c     == external ==
-#ifdef ALLOW_GENTIM2D_CONTROL
+
       integer  ilnblnk
       external ilnblnk
-#endif
 
 c     == end of interface ==
+
+      jtlo = mybylo(myThid)
+      jthi = mybyhi(myThid)
+      itlo = mybxlo(myThid)
+      ithi = mybxhi(myThid)
+      jmin = 1-oly
+      jmax = sny+oly
+      imin = 1-olx
+      imax = snx+olx
 
 c--     Set default values.
       do ivar = 1,maxcvars
@@ -267,7 +278,7 @@ c--   initial forcing only
 
 #if (defined (ALLOW_UWIND_CONTROL))
 #ifdef ALLOW_EXF
-      IF ( useAtmWind ) THEN
+      IF ( useAtmWind ) THEN 
 #endif
 c--   Zonal wind speed.
       call ctrl_init_rec ( xx_uwind_file,
@@ -746,6 +757,7 @@ CML     I     myThid )
      &     snx, sny, 1, 'c', 'xy', myThid )
 #endif /* ALLOW_sihsnow_CONTROL */
 
+
 c----------------------------------------------------------------------
 c--
 #ifdef ALLOW_KAPREDI_CONTROL
@@ -810,24 +822,15 @@ c----------------------------------------------------------------------
 c--
 #ifdef ALLOW_GENARR2D_CONTROL
        do iarr = 1, maxCtrlArr2D
-        ncvargrdtmp='c'
-# ifdef ALLOW_SHELFICE
-C       Under iceshelf, use maskSHI for these
-        if ((xx_genarr2d_file(iarr)(1:11).eq.'xx_shicoeff').or.
-     &      (xx_genarr2d_file(iarr)(1:11).eq.'xx_shicdrag')) then
-            ncvargrdtmp='i'
-        endif
-# endif
-
-# ifndef ALLOW_OPENAD
+#ifndef ALLOW_OPENAD
         if (xx_genarr2d_weight(iarr).NE.' ')
      &  call ctrl_init_ctrlvar (
-# else
+#else
         call ctrl_init_ctrlvar (
-# endif
+#endif
      &       xx_genarr2d_file(iarr)(1:MAX_LEN_FNAM),
      &       100+iarr, 200+iarr, 1, 1, 1,
-     &       snx, sny, 1, ncvargrdtmp, 'xy', myThid )
+     &       snx, sny, 1, 'c', 'xy', myThid )
 
        enddo
 #endif /* ALLOW_GENARR2D_CONTROL */
@@ -836,7 +839,6 @@ c----------------------------------------------------------------------
 c--
 #ifdef ALLOW_GENARR3D_CONTROL
        do iarr = 1, maxCtrlArr3D
-        ncvargrdtmp='c'
 #ifndef ALLOW_OPENAD
         if (xx_genarr3d_weight(iarr).NE.' ')
      &  call ctrl_init_ctrlvar (
@@ -845,7 +847,7 @@ c--
 #endif
      &       xx_genarr3d_file(iarr)(1:MAX_LEN_FNAM),
      &       200+iarr, 300+iarr, 1, 1, 1,
-     &       snx, sny, nr, ncvargrdtmp, '3d', myThid )
+     &       snx, sny, nr, 'c', '3d', myThid )
        enddo
 #endif /* ALLOW_GENARR3D_CONTROL */
 
@@ -860,23 +862,13 @@ c--
           xx_gentim2d_startdate2(iarr)=startdate_2
         endif
 #endif
-        ncvargrdtmp='c'
-# ifdef ALLOW_SHELFICE
-C       Under iceshelf, use maskSHI for these
-        if (xx_gentim2d_file(iarr)(1:11).eq.'xx_shifwflx')
-     &       ncvargrdtmp='i'
-# endif
-        if (xx_gentim2d_file(iarr)(1:5).eq.'xx_fu')
-     &       ncvargrdtmp='w'
-        if (xx_gentim2d_file(iarr)(1:5).eq.'xx_fv')
-     &       ncvargrdtmp='s'
 
         call ctrl_init_rec ( xx_gentim2d_file(iarr)(1:MAX_LEN_FNAM),
-     I       xx_gentim2d_startdate1(iarr),
-     I       xx_gentim2d_startdate2(iarr),
-     I       xx_gentim2d_period(iarr),
+     I       xx_gentim2d_startdate1(iarr), 
+     I       xx_gentim2d_startdate2(iarr), 
+     I       xx_gentim2d_period(iarr), 
      I       1,
-     O       xx_gentim2d_startdate(1,iarr),
+     O       xx_gentim2d_startdate(1,iarr), 
      O       diffrec, startrec, endrec,
      I       myThid )
 C
@@ -911,7 +903,7 @@ C
      &       fnamegen(1:MAX_LEN_FNAM),
      &       300+iarr, 400+iarr,
      &       diffrecFull, startrec, endrecFull,
-     &       snx, sny, 1, ncvargrdtmp, 'xy', myThid )
+     &       snx, sny, 1, 'c', 'xy', myThid )
 C
         ilgen=ilnblnk( xx_gentim2d_file(iarr) )
         write(fnamegen(1:MAX_LEN_FNAM),'(2a)')
@@ -920,13 +912,13 @@ C
      &       fnamegen(1:MAX_LEN_FNAM),
      &       300+iarr, 400+iarr,
      &       diffrecFull, startrec, endrecFull,
-     &       snx, sny, 1, ncvargrdtmp, 'xy', myThid )
+     &       snx, sny, 1, 'c', 'xy', myThid )
 C
         call ctrl_init_ctrlvar (
      &       xx_gentim2d_file(iarr)(1:MAX_LEN_FNAM),
      &       300+iarr, 400+iarr,
      &       diffrec, startrec, endrec,
-     &       snx, sny, 1, ncvargrdtmp, 'xy', myThid )
+     &       snx, sny, 1, 'c', 'xy', myThid )
 C
 #ifndef ALLOW_OPENAD
        endif
@@ -952,10 +944,10 @@ c----------------------------------------------------------------------
 c----------------------------------------------------------------------
 c----------------------------------------------------------------------
 
-      do bj = mybylo(myThid), mybyhi(myThid)
-       do bi = mybxlo(myThid), mybxhi(myThid)
-        do j = 1-OLy, sNy+OLy
-         do i = 1-OLx, sNx+Olx
+      do bj = jtlo,jthi
+       do bi = itlo,ithi
+        do j = jmin,jmax
+         do i = imin,imax
           wareaunit (i,j,bi,bj) = 1.0
 #ifndef ALLOW_ECCO
           whflux    (i,j,bi,bj) = maskC(i,j,1,bi,bj)

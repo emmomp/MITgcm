@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/ptracers/ptracers_diagnostics_init.F,v 1.11 2014/07/18 22:17:28 jmc Exp $
+C $Name:  $
+
 #include "PTRACERS_OPTIONS.h"
 
 CBOP
@@ -141,13 +144,6 @@ C--    add diagnostics for Forcing and Adams-Bashforth tendency increment
        CALL DIAGNOSTICS_ADDTOLIST( diagNum,
      I           diagName, diagCode, diagUnits, diagTitle, 0, myThid )
 
-       diagName  = 'Tp_g'//diagSufx
-       WRITE(diagTitle,'(2A)') locName(1:ilnb),
-     &         ' total transport tendency (before gchem_forcing_sep)'
-       diagCode  = 'SMR     MR      '
-       CALL DIAGNOSTICS_ADDTOLIST( diagNum,
-     I           diagName, diagCode, diagUnits, diagTitle, 0, myThid )
-
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
 
 C--    Add diagnostics of advective & diffusive flux:
@@ -226,18 +222,6 @@ C--    Add diagnostics for other pkg contribution to ptracer solution
         CALL DIAGNOSTICS_ADDTOLIST( diagNum,
      I           diagName, diagCode, diagUnits, diagTitle, 0, myThid )
        ENDIF
-
-C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
-
-#ifdef ALLOW_AUTODIFF
-       WRITE(diagName,'(A6,A2)') 'ADJptr',PTRACERS_ioLabel(iTrc)
-       WRITE(diagTitle,'(3A)') 'sensitivity to ',
-     &                         longName(1:ilng), ' concentration'
-       WRITE(diagUnits,'(2A)') 'dJ/',trcUnits
-       diagCode  = 'SMRA    MR      '
-       CALL DIAGNOSTICS_ADDTOLIST( diagNum,
-     I           diagName, diagCode, diagUnits, diagTitle, 0, myThid )
-#endif
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
       ENDDO

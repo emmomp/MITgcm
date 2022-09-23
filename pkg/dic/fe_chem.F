@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/dic/fe_chem.F,v 1.17 2012/08/22 00:40:56 jmc Exp $
+C $Name:  $
+
 #include "DIC_OPTIONS.h"
 
 CBOP
@@ -43,7 +46,7 @@ C     !LOCAL VARIABLES:
       INTEGER i,j,k
       _RL  lig, FeL
       _RL  tmpfe
-#if ( defined MINFE && defined AD_SAFE )
+#ifdef AD_SAFE
       _RL thx, thy, theps
 #endif
 

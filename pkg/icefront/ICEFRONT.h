@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/icefront/ICEFRONT.h,v 1.15 2017/01/31 20:37:43 jmc Exp $
+C $Name:  $
+
 #ifdef ALLOW_ICEFRONT
 
 CBOP
@@ -36,7 +39,7 @@ C     R_icefront          - icefront depth [m] (2D)
 C     icefrontlength      - icefront horizontal length divided
 C                           by grid cell area [m/m^2] (2D)
 C     icefront_TendT      - temperature tendency (Kelvin/s)
-C     icefront_TendS      - salinity tendency (g/kg/s)
+C     icefront_TendS      - salinity tendency (psu/s)
 C
 C--   Constants that can be set in data.icefront, namelist /ICEFRONT_EXF_PARM02/
 C     SGRunOffFile           - name of subglacial runoff file (kg/s)

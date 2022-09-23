@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/streamice/streamice_dump_ad.F,v 1.2 2014/05/25 08:16:14 dgoldberg Exp $
+C $Name:  $
+
 #include "AD_CONFIG.h"
 #include "PACKAGES_CONFIG.h"
 #include "STREAMICE_OPTIONS.h"

@@ -1,10 +1,10 @@
+C $Header: /u/gcmpack/MITgcm/pkg/ptracers/ptracers_ad_dump.F,v 1.6 2017/03/24 23:48:33 jmc Exp $
+C $Name:  $
+
 #include "PTRACERS_OPTIONS.h"
 #include "AD_CONFIG.h"
 #ifdef ALLOW_AUTODIFF
 # include "AUTODIFF_OPTIONS.h"
-#endif
-#ifdef ALLOW_DIAGNOSTICS
-# include "DIAG_OPTIONS.h"
 #endif
 
 CBOP
@@ -36,13 +36,7 @@ C     == Global variables ===
 #include "PTRACERS_SIZE.h"
 #include "PTRACERS_PARAMS.h"
 #ifdef ALLOW_AUTODIFF_MONITOR
-# include "AUTODIFF.h"
-# include "AUTODIFF_PARAMS.h"
 # include "ptracers_adcommon.h"
-#endif
-#ifdef ALLOW_DIAGNOSTICS
-# include "DIAGNOSTICS_SIZE.h"
-# include "DIAGNOSTICS.h"
 #endif
 
 C     !INPUT/OUTPUT PARAMETERS:
@@ -61,48 +55,44 @@ C     !FUNCTIONS:
       EXTERNAL DIFFERENT_MULTIPLE
 
 C     !LOCAL VARIABLES:
+C     suff   :: Hold suffix part of a filename
 C     msgBuf :: Error message buffer
       INTEGER ip
-      CHARACTER*(8)  diagName
-      CHARACTER*(MAX_LEN_FNAM) dumpName
-      LOGICAL doExch, doDump
-      _RS dumRS(1)
+      CHARACTER*(10) suff
+      CHARACTER*(MAX_LEN_FNAM) prefix
+      CHARACTER*(MAX_LEN_MBUF) msgBuf
 CEOP
 
-C     Handle exchange options
-      doDump = DIFFERENT_MULTIPLE(adjDumpFreq,myTime,deltaTClock)
-      doExch = doDump
-#ifdef ALLOW_DIAGNOSTICS
-      doExch = doExch.OR.useDiag4AdjOutp
-#endif
-      IF (doExch) THEN
-       IF (dumpAdVarExch.EQ.1) THEN
-        DO ip = 1, PTRACERS_numInUse
-#ifdef AUTODIFF_TAMC_COMPATIBILITY
-         CALL ADEXCH_XYZ_RL(myThid, adptracer(1-OLx,1-OLy,1,1,1,ip))
-#else
-         CALL ADEXCH_3D_RL(adptracer(1-OLx,1-OLy,1,1,1,ip), Nr, myThid)
-#endif
-        ENDDO
-       ENDIF
-      ENDIF
+      IF (
+     &  DIFFERENT_MULTIPLE(adjDumpFreq,myTime,deltaTClock)
+     &   ) THEN
 
-      IF (doDump) THEN
         CALL TIMER_START('I/O (WRITE)        [ADJOINT LOOP]', myThid )
-      ENDIF
 
-      DO ip = 1, PTRACERS_numInUse
-        WRITE(diagName,'(A6,A2)') 'ADJptr', PTRACERS_ioLabel(ip)
-        WRITE(dumpName,'(A10,A2,A1)')
-     &        'ADJptracer', PTRACERS_ioLabel(ip), '.'
+C--     Set suffix for this set of data files.
+        IF ( rwSuffixType.EQ.0 ) THEN
+          WRITE(suff,'(I10.10)') myIter
+        ELSE
+          CALL RW_GET_SUFFIX( suff, myTime, myIter, myThid )
+        ENDIF
+C ==>> Resetting run-time parameter writeBinaryPrec in the middle of a run
+C ==>>  is very very very nasty !!!
+c       writeBinaryPrec = writeStatePrec
+C <<==  If you really want to mess-up with this at your own risk,
+C <<==  uncomment the line above
 
-        CALL DUMP_ADJ_XYZ( dumRS, adptracer(1-OLx,1-OLy,1,1,1,ip),
-     &                     diagName, dumpName, 12, doDump,
-     &                     dumpAdRecMn, myTime, myIter, myThid )
-      ENDDO
+        DO ip = 1, PTRACERS_numInUse
+         WRITE(prefix,'(A10,A2,A1)')
+     &          'ADJptracer', PTRACERS_ioLabel(ip), '.'
 
-      IF (doDump) THEN
+         CALL WRITE_FLD_XYZ_RL(
+     &        prefix, suff,
+     &        adptracer(1-OLx,1-OLy,1,1,1,ip), 1, myThid )
+
+        ENDDO
+
         CALL TIMER_STOP( 'I/O (WRITE)        [ADJOINT LOOP]', myThid )
+
       ENDIF
 
 #endif /* ALLOW_AUTODIFF_MONITOR */

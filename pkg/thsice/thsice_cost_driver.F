@@ -1,12 +1,9 @@
-#include "THSICE_OPTIONS.h"
-c#ifdef ALLOW_AUTODIFF
-c# include "AUTODIFF_OPTIONS.h"
-c#endif
-#ifdef ALLOW_COST
-# include "COST_OPTIONS.h"
-#endif
+C $Header: /u/gcmpack/MITgcm/pkg/thsice/thsice_cost_driver.F,v 1.2 2013/04/13 23:14:43 heimbach Exp $
+C $Name:  $
 
-      SUBROUTINE THSICE_COST_DRIVER( myTime, myIter, myThid )
+#include "THSICE_OPTIONS.h"
+
+      subroutine thsice_cost_driver( mytime, myiter, mythid )
 
 c     ==================================================================
 c     SUBROUTINE thsice_cost_driver
@@ -19,30 +16,30 @@ c     ==================================================================
 c     SUBROUTINE thsice_cost_driver
 c     ==================================================================
 
-      IMPLICIT NONE
+      implicit none
 
 c     == global variables ==
 #include "EEPARAMS.h"
 #include "SIZE.h"
 #include "PARAMS.h"
-c#include "GRID.h"
+#include "GRID.h"
 
-c#ifdef ALLOW_COST
-c# include "CTRL_SIZE.h"
-c# include "ctrl.h"
-c# include "ctrl_dummy.h"
-c#endif
+#ifdef ALLOW_COST
+# include "CTRL_SIZE.h"
+# include "ctrl.h"
+# include "ctrl_dummy.h"
+#endif
 
 c     == routine arguments ==
-      _RL     myTime
-      INTEGER myIter
-      INTEGER myThid
+
+      integer myiter
+      _RL     mytime
+      integer mythid
 
 c     == end of interface ==
 
 #ifdef ALLOW_THSICE_COST_TEST
-       CALL THSICE_COST_TEST( myTime, myIter, myThid )
+       CALL THSICE_COST_TEST( mytime, myiter, mythid )
 #endif
 
-      RETURN
-      END
+      end

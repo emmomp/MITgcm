@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/opps/opps_interface.F,v 1.5 2010/01/03 19:11:43 jmc Exp $
+C $Name:  $
+
 #include "OPPS_OPTIONS.h"
 
 CBOP
@@ -42,26 +45,20 @@ C     == Global data ==
 
 C     !INPUT/OUTPUT PARAMETERS:
 C     == Routine arguments ==
-C     bi, bj :: tile indices
-C     iMin, iMax, jMin, jMax :: Loop range
-C     myTime :: Current time in simulation
-C     myIter :: Current iteration in simulation
-C     myThid :: Thread number of this instance of S/R CONVECT
-      INTEGER bi, bj, iMin, iMax, jMin, jMax
+C     bi,bj,iMin,iMax,jMin,jMax,K - Loop counters
+C     myTime - Current time in simulation
+C     myIter - Current iteration in simulation
+C     myThid - Thread number of this instance of S/R CONVECT
+      INTEGER bi,bj,iMin,iMax,jMin,jMax
       _RL myTime
       INTEGER myIter
       INTEGER myThid
 
-#ifdef ALLOW_OPPS_SNAPSHOT
-C     !FUNCTIONS:
-      LOGICAL  DIFFERENT_MULTIPLE
-      EXTERNAL DIFFERENT_MULTIPLE
-#endif
+#ifdef ALLOW_OPPS
 
 C     !LOCAL VARIABLES:
 C     == Local variables ==
-C     OPPSconvectCount :: counter for freqency of convection events
-C     msgBuf           :: Informational/error message buffer
+C     msgBuf      - Informational/error meesage buffer
       INTEGER nTracer
 #ifdef ALLOW_PTRACERS
       PARAMETER( nTracer = 2+PTRACERS_num )
@@ -75,11 +72,7 @@ C     msgBuf           :: Informational/error message buffer
       _RL tMinNew, tMaxNew, sMinNew, sMaxNew
       _RL wVelLoc(Nr)
       _RL tracerLoc(Nr,nTracer)
-      _RL OPPSconvectCount(1-OLx:sNx+OLx,1-OLy:sNy+OLy,Nr)
       CHARACTER*(MAX_LEN_MBUF) msgBuf
-#ifdef ALLOW_OPPS_SNAPSHOT
-      CHARACTER*(10) suff
-#endif
 CEOP
 
 C     initialization
@@ -97,15 +90,16 @@ C     initialization
       sMaxNew = -1. _d 23
       sMinNew =  1. _d 23
       tMinNew =  1. _d 23
-C     Initialize convection counter
+C     re-initialize convection counter
       DO K=1,Nr
-       DO J=1-OLy,sNy+OLy
-        DO I=1-OLx,sNx+OLx
-         OPPSconvectCount(I,J,K) = 0. _d 0
+       DO J=1-Oly,sNy+Oly
+        DO I=1-Olx,sNx+Olx
+         OPPSconvectCount(I,J,K,bi,bj) = 0. _d 0
         ENDDO
        ENDDO
       ENDDO
 
+C
       DO J=jMin,jMax
        DO I=iMin,iMax
         IF ( kSurfC(I,J,bi,bj) .LE. Nr ) THEN
@@ -147,9 +141,8 @@ C     determine range of temperature and salinity
          kMax = kLowC(I,J,bi,bj)
          CALL OPPS_CALC(
      U        tracerLoc,
-     O        OPPSconvectCount,
-     I        wVelLoc, kMax, nTracer, nTracerInUse,
-     I        I, J, bi, bj, myTime, myIter, myThid )
+     I        wVelLoc,kMax,nTracer,nTracerInUse,
+     I        I,J,bi,bj,myTime,myIter,myThid)
 #ifdef ALLOW_OPPS_DEBUG
          IF ( OPPSdebugLevel .GE. debLevA ) THEN
 C     determine range of temperature and salinity
@@ -189,25 +182,7 @@ C     determine range of temperature and salinity
         ENDIF
        ENDDO
       ENDDO
-
-#ifdef ALLOW_DIAGNOSTICS
-      IF ( useDiagnostics ) THEN
-       CALL DIAGNOSTICS_FILL( OPPSconvectCount, 'OPPScadj',
-     &                        0 , Nr, 2, bi, bj, myThid )
-      ENDIF
-#endif /* ALLOW_DIAGNOSTICS */
-
-#ifdef ALLOW_OPPS_SNAPSHOT
-      IF ( DIFFERENT_MULTIPLE( dumpFreq, myTime, deltaTClock ) ) THEN
-c      IF (OPPSwriteState) THEN
-C       Write each snap-shot as a new file
-C- Caution: This might not work in multi-threaded with multiple fields to write
-        WRITE(suff,'(I10.10)') myIter
-        CALL WRITE_LOCAL_RL( 'OPPSconv.', suff, Nr, OPPSconvectCount,
-     &                       bi, bj, 1, myIter, myThid )
-c      ENDIF
-      ENDIF
-#endif /* ALLOW_OPPS_SNAPSHOT */
+#endif /* ALLOW_OPPS */
 
       RETURN
       END

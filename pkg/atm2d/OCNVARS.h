@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/atm2d/OCNVARS.h,v 1.4 2013/12/02 23:54:43 jmc Exp $
+C $Name:  $
+
 C     *==========================================================*
 C     | OCNVARS.h Declare arrays for holding data on the ocean
 C     |           grid. Arrays may need adding or removing
@@ -8,7 +11,7 @@ C     landMask_ocn   :: Atmosphere land mask (=1 : full land grid-point;
 C                       =0 : full ocean grid-point);
 C     OcMxlD_ocn     ::- Ocean mixed-layer depths on ocean grid (m)
 C     SST_ocn        :: Sea surface temperature on ocean grid ( oC).
-C     SSS_ocn        :: Sea surface salinity on ocean grid (g/kg).
+C     SSS_ocn        :: Sea surface temperature on ocean grid (psu).
 C     vSq_ocn        :: Sea surface velocity square on ocean grid (m2/s2)
 C     fluxCO2_ocn    :: flux of CO2 from ocn->Atm on ocean grid (mol/m2/s)
 C     atmSLPr_ocn    :: Sea Level atmos. pressure on ocean grid (Pa)

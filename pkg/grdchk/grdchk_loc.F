@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/grdchk/grdchk_loc.F,v 1.18 2014/10/09 00:50:54 gforget Exp $
+C $Name:  $
+
 #include "GRDCHK_OPTIONS.h"
 #ifdef ALLOW_CTRL
 # include "CTRL_OPTIONS.h"
@@ -204,14 +207,14 @@ cpj)
                         itmp = i
                         jtmp = j
                      endif
-#ifdef ALLOW_SHEFICE
+#ifdef ALLOW_SHIFWFLX_CONTROL
                   else if ( ncvargrd(grdchkvarindex) .eq. 'i' ) then
                      if ( maskSHI(i,j,k,bi,bj) .gt. 0.) then
                         icomptest = icomptest + 1
                         itmp = i
                         jtmp = j
                      endif
-#endif /* ALLOW_SHELFICE */
+#endif /* ALLOW_SHIFWFLX_CONTROL */
                   else if ( ncvargrd(grdchkvarindex) .eq. 'm' ) then
                      if ( grdchkvarindex .EQ. 11 ) then
 #ifdef ALLOW_OBCSN_CONTROL

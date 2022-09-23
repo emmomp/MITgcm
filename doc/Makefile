@@ -1,20 +1,31 @@
-# Minimal makefile for Sphinx documentation
 #
+# $Header: /u/gcmpack/MITgcm/doc/Makefile,v 1.6 2011/04/24 00:01:05 jmc Exp $
+# $Name:  $
 
-# You can set these variables from the command line.
-SPHINXOPTS    =
-SPHINXBUILD   = sphinx-build
-SPHINXPROJ    = MITgcm
-SOURCEDIR     = .
-BUILDDIR      = _build
+ALL = \
+  devel_HOWTO.ps \
+  devel_HOWTO.pdf \
+  devel_HOWTO_multipage \
+  devel_HOWTO_onepage
 
-# Put it first so that "make" without argument is like "make help".
-help:
-	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+all: $(ALL)
 
-.PHONY: help Makefile
+install: all
+	./install_devel_HOWTO
 
-# Catch-all target: route all unknown targets to Sphinx using the new
-# "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
-%: Makefile
-	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+devel_HOWTO.ps:  devel_HOWTO.sgml
+	docbook2ps -d ldp.dsl devel_HOWTO.sgml
+
+devel_HOWTO.pdf:  devel_HOWTO.sgml
+	docbook2pdf -d ldp.dsl devel_HOWTO.sgml
+
+devel_HOWTO_multipage:  devel_HOWTO.sgml
+	docbook2html -o devel_HOWTO_multipage -d ./ldp.dsl devel_HOWTO.sgml
+	( cd devel_HOWTO_multipage && cp -p t1.htm index.html )
+
+devel_HOWTO_onepage:  devel_HOWTO.sgml
+	docbook2html -u -o devel_HOWTO_onepage -d ./ldp.dsl devel_HOWTO.sgml
+	( cd devel_HOWTO_onepage && mv devel_HOWTO.html index.html )
+
+clean:
+	rm -rf $(ALL)

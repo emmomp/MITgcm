@@ -1,3 +1,5 @@
+C $Header: /u/gcmpack/MITgcm/model/inc/GRID_MACROS.h,v 1.13 2013/08/11 14:27:37 jmc Exp $
+C $Name:  $
 C
 CBOP
 C    !ROUTINE: GRID_MACROS.h

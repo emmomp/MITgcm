@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/obcs/obcs_write_pickup.F,v 1.6 2011/12/02 15:27:02 mlosch Exp $
+C $Name:  $
+
 #include "OBCS_OPTIONS.h"
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|

@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/rbcs/rbcs_fields_load.F,v 1.15 2011/06/07 22:25:10 jmc Exp $
+C $Name:  $
+
 #include "RBCS_OPTIONS.h"
 
 C     !ROUTINE: RBCS_FIELDS_LOAD

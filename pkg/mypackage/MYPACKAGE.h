@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/mypackage/MYPACKAGE.h,v 1.2 2008/01/27 20:52:11 jmc Exp $
+C $Name:  $
+
 #ifdef ALLOW_MYPACKAGE
 
 C     Package flag

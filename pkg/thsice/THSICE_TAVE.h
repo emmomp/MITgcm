@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/thsice/THSICE_TAVE.h,v 1.5 2013/05/02 20:01:21 jmc Exp $
+C $Name:  $
+
 CBOP
 C     !ROUTINE: THSICE_TAVE.h
 C     !INTERFACE:
@@ -25,12 +28,12 @@ C     ice_Tice2_Ave  :: cumulated 2nd  level Temp. [oC]
 cC    ice_snowPr_Ave :: cumulated snow precipitation (+=down) [kg/m2/s]
 C     ice_flx2oc_Ave :: cumulated heat flux out of the ocean (+=up) [W/m2]
 C     ice_frw2oc_Ave :: cumulated fresh-water flux out off the ocean (E-P) [m/s]
-C     ice_salFx_Ave  :: cumulated salt flux out of the ocean (+=up) [g/m2/s]
+C     ice_salFx_Ave  :: cumulated salt flux out of the ocean (+=up) [psu.kg/m2]
 C     ice_flxAtm_Ave :: cumulated net heat flux from Atmosphere (+=down) [W/m2]
 C     ice_frwAtm_Ave :: cumulated fresh-water flux from Atmos. (+=up) [kg/m2/s]
 C     ice_albedo_Ave :: cumulated sea-ice albedo [0-1]
 C     ice_tMxL_Ave   :: cumulated ocean mixed-layer Temp. [oC]
-C     ice_sMxL_Ave   :: cumulated ocean mixed-layer salinity [g/kg]
+C     ice_sMxL_Ave   :: cumulated ocean mixed-layer salinity [psu]
 
       _RL ice_timeAve(nSx,nSy)
       _RL ice_fract_Ave (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)

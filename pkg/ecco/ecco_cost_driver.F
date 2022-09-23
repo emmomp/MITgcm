@@ -1,10 +1,7 @@
+C $Header: /u/gcmpack/MITgcm/pkg/ecco/ecco_cost_driver.F,v 1.21 2015/11/24 21:26:31 gforget Exp $
+C $Name:  $
+
 #include "ECCO_OPTIONS.h"
-#ifdef ALLOW_AUTODIFF
-# include "AUTODIFF_OPTIONS.h"
-#endif
-#ifdef ALLOW_CTRL
-# include "CTRL_OPTIONS.h"
-#endif
 
       subroutine ecco_cost_driver(  myTime, myIter, myThid  )
 
@@ -26,8 +23,7 @@ c     == global variables ==
 #include "SIZE.h"
 #include "PARAMS.h"
 #ifdef ALLOW_ECCO
-# include "ECCO_SIZE.h"
-# include "ECCO.h"
+# include "ecco.h"
 #endif
 #ifdef ALLOW_AUTODIFF_TAMC
 # ifdef ALLOW_SSH_COST_CONTRIBUTION
@@ -103,10 +99,10 @@ c--   Compute bottom pressure cost
      &     1, bpdatfile, bperrfile, mult_bp,
      &     nmonsrec, nmonsrec, bpstartdate, 0. _d 0,
      &     'C', -1. _d 2, 1. _d 2, 0. _d 0,
-     &     anom_preproc, no_preproc_c, no_preproc_i, no_preproc_r,
+     &     anom_preproc, no_preproc_c, no_preproc_i, no_preproc_r, 
      &     no_posproc, no_posproc_c, no_posproc_i, no_posproc_r,
      &     0, bpdatfile, objf_bp, num_bp,
-     &     myIter, myTime, myThid )
+     &     myiter, mytime, mythid )
       call timer_stop ('cost_bp    [ECCO SPIN-DOWN]', myThid)
       no_preproc(1)=' '
       ENDIF
@@ -129,6 +125,15 @@ c--   Compute cost function contribution of Temperature and Salinity.
       call seaice_cost_driver( myIter, myTime, myThid )
       call timer_stop ('seaice_cost_driver [ECCO SPIN-DOWN]', myThid)
       ENDIF
+#endif
+
+#ifdef ALLOW_OBCS_COST_CONTRIBUTION
+#ifdef ALLOW_DEBUG
+      IF (debugMode) CALL DEBUG_CALL('cost_obcs',myThid)
+#endif
+      call timer_start('cost_obcs          [ECCO SPIN-DOWN]', myThid)
+      call cost_obcs( myIter, myTime, myThid )
+      call timer_stop ('cost_obcs          [ECCO SPIN-DOWN]', myThid)
 #endif
 
 c#ifdef ALLOW_CURMTR_COST_CONTRIBUTION
@@ -202,15 +207,6 @@ c--   Internal Parameter controls cost terms:
 
 #endif /* ECCO_CTRL_DEPRECATED */
 
-#ifdef ALLOW_OBCS_COST_CONTRIBUTION
-#ifdef ALLOW_DEBUG
-      IF (debugMode) CALL DEBUG_CALL('cost_obcs',myThid)
-#endif
-      call timer_start('cost_obcs          [ECCO SPIN-DOWN]', myThid)
-      call cost_obcs( myIter, myTime, myThid )
-      call timer_stop ('cost_obcs          [ECCO SPIN-DOWN]', myThid)
-#endif
-
 c--   Compute user defined cost function contributions (elaborate)
       call timer_start('cost_gencost_all    [ECCO SPIN-DOWN]', myThid)
       call cost_gencost_all( myIter, myTime, myThid )
@@ -227,5 +223,5 @@ c--   Compute user defined cost function contributions (elaborate)
       ENDIF
 #endif
 
-      RETURN
-      END
+      return
+      end

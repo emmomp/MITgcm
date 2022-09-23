@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/ctrl/ctrl_readparms.F,v 1.62 2015/06/16 13:15:27 gforget Exp $
+C $Name:  $
+
 #include "CTRL_OPTIONS.h"
 #include "AD_CONFIG.h"
 
@@ -39,10 +42,25 @@ c     == routine arguments ==
 
 c     == local variables ==
 
+      integer bi,bj
+      integer i,j,k
+      integer ntmp
+      integer ivarindex
       integer iUnit
+      integer iobcs
+      integer il
+      integer errio
+      integer startrec
+      integer endrec
+      integer difftime(4)
+      _RL     diffsecs
+      _RL     dummy
 
+      character*(80)   ymaskobcs
+      character*(max_len_prec) record
       character*(max_len_mbuf) msgbuf
 
+      integer nwetc3d
 #if (defined (ALLOW_GENARR2D_CONTROL) || defined (ALLOW_GENARR3D_CONTROL) || defined (ALLOW_GENTIM2D_CONTROL))
       integer iarr,jarr
 #endif
@@ -122,7 +140,7 @@ c--   Read the namelist input.
      &  doMainUnpack, doMainPack,
      &  doSinglePrecTapelev,
      &  doAdmtlmBypassAD,
-     &  delZexp, forcingPrecond ,ctrlprec
+     &  delZexp, forcingPrecond
 cHFLUXM_CONTROL
      &  ,xx_hfluxm_file
 cHFLUXM_CONTROL
@@ -198,14 +216,6 @@ c--     Set default values.
         delZexp = 0.
         forcingPrecond = 1. _d 0
 
-#ifdef CTRL_SET_PREC_32
-C     for backward compatibility set default value to 32 if this
-C     flag is defined
-        ctrlprec = 32
-#else
-        ctrlprec = 64
-#endif
-
         xx_theta_file      = 'xx_theta'
         xx_salt_file       = 'xx_salt'
 c
@@ -221,8 +231,8 @@ c
          write(xx_genarr2d_file(iarr)(15:MAX_LEN_FNAM),'(a)') ' '
 #endif
          write(xx_genarr2d_weight(iarr)(1:MAX_LEN_FNAM),'(a)') ' '
-         genarr2dPrecond(iarr)  = 1. _d 0
-         mult_genarr2d(iarr)    = 1. _d 0
+         genarr2dPrecond(iarr) = 1. _d 0
+         mult_genarr2d(iarr)   = 1. _d 0
          do jarr = 1, 5
            xx_genarr2d_bounds(jarr,iarr) = 0. _d 0
          enddo
@@ -242,8 +252,8 @@ c
          write(xx_genarr3d_file(iarr)(15:MAX_LEN_FNAM),'(a)') ' '
 #endif
          write(xx_genarr3d_weight(iarr)(1:MAX_LEN_FNAM),'(a)') ' '
-         genarr3dPrecond(iarr)  = 1. _d 0
-         mult_genarr3d(iarr)    = 1. _d 0
+         genarr3dPrecond(iarr) = 1. _d 0
+         mult_genarr3d(iarr)   = 1. _d 0
          do jarr = 1, 5
            xx_genarr3d_bounds(jarr,iarr) = 0. _d 0
          enddo
@@ -505,11 +515,7 @@ c--     Next, read the cost data file.
         CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
      &                  SQUEEZE_RIGHT , 1)
 
-#ifdef SINGLE_DISK_IO
-        CLOSE(iUnit)
-#else
-        CLOSE(iUnit,STATUS='DELETE')
-#endif /* SINGLE_DISK_IO */
+        CLOSE( iUnit )
 
 #ifdef ALLOW_AUTODIFF
 c allow for switching off correl2d in adjoint

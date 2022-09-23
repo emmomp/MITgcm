@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/ecco/cost_obcs_ageos.F,v 1.10 2014/10/20 03:16:12 gforget Exp $
+C $Name:  $
+
 #include "ECCO_OPTIONS.h"
 #ifdef ALLOW_CTRL
 # include "CTRL_OPTIONS.h"
@@ -57,7 +60,6 @@ c     == routine arguments ==
      defined (ALLOW_OBCS) && \
      defined (ALLOW_ECCO))
 
-#ifdef OBCS_AGEOS_COST_CONTRIBUTION
 c     == local variables ==
 
       integer bi,bj
@@ -78,15 +80,15 @@ c     == local variables ==
       _RL fctile
       _RL fcthread
 
-      _RL rholoc (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
-      _RL xzgrdrho(1-OLx:sNx+OLx,Nr,nSx,nSy)
-      _RL yzgrdrho(1-OLy:sNy+OLy,Nr,nSx,nSy)
-      _RL xzdvel1   (1-OLx:sNx+OLx,Nr,nSx,nSy)
-      _RL xzdvel2   (1-OLx:sNx+OLx,Nr,nSx,nSy)
-      _RL yzdvel1   (1-OLy:sNy+OLy,Nr,nSx,nSy)
-      _RL yzdvel2   (1-OLy:sNy+OLy,Nr,nSx,nSy)
-      _RL maskxzageos   (1-OLx:sNx+OLx,Nr,nSx,nSy)
-      _RL maskyzageos   (1-OLy:sNy+OLy,Nr,nSx,nSy)
+      _RL rholoc (1-olx:snx+olx,1-oly:sny+oly,nsx,nsy)
+      _RL xzgrdrho(1-olx:snx+olx,Nr,nsx,nsy)
+      _RL yzgrdrho(1-oly:sny+oly,Nr,nsx,nsy)
+      _RL xzdvel1   (1-olx:snx+olx,nr,nsx,nsy)
+      _RL xzdvel2   (1-olx:snx+olx,nr,nsx,nsy)
+      _RL yzdvel1   (1-oly:sny+oly,nr,nsx,nsy)
+      _RL yzdvel2   (1-oly:sny+oly,nr,nsx,nsy)
+      _RL maskxzageos   (1-olx:snx+olx,nr,nsx,nsy)
+      _RL maskyzageos   (1-oly:sny+oly,nr,nsx,nsy)
       _RL dummy
 
       character*(80) fnametheta
@@ -106,18 +108,20 @@ c     == external functions ==
 
 c     == end of interface ==
 
-      jtlo = myByLo(mythid)
-      jthi = myByHi(mythid)
-      itlo = myBxLo(mythid)
-      ithi = myBxHi(mythid)
+      jtlo = mybylo(mythid)
+      jthi = mybyhi(mythid)
+      itlo = mybxlo(mythid)
+      ithi = mybxhi(mythid)
       jmin = 1
-      jmax = sNy
+      jmax = sny
       imin = 1
-      imax = sNx
+      imax = snx
 
 c--   Read tiled data.
       doglobalread = .false.
       ladinit      = .false.
+
+#ifdef OBCS_AGEOS_COST_CONTRIBUTION
 
 #ifdef ECCO_VERBOSE
       _BEGIN_MASTER( mythid )
@@ -132,7 +136,7 @@ c--   Read tiled data.
         call print_message( msgbuf, standardmessageunit,
      &                      SQUEEZE_RIGHT , mythid)
       _END_MASTER( mythid )
-#endif /* ECCO_VERBOSE */
+#endif
 
       if (optimcycle .ge. 0) then
         iltheta = ilnblnk( tbarfile )
@@ -155,14 +159,14 @@ c--   Read tiled data.
 cgg   Code safe: always initialize to zero.
       do bj = jtlo,jthi
         do bi = itlo,ithi
-          do k = 1,Nr
-            do i = 1-OLx,sNx+OLx
+          do k = 1,nr
+            do i = 1-olx,snx+olx
               maskxzageos(i,k,bi,bj) = 0. _d 0
               xzdvel1(i,k,bi,bj)     = 0. _d 0
               xzdvel2(i,k,bi,bj)     = 0. _d 0
               xzgrdrho(i,k,bi,bj)    = 0. _d 0
             enddo
-            do j = 1-OLy,sNy+OLy
+            do j = 1-oly,sny+oly
               maskyzageos(j,k,bi,bj) = 0. _d 0
               yzdvel1(j,k,bi,bj)     = 0. _d 0
               yzdvel2(j,k,bi,bj)     = 0. _d 0
@@ -174,8 +178,8 @@ cgg   Code safe: always initialize to zero.
 
       do bj = jtlo,jthi
         do bi = itlo,ithi
-          do j = 1-OLy,sNy+OLy
-            do i = 1-OLx,sNx+OLx
+          do j = 1-oly,sny+oly
+            do i = 1-olx,snx+olx
               rholoc(i,j,bi,bj) = 0. _d 0
             enddo
           enddo
@@ -214,6 +218,7 @@ cgg     Minor problem : grad T,S needs overlap values.
         _EXCH_XYZ_RL(tbar,myThid)
         _EXCH_XYZ_RL(sbar,myThid)
 
+
         do bj = jtlo,jthi
           do bi = itlo,ithi
 
@@ -221,7 +226,7 @@ cgg     Minor problem : grad T,S needs overlap values.
             jp1 = 0
 
 cgg    Make a mask for the velocity shear comparison.
-            do k = 1,Nr-1
+            do k = 1,nr-1
               do i = imin, imax
                 j = OB_Jn(i,bi,bj)
 cgg    All these points need to be wet.
@@ -237,7 +242,7 @@ cgg    All these points need to be wet.
               enddo
             enddo
 
-            do k = 1,Nr
+            do k = 1,nr
 
 C-- jmc: both calls below are wrong if more than 1 tile => stop here
        IF ( bi.NE.1 .OR. bj.NE.1 )
@@ -290,7 +295,7 @@ c--         End of loop over layers.
             jp1 = 1
 
 cgg    Make a mask for the velocity shear comparison.
-            do k = 1,Nr-1
+            do k = 1,nr-1
               do i = imin, imax
                 j = OB_Js(i,bi,bj)
                 if ( j.eq.OB_indexNone ) then
@@ -306,7 +311,7 @@ cgg    All these points need to be wet.
               enddo
             enddo
 
-            do k = 1,Nr
+            do k = 1,nr
 
 C-- jmc: both calls below are wrong if more than 1 tile => stop here
        IF ( bi.NE.1 .OR. bj.NE.1 )
@@ -353,13 +358,13 @@ cgg        print*,'fctile S',fctile
               enddo
             enddo
 c--         End of loop over layers.
-#endif /* ALLOW_OBCSS_CONTROL */
+#endif
 
 #ifdef ALLOW_OBCSW_CONTROL
             ip1 = 1
 
 cgg    Make a mask for the velocity shear comparison.
-            do k = 1,Nr-1
+            do k = 1,nr-1
               do j = jmin, jmax
                 i = OB_Iw(j,bi,bj)
 cgg    All these points need to be wet.
@@ -375,7 +380,7 @@ cgg    All these points need to be wet.
               enddo
             enddo
 
-            do k = 1,Nr
+            do k = 1,nr
 
        IF ( bi.NE.1 .OR. bj.NE.1 )
      &  STOP 'COST_OBCS_AGEOS wrong with more than 1 tile/proc'
@@ -420,13 +425,13 @@ cgg   Make a comparison.
               enddo
             enddo
 c--         End of loop over layers.
-#endif /* ALLOW_OBCSW_CONTROL */
+#endif
 
 #ifdef ALLOW_OBCSE_CONTROL
             ip1 = 0
 
 cgg    Make a mask for the velocity shear comparison.
-            do k = 1,Nr-1
+            do k = 1,nr-1
               do j = jmin, jmax
                 i = OB_Ie(j,bi,bj)
                 if ( i.eq.OB_indexNone ) then
@@ -442,7 +447,7 @@ cgg    All these points need to be wet.
               enddo
             enddo
 
-            do k = 1,Nr
+            do k = 1,nr
 
        IF ( bi.NE.1 .OR. bj.NE.1 )
      &  STOP 'COST_OBCS_AGEOS wrong with more than 1 tile/proc'
@@ -488,7 +493,7 @@ cgg   Make a comparison.
               enddo
             enddo
 c--         End of loop over layers.
-#endif /* ALLOW_OBCSE_CONTROL */
+#endif
 
             fcthread          = fcthread          + fctile
             objf_ageos(bi,bj) = objf_ageos(bi,bj) + fctile
@@ -510,7 +515,7 @@ c--         Print cost function for each tile in each thread.
             write(msgbuf,'(a)') ' '
             call print_message( msgbuf, standardmessageunit,
      &                          SQUEEZE_RIGHT , mythid)
-#endif /* ECCO_VERBOSE */
+#endif
 
           enddo
         enddo
@@ -533,12 +538,12 @@ c--     Print cost function for all tiles.
         write(msgbuf,'(a)') ' '
         call print_message( msgbuf, standardmessageunit,
      &                      SQUEEZE_RIGHT , mythid)
-#endif /* ECCO_VERBOSE */
+#endif
 
       enddo
 c--   End of loop over records.
 
-#endif /* OBCS_AGEOS_COST_CONTRIBUTION */
+#endif
 
 #endif /* ALLOW_CTRL, ALLOW_OBCS and ALLOW_ECCO */
 

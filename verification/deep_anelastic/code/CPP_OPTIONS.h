@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/verification/deep_anelastic/code/CPP_OPTIONS.h,v 1.2 2016/10/07 21:31:30 jmc Exp $
+C $Name:  $
+
 #ifndef CPP_OPTIONS_H
 #define CPP_OPTIONS_H
 

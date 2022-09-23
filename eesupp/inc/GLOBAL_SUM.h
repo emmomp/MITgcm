@@ -1,3 +1,5 @@
+C $Header: /u/gcmpack/MITgcm/eesupp/inc/GLOBAL_SUM.h,v 1.8 2009/06/10 03:45:11 jmc Exp $
+C $Name:  $
 CBOP
 C     !ROUTINE: GLOBAL_SUM.h
 C     !INTERFACE:

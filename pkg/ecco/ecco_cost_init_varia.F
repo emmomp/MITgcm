@@ -1,10 +1,10 @@
+C $Header: /u/gcmpack/MITgcm/pkg/ecco/ecco_cost_init_varia.F,v 1.28 2015/03/23 21:12:54 gforget Exp $
+C $Name:  $
+
 #include "ECCO_OPTIONS.h"
 #include "AD_CONFIG.h"
-#ifdef ALLOW_CTRL
-# include "CTRL_OPTIONS.h"
-#endif
 
-      subroutine ecco_cost_init_varia( myThid )
+      subroutine ecco_cost_init_varia( mythid )
 
 c     ==================================================================
 c     SUBROUTINE ecco_cost_init_varia
@@ -34,8 +34,7 @@ c     == global variables ==
 # ifdef ECCO_CTRL_DEPRECATED
 #  include "ecco_cost.h"
 # else
-#  include "ECCO_SIZE.h"
-#  include "ECCO.h"
+#  include "ecco.h"
 # endif
 #endif
 #ifdef ALLOW_CTRL
@@ -46,25 +45,36 @@ c     == global variables ==
 #endif
 
 c     == routine arguments ==
-      integer myThid
+
+      integer mythid
 
 c     == local variables ==
+
       integer bi,bj
+      integer itlo,ithi
+      integer jtlo,jthi
       integer imin, imax
       integer jmin, jmax
       integer i,j,k
-c     logical exst
+      integer num_file,num_var
+
+      logical exst
+
+c     == external functions ==
 
 c     == end of interface ==
-
+      jtlo = mybylo(mythid)
+      jthi = mybyhi(mythid)
+      itlo = mybxlo(mythid)
+      ithi = mybxhi(mythid)
       jmin = 1-OLy
-      jmax = sNy+OLy
+      jmax = sny+OLy
       imin = 1-OLx
-      imax = sNx+OLy
+      imax = snx+OLy
 
 c--   Initialise adjoint of monthly mean files calculated
 c--   in cost_averagesfields (and their ad...).
-      call cost_averagesinit( myThid )
+      call cost_averagesinit( mythid )
       _BARRIER
 
 #ifndef ALLOW_TANGENTLINEAR_RUN
@@ -74,13 +84,13 @@ cph   of a divided adjoint run
 cph)
 c      inquire( file='costfinal', exist=exst )
 c      if ( .NOT. exst) then
-c         call ecco_cost_init_barfiles( myThid )
+c         call ecco_cost_init_barfiles( mythid )
 c      endif
 #endif
 
 c--   Initialize the tiled cost function contributions.
-      do bj = myByLo(myThid), myByHi(myThid)
-        do bi = myBxLo(myThid), myBxHi(myThid)
+      do bj = jtlo,jthi
+        do bi = itlo,ithi
 #ifdef ECCO_CTRL_DEPRECATED
           objf_hflux(bi,bj)    = 0. _d 0
           objf_hfluxm(bi,bj)   = 0. _d 0
@@ -246,8 +256,8 @@ c--   Initialize the tiled cost function contributions.
 #ifdef ECCO_CTRL_DEPRECATED
 
       k = 1
-      do bj = myByLo(myThid), myByHi(myThid)
-        do bi = myBxLo(myThid), myBxHi(myThid)
+      do bj = jtlo,jthi
+        do bi = itlo,ithi
           do j = jmin,jmax
             do i = imin,imax
 #ifdef ALLOW_SSH_COST_CONTRIBUTION
@@ -317,8 +327,8 @@ c--   Initialize the tiled cost function contributions.
       enddo
 
 #ifdef GENERIC_BAR_MONTH
-      do bj = myByLo(myThid), myByHi(myThid)
-       do bi = myBxLo(myThid), myBxHi(myThid)
+      do bj = jtlo,jthi
+       do bi = itlo,ithi
         do k =1,Nr
          do j = jmin,jmax
           do i = imin,imax
@@ -332,26 +342,27 @@ c--   Initialize the tiled cost function contributions.
 #endif
 
 c--   Initialise the "global" parts of the cost function.
-      _BEGIN_MASTER( myThid )
+      _BEGIN_MASTER( mythid )
         objf_hmean   = 0. _d 0
         objf_hfluxmm = 0. _d 0
         objf_sfluxmm = 0. _d 0
         objf_transp  = 0. _d 0
         num_hmean   = 0. _d 0
         num_transp  = 0. _d 0
-      _END_MASTER( myThid )
+      _END_MASTER( mythid )
 
 #endif /* ECCO_CTRL_DEPRECATED */
 
 c--   Initialise the "global" parts of the cost function.
 #if (defined (ALLOW_CTRL) && defined (ALLOW_OBCS))
-      _BEGIN_MASTER( myThid )
+      _BEGIN_MASTER( mythid )
         objf_obcsvol = 0. _d 0
         num_obcsvol = 0. _d 0
-      _END_MASTER( myThid )
+      _END_MASTER( mythid )
 #endif
 
       _BARRIER
 
-      RETURN
-      END
+      return
+      end
+

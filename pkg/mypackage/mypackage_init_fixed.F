@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/mypackage/mypackage_init_fixed.F,v 1.2 2006/08/07 21:13:52 edhill Exp $
+C $Name:  $
+
 #include "MYPACKAGE_OPTIONS.h"
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|

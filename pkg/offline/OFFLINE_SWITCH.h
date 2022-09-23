@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/offline/OFFLINE_SWITCH.h,v 1.1 2013/07/07 22:25:13 jmc Exp $
+C $Name:  $
+
 C     !ROUTINE: OFFLINE_SWITCH.h
 C -------------------------------
 C   OFFLINE_SWITCH.h

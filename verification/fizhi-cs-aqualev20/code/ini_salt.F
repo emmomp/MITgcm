@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/verification/fizhi-cs-aqualev20/code/ini_salt.F,v 1.2 2009/04/28 18:06:14 jmc Exp $
+C $Name:  $
+
 #include "CPP_OPTIONS.h"
 
 CBOP

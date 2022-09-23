@@ -1,4 +1,6 @@
-#undef USE_OBSOLETE_MDS_RW_FIELD
+C $Header: /u/gcmpack/MITgcm/pkg/mdsio/mdsio_rw_field.F,v 1.4 2009/09/01 19:20:40 jmc Exp $
+C $Name:  $
+
 #include "MDSIO_OPTIONS.h"
 
 C--  File mdsio_rw_field.F: old version of MDSIO READ/WRITE FIELD S/R with
@@ -52,7 +54,7 @@ C Routine arguments
       INTEGER irecord
       INTEGER myThid
 
-#ifdef USE_OBSOLETE_MDS_RW_FIELD
+#ifdef ALLOW_AUTODIFF
 C Local variables
       _RL dummyRL(1)
       _RS dummyRS(1)
@@ -69,9 +71,9 @@ C Local variables
      I                irecord, myThid )
       ENDIF
 
-#else /* USE_OBSOLETE_MDS_RW_FIELD */
+#else /* ALLOW_AUTODIFF */
       STOP 'ABNORMAL END: S/R MDSREADFIELD is retired'
-#endif /* USE_OBSOLETE_MDS_RW_FIELD */
+#endif /* ALLOW_AUTODIFF */
 
       RETURN
       END
@@ -118,7 +120,7 @@ C Routine arguments
       INTEGER irecord
       INTEGER myThid
 
-#ifdef USE_OBSOLETE_MDS_RW_FIELD
+#ifdef ALLOW_AUTODIFF
 C Local variables
       _RL dummyRL(1)
       _RS dummyRS(1)
@@ -135,9 +137,9 @@ C Local variables
      I                irecord, myThid )
       ENDIF
 
-#else /* USE_OBSOLETE_MDS_RW_FIELD */
+#else /* ALLOW_AUTODIFF */
       STOP 'ABNORMAL END: S/R MDSREADFIELD_LOC is empty'
-#endif /* USE_OBSOLETE_MDS_RW_FIELD */
+#endif /* ALLOW_AUTODIFF */
 
       RETURN
       END
@@ -190,7 +192,7 @@ C Routine arguments
       INTEGER myIter
       INTEGER myThid
 
-#ifdef USE_OBSOLETE_MDS_RW_FIELD
+#ifdef ALLOW_AUTODIFF
 C Local variables
       _RL dummyRL(1)
       _RS dummyRS(1)
@@ -207,9 +209,9 @@ C Local variables
      I                 irecord, myIter, myThid )
       ENDIF
 
-#else /* USE_OBSOLETE_MDS_RW_FIELD */
+#else /* ALLOW_AUTODIFF */
       STOP 'ABNORMAL END: S/R MDSWRITEFIELD is retired'
-#endif /* USE_OBSOLETE_MDS_RW_FIELD */
+#endif /* ALLOW_AUTODIFF */
 
       RETURN
       END
@@ -262,7 +264,7 @@ C Routine arguments
       INTEGER myIter
       INTEGER myThid
 
-#ifdef USE_OBSOLETE_MDS_RW_FIELD
+#ifdef ALLOW_AUTODIFF
 C Local variables
       _RL dummyRL(1)
       _RS dummyRS(1)
@@ -279,9 +281,9 @@ C Local variables
      I                 irecord, myIter, myThid )
       ENDIF
 
-#else /* USE_OBSOLETE_MDS_RW_FIELD */
+#else /* ALLOW_AUTODIFF */
       STOP 'ABNORMAL END: S/R MDSWRITEFIELD_LOC is empty'
-#endif /* USE_OBSOLETE_MDS_RW_FIELD */
+#endif /* ALLOW_AUTODIFF */
 
       RETURN
       END

@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/streamice/streamice_vel_solve_openad.F,v 1.3 2015/03/23 14:07:17 dgoldberg Exp $
+C $Name:  $
+
 #include "STREAMICE_OPTIONS.h"
 #ifdef ALLOW_AUTODIFF
 # include "AUTODIFF_OPTIONS.h"
@@ -6,7 +9,7 @@
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
 
 CBOP
-      SUBROUTINE STREAMICE_VEL_SOLVE_OPENAD ( myThid, maxNLIter,
+      SUBROUTINE STREAMICE_VEL_SOLVE_OPENAD ( myThid, maxNLIter, 
      &                                maxCGiter, myiter )
 C     /============================================================\
 C     | SUBROUTINE                                                 |
@@ -23,6 +26,11 @@ C     === Global variables ===
 #include "STREAMICE.h"
 #include "STREAMICE_CG.h"
 
+
+#ifdef ALLOW_AUTODIFF_TAMC
+# include "tamc.h"
+#endif
+
 C     !INPUT/OUTPUT ARGUMENTS
       INTEGER myThid
       INTEGER maxNLIter
@@ -34,9 +42,9 @@ C     !INPUT/OUTPUT ARGUMENTS
 C     LOCAL VARIABLES
 
       INTEGER i, j, k, l, bi, bj, loopiter
-      CHARACTER*(MAX_LEN_MBUF) msgBuf
+      CHARACTER*(MAX_LEN_MBUF) msgBuf      
 
-      INTEGER NL_iter
+      INTEGER NL_iter 
       _RL err_last_change, cgtol, err_init
       LOGICAL CONVERGED
 
@@ -45,11 +53,14 @@ C     LOCAL VARIABLES
       LOGICAL ADJ_CONVERGED
 #endif
 
+
+
 #ifdef ALLOW_STREAMICE_OAD_FP
       isinloop0 =0
       isinloop1 =1
       isinloop2 =2
 #endif
+
 
 #if (defined (ALLOW_STREAMICE_OAD_FP))
 
@@ -71,7 +82,7 @@ C     LOCAL VARIABLES
       nl_iter = 0
       CONVERGED = .false.
       err_last_change = 1 _d 1
-
+      
       _EXCH_XY_RL( taudx_SI , myThid )
       _EXCH_XY_RL( taudy_SI , myThid )
 
@@ -82,7 +93,7 @@ C     LOCAL VARIABLES
            U_streamice (i,j,bi,bj)=U_streamice (i,j,bi,bj)
      & + 0*u_new_SI (i,j,bi,bj)
            V_streamice (i,j,bi,bj)=V_streamice (i,j,bi,bj)
-     & + 0*v_new_SI (i,j,bi,bj)
+     & + 0*v_new_SI (i,j,bi,bj) 
           ENDDO
          ENDDO
         ENDDO
@@ -105,25 +116,27 @@ C     LOCAL VARIABLES
         CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
      &                    SQUEEZE_RIGHT , 1)
 
-       endif
+       endif 
+
+
 
 #ifndef ALLOW_OPENAD
-      CALL STREAMICE_VEL_PHISTAGE (
-     I                   myThid,
-     I                   maxNLIter,
-     I                   maxCGiter,
-     O                   cgtol,
+      CALL STREAMICE_VEL_PHISTAGE ( 
+     I                   myThid, 
+     I                   maxNLIter, 
+     I                   maxCGiter, 
+     O                   cgtol, 
      O                   nL_iter,
      O                   CONVERGED,
      O                   err_last_change,
      O                   err_init,
      I                   isinloop0)
 #else
-      CALL STREAMICE_VEL_PHISTAGE (
-     I                   myThid,
-     I                   maxNLIter,
-     I                   maxCGiter,
-     O                   cgtol,
+      CALL STREAMICE_VEL_PHISTAGE ( 
+     I                   myThid, 
+     I                   maxNLIter, 
+     I                   maxCGiter, 
+     O                   cgtol, 
      O                   nL_iter,
      O                   adj_iter,
      O                   CONVERGED,
@@ -141,22 +154,22 @@ C       but after convergence loop does nothing
 !        IF (.not.CONVERGED) THEN
 
 #ifndef ALLOW_OPENAD
-      CALL STREAMICE_VEL_PHISTAGE (
-     I                   myThid,
-     I                   maxNLIter,
-     I                   maxCGiter,
-     O                   cgtol,
+      CALL STREAMICE_VEL_PHISTAGE ( 
+     I                   myThid, 
+     I                   maxNLIter, 
+     I                   maxCGiter, 
+     O                   cgtol, 
      O                   nL_iter,
      O                   CONVERGED,
      O                   err_last_change,
      O                   err_init,
      I                   isinloop1)
 #else
-      CALL STREAMICE_VEL_PHISTAGE (
-     I                   myThid,
-     I                   maxNLIter,
-     I                   maxCGiter,
-     O                   cgtol,
+      CALL STREAMICE_VEL_PHISTAGE ( 
+     I                   myThid, 
+     I                   maxNLIter, 
+     I                   maxCGiter, 
+     O                   cgtol, 
      O                   nL_iter,
      O                   adj_iter,
      O                   CONVERGED,
@@ -171,31 +184,32 @@ C       but after convergence loop does nothing
        !  DO j=1-OLy,sNy+OLy
        !   DO i=1-OLx,sNx+OLx
        !    U_streamice (i,j,bi,bj)=u_new_SI (i,j,bi,bj)
-       !    V_streamice (i,j,bi,bj)=v_new_SI (i,j,bi,bj)
+       !    V_streamice (i,j,bi,bj)=v_new_SI (i,j,bi,bj) 
        !   ENDDO
        !  ENDDO
        ! ENDDO
        !ENDDO
 
+
       ENDDO
 
 #ifndef ALLOW_OPENAD
-      CALL STREAMICE_VEL_PHISTAGE (
-     I                   myThid,
-     I                   maxNLIter,
-     I                   maxCGiter,
-     O                   cgtol,
+      CALL STREAMICE_VEL_PHISTAGE ( 
+     I                   myThid, 
+     I                   maxNLIter, 
+     I                   maxCGiter, 
+     O                   cgtol, 
      O                   nL_iter,
      O                   CONVERGED,
      O                   err_last_change,
      O                   err_init,
      I                   isinloop2)
 #else
-      CALL STREAMICE_VEL_PHISTAGE (
-     I                   myThid,
-     I                   maxNLIter,
-     I                   maxCGiter,
-     O                   cgtol,
+      CALL STREAMICE_VEL_PHISTAGE ( 
+     I                   myThid, 
+     I                   maxNLIter, 
+     I                   maxCGiter, 
+     O                   cgtol, 
      O                   nL_iter,
      O                   adj_iter,
      O                   CONVERGED,
@@ -204,6 +218,8 @@ C       but after convergence loop does nothing
      O                   err_init,
      I                   isinloop2)
 #endif
+
+
 
 C END NL ITER. LOOP
 C-------------------------------------------------------------------

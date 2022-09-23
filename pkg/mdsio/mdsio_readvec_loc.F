@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/mdsio/mdsio_readvec_loc.F,v 1.4 2012/09/11 22:13:29 jmc Exp $
+C $Name:  $
+
 #include "MDSIO_OPTIONS.h"
 
 CBOP

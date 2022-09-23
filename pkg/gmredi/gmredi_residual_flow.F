@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/gmredi/gmredi_residual_flow.F,v 1.2 2015/01/20 20:51:20 jmc Exp $
+C $Name:  $
+
 #include "GMREDI_OPTIONS.h"
 
 CBOP

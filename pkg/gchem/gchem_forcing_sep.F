@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/gchem/gchem_forcing_sep.F,v 1.44 2017/03/29 15:46:27 mmazloff Exp $
+C $Name:  $
+
 #include "GCHEM_OPTIONS.h"
 #ifdef ALLOW_DIC
 # include "DIC_OPTIONS.h"
@@ -74,7 +77,7 @@ c     INTEGER i,j
 #ifdef ALLOW_DIAGNOSTICS
       IF ( useDiagnostics ) THEN
 C--   fill-in tracer diagnostics before any GChem udate
-       DO iTr = 1,gchem_sepFTr_num
+       DO iTr = 1,PTRACERS_numInUse
         diagName = '        '
         WRITE(diagName,'(A5,A2)') 'GC_Tr', PTRACERS_ioLabel(iTr)
         CALL DIAGNOSTICS_FILL( pTracer(1-OLx,1-OLy,1,1,1,iTr), diagName,
@@ -100,6 +103,7 @@ c find global surface averages
        CALL GCHEM_SURFMEAN(salt,gsm_s,myThid)
        CALL GCHEM_SURFMEAN(
      &             pTracer(1-OLx,1-OLy,1,1,1,1), gsm_dic, myThid )
+       print*,'mean surface dic', gsm_dic,gsm_s
        CALL GCHEM_SURFMEAN(
      &             pTracer(1-OLx,1-OLy,1,1,1,2), gsm_alk, myThid )
 # ifndef ALLOW_AUTODIFF
@@ -115,6 +119,7 @@ c find global surface averages
        CALL GCHEM_SURFMEAN(salt,gsm_s,myThid)
        CALL GCHEM_SURFMEAN(
      &             pTracer(1-OLx,1-OLy,1,1,1,iDIC), gsm_dic, myThid )
+       print*,'mean surface dic', gsm_dic,gsm_s
        CALL GCHEM_SURFMEAN(
      &             pTracer(1-OLx,1-OLy,1,1,1,iALK), gsm_alk, myThid )
 c     ENDIF
@@ -182,8 +187,6 @@ cccccccccccccccccccccccccc END DIC cccccccccccccccccccccccccccccccccc
 ccccccccccccccccccccccccccc BLING cccccccccccccccccccccccccccccccc
 #ifdef ALLOW_BLING
         IF ( useBLING ) THEN
-# ifndef USE_BLING_V1
-#  ifdef USE_SIBLING
           CALL BLING_MAIN( pTracer(1-OLx,1-OLy,1,bi,bj,1),
      &                          pTracer(1-OLx,1-OLy,1,bi,bj,2),
      &                          pTracer(1-OLx,1-OLy,1,bi,bj,3),
@@ -192,40 +195,11 @@ ccccccccccccccccccccccccccc BLING cccccccccccccccccccccccccccccccc
      &                          pTracer(1-OLx,1-OLy,1,bi,bj,6),
      &                          pTracer(1-OLx,1-OLy,1,bi,bj,7),
      &                          pTracer(1-OLx,1-OLy,1,bi,bj,8),
+# ifdef ADVECT_PHYTO
      &                          pTracer(1-OLx,1-OLy,1,bi,bj,9),
-#   ifdef ADVECT_PHYTO
-     &                          pTracer(1-OLx,1-OLy,1,bi,bj,10),
-#   endif
+# endif
      &                          bi, bj, iMin, iMax, jMin, jMax,
-     &                          myTime, myIter, myThid )
-#  else /* USE_SIBLING */
-          CALL BLING_MAIN( pTracer(1-OLx,1-OLy,1,bi,bj,1),
-     &                          pTracer(1-OLx,1-OLy,1,bi,bj,2),
-     &                          pTracer(1-OLx,1-OLy,1,bi,bj,3),
-     &                          pTracer(1-OLx,1-OLy,1,bi,bj,4),
-     &                          pTracer(1-OLx,1-OLy,1,bi,bj,5),
-     &                          pTracer(1-OLx,1-OLy,1,bi,bj,6),
-     &                          pTracer(1-OLx,1-OLy,1,bi,bj,7),
-     &                          pTracer(1-OLx,1-OLy,1,bi,bj,8),
-#   ifdef ADVECT_PHYTO
-     &                          pTracer(1-OLx,1-OLy,1,bi,bj,9),
-#   endif
-     &                          bi, bj, iMin, iMax, jMin, jMax,
-     &                          myTime, myIter, myThid )
-#  endif /* USE_SIBLING */
-# else /* USE_BLING_v1 */
-          CALL BLING_MAIN( pTracer(1-OLx,1-OLy,1,bi,bj,1),
-     &                          pTracer(1-OLx,1-OLy,1,bi,bj,2),
-     &                          pTracer(1-OLx,1-OLy,1,bi,bj,3),
-     &                          pTracer(1-OLx,1-OLy,1,bi,bj,4),
-     &                          pTracer(1-OLx,1-OLy,1,bi,bj,5),
-     &                          pTracer(1-OLx,1-OLy,1,bi,bj,6),
-#  ifdef ADVECT_PHYTO
-     &                          pTracer(1-OLx,1-OLy,1,bi,bj,7),
-#  endif
-     &                          bi, bj, iMin, iMax, jMin, jMax,
-     &                          myTime, myIter, myThid )
-# endif /* USE_BLING_v1 */
+     &                          myIter, myTime, myThid )
         ENDIF
 #endif /* ALLOW_BLING */
 cccccccccccccccccccccccccc END BLING cccccccccccccccccccccccccccccccccc
@@ -271,7 +245,7 @@ C       tendency multiplied by maskInC)
 #ifdef ALLOW_DEBUG
           IF (debugMode) CALL DEBUG_CALL('OBCS_APPLY_PTRACER',myThid)
 #endif
-          DO iTr = 1,gchem_sepFTr_num
+          DO iTr = 1,PTRACERS_numInUse
             CALL OBCS_APPLY_PTRACER(
      I                bi, bj, 0, iTr,
      U                pTracer(1-OLx,1-OLy,1,bi,bj,iTr),
