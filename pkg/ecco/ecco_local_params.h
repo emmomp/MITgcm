@@ -1,3 +1,7 @@
+C $Header: /u/gcmpack/MITgcm/pkg/ecco/ecco_local_params.h,v 1.1 2014/10/16 19:52:04 gforget Exp $
+C $Name:  $
+
+
 c     ==================================================================
 c     HEADER ECCO_legacy
 c     ==================================================================
@@ -181,6 +185,7 @@ c     ==================================================================
       _RL  mult_smooth_bc
       _RL  mult_transp
 
+
       common /ecco_cost_c/
      &                hflux_errfile,
      &                hfluxm_errfile,
@@ -214,7 +219,7 @@ c     ==================================================================
      &                velerrfile,
      &                salt0errfile,
      &                temp0errfile,
-     &                etan0errfile,
+     &                etan0errfile, 
      &                uvel0errfile,
      &                vvel0errfile,
      &                vel0errfile,
@@ -403,6 +408,7 @@ c     ==================================================================
       character*(MAX_LEN_FNAM) xbtfile
       character*(MAX_LEN_FNAM) argotfile
       character*(MAX_LEN_FNAM) argosfile
+      character*(MAX_LEN_FNAM) argofile
       character*(MAX_LEN_FNAM) usercost_datafile(NUSERCOST)
       character*(MAX_LEN_FNAM) udriftfile
       character*(MAX_LEN_FNAM) vdriftfile

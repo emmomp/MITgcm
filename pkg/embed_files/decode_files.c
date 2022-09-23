@@ -1,4 +1,8 @@
 /*************************************************   -*- mode: C -*-
+**
+** $Header: /u/gcmpack/MITgcm/pkg/embed_files/decode_files.c,v 1.2 2006/01/11 06:02:31 edhill Exp $
+** $Name:  $
+**
 */
 
 /*  Decode and write files */

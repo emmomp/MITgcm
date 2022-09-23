@@ -1,4 +1,6 @@
 #
+# $Header: /u/gcmpack/MITgcm/pkg/mnc/Makefile,v 1.20 2008/07/20 13:57:49 jmc Exp $
+# $Name:  $
 #
 #  A Makefile for MNC templates and testing
 #

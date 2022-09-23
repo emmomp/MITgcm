@@ -1,3 +1,5 @@
+# $Header: /u/gcmpack/MITgcm/utils/knudsen2/Makefile,v 1.2 2002/08/07 16:55:52 mlosch Exp $
+
      FC = f77
 F77OPTS = -r8
 

@@ -1,7 +1,7 @@
+C $Header: /u/gcmpack/MITgcm/pkg/thsice/thsice_check.F,v 1.10 2015/11/06 22:32:52 jmc Exp $
+C $Name:  $
+
 #include "THSICE_OPTIONS.h"
-#ifdef ALLOW_AUTODIFF
-# include "AUTODIFF_OPTIONS.h"
-#endif
 
 CBOP
 C     !ROUTINE: THSICE_CHECK
@@ -86,15 +86,13 @@ C-    need some form of ATM-surface pkg to provide Air-Ice surf fluxes
        ENDIF
       ENDIF
 
-#ifdef ALLOW_AUTODIFF_TAMC
+#ifdef ALLOW_AUTODIFF
       IF ( nitMaxTsf .GT. MaxTsf ) THEN
         WRITE(msgBuf,'(2A)')
      &   'THSICE_CHECK: Need to set MaxTsf >= nitMaxTsf for TAF'
         CALL PRINT_ERROR( msgBuf, myThid )
         errCount = errCount + 1
       ENDIF
-#endif /* ALLOW_AUTODIFF_TAMC */
-#ifdef ALLOW_AUTODIFF
 # ifdef ALLOW_DBUG_THSICE
         WRITE(msgBuf,'(2A)')
      &   'THSICE_CHECK: cannot compile AD-code with ALLOW_DBUG_THSICE'
@@ -102,6 +100,17 @@ C-    need some form of ATM-surface pkg to provide Air-Ice surf fluxes
         errCount = errCount + 1
 # endif
 #endif /* ALLOW_AUTODIFF */
+
+#ifdef OLD_THSICE_CALL_SEQUENCE
+        WRITE(msgBuf,'(2A)') '** WARNING ** THSICE_CHECK: ',
+     &   'OLD_THSICE_CALL_SEQUENCE code no longer maintained'
+        CALL PRINT_MESSAGE( msgBuf, errorMessageUnit,
+     &                      SQUEEZE_RIGHT, myThid )
+        WRITE(msgBuf,'(2A)') '** WARNING ** THSICE_CHECK: ',
+     &   'option and related code will be removed after chkpt-64e'
+        CALL PRINT_MESSAGE( msgBuf, errorMessageUnit,
+     &                      SQUEEZE_RIGHT, myThid )
+#endif /* OLD_THSICE_CALL_SEQUENCE */
 
       IF ( useAIM .AND. .NOT.( stepFwd_oceMxL .OR. useCoupler )
      &            .AND.  tauRelax_MxL.NE. -1. _d 0 ) THEN

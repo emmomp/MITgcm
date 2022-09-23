@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/verification/internal_wave/code/obcs_calc.F,v 1.9 2011/12/12 19:04:25 jmc Exp $
+C $Name:  $
+
 #include "OBCS_OPTIONS.h"
 
       SUBROUTINE OBCS_CALC( futureTime, futureIter,
@@ -196,6 +199,12 @@ C         Southern OB, template for forcing
 C--   end bi,bj loops.
       ENDDO
       ENDDO
+
+#ifdef ALLOW_OBCS_BALANCE
+      IF ( useOBCSbalance ) THEN
+        CALL OBCS_BALANCE_FLOW( futureTime, futureIter, myThid )
+      ENDIF
+#endif /* ALLOW_OBCS_BALANCE */
 
 #ifdef ALLOW_DEBUG
       IF (debugMode) CALL DEBUG_LEAVE('OBCS_CALC',myThid)

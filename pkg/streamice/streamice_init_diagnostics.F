@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/streamice/streamice_init_diagnostics.F,v 1.2 2014/04/24 12:02:41 dgoldberg Exp $
+C $Name:  $
+
 #include "STREAMICE_OPTIONS.h"
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
@@ -20,15 +23,17 @@ C     !USES:
 #include "STREAMICE_BDRY.h"
 #include "GRID.h"
 
-C     myThid ::  my Thread Id number
       INTEGER myThid
 
 #ifdef ALLOW_STREAMICE
-#ifdef ALLOW_DIAGNOSTICS
 
       CHARACTER*(MAX_LEN_MBUF) msgBuf
+#ifdef ALLOW_DIAGNOSTICS
+
+C     myThid ::  my Thread Id number
+
       INTEGER       diagNum
-c     INTEGER       diagMate
+      INTEGER       diagMate
       CHARACTER*8   diagName
       CHARACTER*16  diagCode
       CHARACTER*16  diagUnits
@@ -132,18 +137,12 @@ c     INTEGER       diagMate
       CALL DIAGNOSTICS_ADDTOLIST( diagNum,
      I      diagName, diagCode, diagUnits, diagTitle, 0, myThid )
 
-      diagName  = 'BDOT_SI '
-      diagTitle = 'Ice stream 2d tracer'
-      diagUnits = 'none       '
-      diagCode  = 'SM      L1      '
-      CALL DIAGNOSTICS_ADDTOLIST( diagNum,
-     I      diagName, diagCode, diagUnits, diagTitle, 0, myThid )
-
       WRITE(msgBuf,'(A)') 'ADDED DIAGS TO LIST'
        CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
      &                     SQUEEZE_RIGHT , 1)
 
-#endif /* ALLOW_DIAGNOSTICS */
-#endif /* ALLOW_STREAMICE */
+
+#endif
+#endif
       RETURN
       END

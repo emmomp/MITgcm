@@ -1,3 +1,5 @@
+C $Header: /u/gcmpack/MITgcm/pkg/timeave/timeave_surf_flux.F,v 1.6 2011/04/27 20:21:42 jmc Exp $
+C $Name:  $
 #include "TIMEAVE_OPTIONS.h"
 
       SUBROUTINE TIMEAVE_SURF_FLUX(
@@ -48,7 +50,7 @@ C-    uFlux (surface momentum flux [Pa=N/m2], positive <-> increase u)
         ENDDO
        ENDDO
        CALL TIMEAVE_CUMUL_1T(uFluxtave,tmpFld,1,
-     &                                   deltaTClock, bi, bj, myThid)
+     &                                   deltaTclock, bi, bj, myThid)
 
 C-    vFlux (surface momentum flux [Pa=N/m2], positive <-> increase v)
        DO j=1,sNy
@@ -57,7 +59,7 @@ C-    vFlux (surface momentum flux [Pa=N/m2], positive <-> increase v)
         ENDDO
        ENDDO
        CALL TIMEAVE_CUMUL_1T(vFluxtave,tmpFld,1,
-     &                                   deltaTClock, bi, bj, myThid)
+     &                                   deltaTclock, bi, bj, myThid)
 
 C     tFlux (=Heat flux [W/m2], positive <-> increasing Theta)
        DO j=1,sNy
@@ -66,7 +68,7 @@ C     tFlux (=Heat flux [W/m2], positive <-> increasing Theta)
 #ifdef SHORTWAVE_HEATING
      &    -Qsw(i,j,bi,bj)+
 #endif
-     &    (surfaceForcingT(i,j,bi,bj)+adjustColdSST_diag(I,J,bi,bj))
+     &    (surfaceForcingT(i,j,bi,bj)+surfaceForcingTice(I,J,bi,bj))
      &    *HeatCapacity_Cp*rUnit2mass
         ENDDO
        ENDDO
@@ -82,9 +84,9 @@ C     tFlux (=Heat flux [W/m2], positive <-> increasing Theta)
        ENDIF
 #endif /* NONLIN_FRSURF */
        CALL TIMEAVE_CUMUL_1T( tFluxtave, tmpFld, 1,
-     &                                   deltaTClock, bi, bj, myThid)
+     &                                   deltaTclock, bi, bj, myThid)
 
-C     sFlux (=salt flux [g/m2/s], positive <-> increasing salinity)
+C     sFlux (=salt flux [psu.kg/m2/s], positive <-> increasing Theta)
        DO j=1,sNy
         DO i=1,sNx
          tmpFld(i,j)=
@@ -103,7 +105,7 @@ C     sFlux (=salt flux [g/m2/s], positive <-> increasing salinity)
        ENDIF
 #endif /* NONLIN_FRSURF */
        CALL TIMEAVE_CUMUL_1T( sFluxtave, tmpFld, 1,
-     &                                   deltaTClock, bi, bj, myThid)
+     &                                   deltaTclock, bi, bj, myThid)
 
 #endif /* ALLOW_TIMEAVE */
 

@@ -1,17 +1,20 @@
+C $Header: /u/gcmpack/MITgcm/pkg/bling/bling_sgs.F,v 1.2 2016/09/12 20:00:28 mmazloff Exp $
+C $Name:  $
+
 #include "BLING_OPTIONS.h"
 
 CBOP
-      SUBROUTINE BLING_SGS(
+      subroutine BLING_SGS( 
      I           bi, bj, imin, imax, jmin, jmax,
-     I           myTime, myIter, myThid)
+     I           myIter, myTime, myThid )
 
 C     =================================================================
 C     | subroutine bling_sgs
 C     | o Placeholder for sub-grid scale sediment stuff
 C     =================================================================
 
-      IMPLICIT NONE
-
+      implicit none
+      
 C     === Global variables ===
 
 #include "SIZE.h"
@@ -22,6 +25,9 @@ C     === Global variables ===
 #include "BLING_VARS.h"
 #include "PTRACERS_SIZE.h"
 #include "PTRACERS_PARAMS.h"
+#ifdef ALLOW_AUTODIFF
+# include "tamc.h"
+#endif
 
 C     === Routine arguments ===
 C     bi,bj         :: tile indices
@@ -36,29 +42,33 @@ C     myThid        :: thread Id. number
       INTEGER myThid
 C     === Input ===
 C     === Output ===
-
+ 
 #ifdef ALLOW_BLING
 C     === Local variables ===
 C     i,j,k         :: loop indices
-c     INTEGER i,j,k
+
+      INTEGER i,j,k        
 
 CEOP
-
+  
 c ---------------------------------------------------------------------
 c  Initialize output and diagnostics
+
+
 
 c---------------------------------------------------------------------
 c SUBGRIDSCALE SEDIMENT FLUXES
 c
-c The subgridscale sediment produces remineralization fluxes from sinking particles
+c The subgridscale sediment produces remineralization fluxes from sinking particles 
 c throughout the water column, and leads to 3-dimensional fields for benthic
-c iron fluxes and benthic denitrification.
+c iron fluxes and benthic denitrification. 
 c Note that the remineralization of particle flux intercepting the subgridscale
 c sediment is implicit in the reminp terms.
 
-#ifdef use_sgs_sed
+#ifdef use_sgs_sed    
 c!!
 #endif
+
 
 c ---------------------------------------------------------------------
 

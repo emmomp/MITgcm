@@ -1,4 +1,10 @@
+C $Header: /u/gcmpack/MITgcm/pkg/seaice/seaice_calc_lhs.F,v 1.13 2016/04/22 08:50:34 mlosch Exp $
+C $Name:  $
+
 #include "SEAICE_OPTIONS.h"
+#ifdef ALLOW_AUTODIFF
+# include "AUTODIFF_OPTIONS.h"
+#endif
 
 CBOP
 C     !ROUTINE: SEAICE_CALC_LHS
@@ -43,6 +49,10 @@ C     === Global variables ===
 #include "SEAICE_PARAMS.h"
 #include "SEAICE.h"
 
+#ifdef ALLOW_AUTODIFF_TAMC
+# include "tamc.h"
+#endif
+
 C     !INPUT/OUTPUT PARAMETERS:
 C     === Routine arguments ===
 C     myTime :: Simulation time
@@ -65,19 +75,18 @@ C     i,j,bi,bj,k :: loop indices
       INTEGER i,j,bi,bj
       INTEGER k
       _RS     SINWAT
-      _RL     COSWAT, recip_deltaT
+      _RL     COSWAT, recip_deltaT, eplus, eminus
 C     backward difference extrapolation factor
       _RL bdfAlpha
+C     components of symmetric stress tensor
+      _RL sig11(1-OLx:sNx+OLx,1-OLy:sNy+OLy)
+      _RL sig22(1-OLx:sNx+OLx,1-OLy:sNy+OLy)
+      _RL sig12(1-OLx:sNx+OLx,1-OLy:sNy+OLy)
 C     symmetric drag coefficient
       _RL dragSym(1-OLx:sNx+OLx,1-OLy:sNy+OLy)
 C     fractional area at velocity points
       _RL areaW(1:sNx,1:sNy)
       _RL areaS(1:sNx,1:sNy)
-#ifdef SEAICE_ALLOW_MOM_ADVECTION
-C     tendency due to advection of momentum
-      _RL gUmom(1-OLx:sNx+OLx,1-OLy:sNy+OLy)
-      _RL gVmom(1-OLx:sNx+OLx,1-OLy:sNy+OLy)
-#endif /*  SEAICE_ALLOW_MOM_ADVECTION */
 CEOP
 
       k=1
@@ -114,14 +123,50 @@ C     symmetric drag coefficient may include bottomdrag for grounded ice
 #endif /* SEAICE_ALLOW_BOTTOMDRAG */
          ENDDO
         ENDDO
-C
 C     compute components of stress tensor from current velocity field
-C     and compute divergence of stress tensor
+        DO j=1-OLy,sNy+OLy
+         DO i=1-OLx,sNx+OLx
+          sig11(I,J) = 0. _d 0
+          sig22(I,J) = 0. _d 0
+          sig12(I,J) = 0. _d 0
+         ENDDO
+        ENDDO
+
+        DO j=0,sNy
+         DO i=0,sNx
+          eplus = e11(I,J,bi,bj) + e22(I,J,bi,bj)
+          eminus= e11(I,J,bi,bj) - e22(I,J,bi,bj)
+          sig11(I,J) = zeta(I,J,bi,bj)*eplus + eta(I,J,bi,bj)*eminus
+     &         - 0.5 _d 0 * PRESS(I,J,bi,bj)
+          sig22(I,J) = zeta(I,J,bi,bj)*eplus - eta(I,J,bi,bj)*eminus
+     &         - 0.5 _d 0 * PRESS(I,J,bi,bj)
+         ENDDO
+        ENDDO
+
+        DO j=1,sNy+1
+         DO i=1,sNx+1
+          sig12(I,J) = 2. _d 0 * e12(I,J,bi,bj) * etaZ(I,J,bi,bj)
+         ENDDO
+        ENDDO
 C
-        CALL SEAICE_CALC_STRESSDIV(
-     I       e11, e22, e12, press, zeta, eta, etaZ,
-     O       stressDivergenceX, stressDivergenceY,
-     I       bi, bj, myTime, myIter, myThid )
+C     compute divergence of stress tensor
+C
+        DO J=1,sNy
+         DO I=1,sNx
+          stressDivergenceX(I,J,bi,bj) =
+     &         ( sig11(I  ,J  ) * _dyF(I  ,J,bi,bj)
+     &         - sig11(I-1,J  ) * _dyF(I-1,J,bi,bj)
+     &         + sig12(I  ,J+1) * _dxV(I,J+1,bi,bj)
+     &         - sig12(I  ,J  ) * _dxV(I,J  ,bi,bj)
+     &         ) * recip_rAw(I,J,bi,bj)
+          stressDivergenceY(I,J,bi,bj) =
+     &         ( sig22(I  ,J  ) * _dxF(I,J  ,bi,bj)
+     &         - sig22(I  ,J-1) * _dxF(I,J-1,bi,bj)
+     &         + sig12(I+1,J  ) * _dyU(I+1,J,bi,bj)
+     &         - sig12(I  ,J  ) * _dyU(I  ,J,bi,bj)
+     &         ) * recip_rAs(I,J,bi,bj)
+         ENDDO
+        ENDDO
 C     compute lhs side of momentum equations
         IF ( SEAICEscaleSurfStress ) THEN
          DO J=1,sNy
@@ -134,11 +179,11 @@ C     compute lhs side of momentum equations
         DO J=1,sNy
          DO I=1,sNx
 C     mass*(uIce)/deltaT - dsigma/dx
-          uIceLHS(I,J,bi,bj) =
+          uIceLHS(I,J,bi,bj) = 
      &         bdfAlpha*seaiceMassU(I,J,bi,bj)*recip_deltaT
      &         *uIceLoc(I,J,bi,bj) - stressDivergenceX(I,J,bi,bj)
 C     mass*(vIce)/deltaT - dsigma/dy
-          vIceLHS(I,J,bi,bj) =
+          vIceLHS(I,J,bi,bj) = 
      &         bdfAlpha*seaiceMassV(I,J,bi,bj)*recip_deltaT
      &         *vIceLoc(I,J,bi,bj) - stressDivergenceY(I,J,bi,bj)
 C     coriols terms: - mass*f*vIce
@@ -180,29 +225,6 @@ C     apply masks for interior (important when we have open boundaries)
           vIceLHS(I,J,bi,bj) = vIceLHS(I,J,bi,bj)*maskinS(I,J,bi,bj)
          ENDDO
         ENDDO
-#ifdef SEAICE_ALLOW_MOM_ADVECTION
-        IF ( SEAICEmomAdvection ) THEN
-         DO J=1-OLy,sNy+OLy
-          DO I=1-OLx,sNx+OLx
-           gUmom(I,J) = 0. _d 0
-           gVmom(I,J) = 0. _d 0
-          ENDDO
-         ENDDO
-         CALL SEAICE_MOM_ADVECTION(
-     I        bi,bj,1,sNx,1,sNy,
-     I        uIceLoc, vIceLoc,
-     O        gUmom, gVmom,
-     I        myTime, myIter, myThid )
-C     Beware of sign! gU/Vmom is computed for the rhs of the equation;
-C     therefore, we need to substract gU/Vmom from the left hand side
-         DO J=1,sNy
-          DO I=1,sNx
-           uIceLHS(I,J,bi,bj) = uIceLHS(I,J,bi,bj) - gUmom(I,J)
-           vIceLHS(I,J,bi,bj) = vIceLHS(I,J,bi,bj) - gVmom(I,J)
-          ENDDO
-         ENDDO
-        ENDIF
-#endif /* SEAICE_ALLOW_MOM_ADVECTION */
        ENDDO
       ENDDO
 

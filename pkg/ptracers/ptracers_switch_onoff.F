@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/ptracers/ptracers_switch_onoff.F,v 1.2 2014/09/09 22:48:18 jmc Exp $
+C $Name:  $
+
 #include "PTRACERS_OPTIONS.h"
 
 CBOP
@@ -30,9 +33,7 @@ CEOP
 
 #ifdef ALLOW_PTRACERS
 C     !LOCAL VARIABLES:
-#ifndef ALLOW_AUTODIFF
       INTEGER iTracer
-#endif
 
       IF ( .NOT.PTRACERS_startAllTrc ) THEN
 

@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/exf/exf_check.F,v 1.33 2017/03/13 23:13:46 jmc Exp $
+C $Name:  $
+
 #include "EXF_OPTIONS.h"
 
 C--  File exf_check.F: Routines to check EXF settings
@@ -29,8 +32,6 @@ C     == Global variables ===
 
 #include "EXF_PARAM.h"
 #include "EXF_CONSTANTS.h"
-#include "EXF_INTERP_SIZE.h"
-#include "EXF_INTERP_PARAM.h"
 
 C     !INPUT/OUTPUT PARAMETERS:
 C     myThid   :: my Thread Id number
@@ -90,9 +91,7 @@ C- Note: should check all obcs{N,S,E,W}repCycle (not just default repeatPeriod)
         CALL PRINT_ERROR( msgBuf, myThid )
         errCount = errCount + 1
        ENDIF
-       IF ( repeatPeriod.NE.0. .AND. (OBCSNperiod.GE.0 .OR.
-     &      OBCSSperiod.GE.0 .OR. OBCSWperiod.GE.0 .OR.
-     &      OBCSEperiod.GE.0)) THEN
+       IF ( repeatPeriod.NE.0. ) THEN
 C- Note: should check all siob{N,S,E,W}repCycle (not just default repeatPeriod)
         WRITE(msgBuf,'(2A)') 'EXF_CHECK: ',
      &       'useOBCSYearlyFields not implemented for repeatPeriod <> 0'
@@ -301,15 +300,6 @@ c     ENDIF
       ENDIF
 #endif /* ndef ATMOSPHERIC_LOADING */
 
-#ifndef EXF_ALLOW_TIDES
-      IF ( tidePotFile.NE.' ' ) THEN
-        WRITE(msgBuf,'(3A)') 'EXF_CHECK: Cannot read-in field ',
-     &    '"tidePot" with #undef EXF_ALLOW_TIDES'
-        CALL PRINT_ERROR( msgBuf, myThid )
-        errCount = errCount + 1
-      ENDIF
-#endif /* ndef EXF_SEAICE_FRACTION */
-
 #ifndef EXF_SEAICE_FRACTION
       IF ( areamaskfile.NE.' ' ) THEN
         WRITE(msgBuf,'(3A)') 'EXF_CHECK: Cannot read-in field ',
@@ -464,9 +454,6 @@ C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
       CALL EXF_CHECK_INTERP( 'apressure', apressurefile,
      &         apressure_interpMethod, apressure_nlat,
      &         apressure_nlon, apressure_lon_inc, errCount, myThid )
-      CALL EXF_CHECK_INTERP( 'tidePot', tidePotFile,
-     &         tidePot_interpMethod, tidePot_nlat,
-     &         tidePot_nlon, tidePot_lon_inc, errCount, myThid )
       CALL EXF_CHECK_INTERP( 'areamask', areamaskfile,
      &         areamask_interpMethod, areamask_nlat,
      &         areamask_nlon, areamask_lon_inc, errCount, myThid )
@@ -557,14 +544,6 @@ C-    stop if one expects interp+rotation (Curvilin-G) which will not happen
        IF (rotateStressOnAgrid.AND..NOT.readStressOnAgrid) THEN
         WRITE(msgBuf,'(2A)') 'EXF_CHECK: rotateStressOnAgrid ',
      &       'only applies to cases readStressOnAgrid is true'
-        CALL PRINT_ERROR( msgBuf, myThid )
-        errCount = errCount + 1
-       ENDIF
-       IF ( rotateStressOnAgrid .AND.
-     &      ( ustressfile .EQ. ' ' .OR. ustressperiod .EQ. 0. .OR.
-     &        vstressfile .EQ. ' ' .OR. vstressperiod .EQ. 0. ) ) THEN
-        WRITE(msgBuf,'(2A)') 'EXF_CHECK: rotateStressOnAgrid ',
-     &       'requires to update u/vstress'
         CALL PRINT_ERROR( msgBuf, myThid )
         errCount = errCount + 1
        ENDIF
@@ -680,6 +659,7 @@ C     !USES:
 C     == Global variables ===
 #include "EEPARAMS.h"
 #include "EXF_INTERP_SIZE.h"
+#include "EXF_PARAM.h"
 
 C     !INPUT/OUTPUT PARAMETERS:
 C     fldName          :: field short name (to print mesg)

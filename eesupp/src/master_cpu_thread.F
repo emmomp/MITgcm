@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/eesupp/src/master_cpu_thread.F,v 1.2 2009/04/08 20:43:54 dimitri Exp $
+C $Name:  $
+
 #include "CPP_EEOPTIONS.h"
 
 CBOP

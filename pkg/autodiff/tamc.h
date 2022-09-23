@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/autodiff/tamc.h,v 1.12 2014/04/04 23:06:34 jmc Exp $
+C $Name:  $
+
 C     ================================================================
 C     HEADER TAMC
 C     ================================================================
@@ -110,7 +113,6 @@ C     and writing data.
       integer iloop_daily
 
       INTEGER    isbyte
-c     For smaller tapes replace 8 by 4.
       PARAMETER( isbyte      = 8 )
       INTEGER    maximpl
       PARAMETER( maximpl     = 6 )
@@ -120,6 +122,11 @@ c     For smaller tapes replace 8 by 4.
 #endif
       INTEGER    maxcube
       PARAMETER( maxcube     = 1 )
+
+      INTEGER act0, act1, act2, act3, act4
+      INTEGER max0, max1, max2, max3
+      INTEGER iikey, kkey, passkey, igadkey,
+     &        itdkey, idynkey, igmkey, ikppkey, iptrkey
 
 #ifdef ALLOW_CG2D_NSA
 C     Parameter that is needed for the tape complev_cg2d_iter

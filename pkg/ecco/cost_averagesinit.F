@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/ecco/cost_averagesinit.F,v 1.23 2015/11/10 13:58:14 atn Exp $
+C $Name:  $
+
 #include "ECCO_OPTIONS.h"
 #ifdef ALLOW_SEAICE
 # include "SEAICE_OPTIONS.h"
@@ -34,20 +37,15 @@ c     == global variables ==
 #include "EEPARAMS.h"
 #include "SIZE.h"
 
-#ifdef ECCO_CTRL_DEPRECATED
-# include "ecco_cost.h"
-# ifdef ALLOW_CTRL
-#  include "CTRL_SIZE.h"
-#  include "ctrl.h"
-#  include "ctrl_dummy.h"
-# endif /* ALLOW_CTRL */
-# ifdef ALLOW_SEAICE
-#  include "SEAICE_COST.h"
-# endif
-#else /* ndef ECCO_CTRL_DEPRECATED */
-# include "ECCO_SIZE.h"
-# include "ECCO.h"
-#endif /* ECCO_CTRL_DEPRECATED */
+#include "ecco_cost.h"
+#ifdef ALLOW_CTRL
+# include "CTRL_SIZE.h"
+# include "ctrl.h"
+# include "ctrl_dummy.h"
+#endif
+#ifdef ALLOW_SEAICE
+# include "SEAICE_COST.h"
+#endif
 
 c     == routine arguments ==
 
@@ -56,25 +54,27 @@ c     == routine arguments ==
 c     == local variables ==
 
       integer bi,bj
+      integer i,j,k,kk
+      integer itlo,ithi
+      integer jtlo,jthi
       integer jmin,jmax
       integer imin,imax
-#if (defined ALLOW_GENCOST_CONTRIBUTION || defined ECCO_CTRL_DEPRECATED)
-      integer i,j,k,kk
-#ifdef ALLOW_TRANSPORT_COST_CONTRIBUTION
       integer irec
-#endif
-#endif
 
 c     == end of interface ==
 
 c--   Set the loop ranges.
+      jtlo = mybylo(mythid)
+      jthi = mybyhi(mythid)
+      itlo = mybxlo(mythid)
+      ithi = mybxhi(mythid)
       jmin = 1
       jmax = sny
       imin = 1
       imax = snx
 
-      do bj = mybylo(mythid), mybyhi(mythid)
-        do bi = mybxlo(mythid), mybxhi(mythid)
+      do bj = jtlo,jthi
+        do bi = itlo,ithi
 
 #ifdef ALLOW_GENCOST_CONTRIBUTION
           do  k=1,NGENCOST
@@ -97,10 +97,9 @@ c--   Set the loop ranges.
               enddo
             enddo
           enddo
-#endif /* ALLOW_GENCOST3D */
-#endif /* ALLOW_GENCOST_CONTRIBUTION */
+#endif
+#endif
 
-#ifdef ECCO_CTRL_DEPRECATED
 #ifdef ALLOW_SSH_COST_CONTRIBUTION
 c--       Initialise surface pressure average.
           do j = jmin,jmax
@@ -297,10 +296,10 @@ c--       Initialise salinity average (2d).
              transpbar(irec,bi,bj) = 0. _d 0
           enddo
 #endif
-#endif /* ECCO_CTRL_DEPRECATED */
 
         enddo
       enddo
 
       return
       end
+

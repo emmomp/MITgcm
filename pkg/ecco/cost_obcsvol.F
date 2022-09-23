@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/ecco/cost_obcsvol.F,v 1.13 2014/10/20 03:16:12 gforget Exp $
+C $Name:  $
+
 #include "ECCO_OPTIONS.h"
 #ifdef ALLOW_CTRL
 # include "CTRL_OPTIONS.h"
@@ -8,7 +11,8 @@
      I                       mytime,
      I                       startrec,
      I                       endrec,
-     I                       mythid )
+     I                       mythid
+     &                     )
 
 c     ==================================================================
 c     SUBROUTINE cost_obcsvol
@@ -46,21 +50,17 @@ c     == global variables ==
 #endif
 
 c     == routine arguments ==
+
       integer myiter
       _RL     mytime
+      integer mythid
       integer startrec
       integer endrec
-      integer mythid
 
 #if (defined (ALLOW_CTRL) && defined (ALLOW_OBCS))
 
-#ifdef OBCS_VOLFLUX_COST_CONTRIBUTION
-#ifdef BAROTROPIC_OBVEL_CONTROL
-c     == external functions ==
-      integer  ilnblnk
-      external ilnblnk
-
 c     == local variables ==
+
       integer bi,bj
       integer i,j,k
       integer itlo,ithi
@@ -72,6 +72,7 @@ c     == local variables ==
       integer nrec
       integer ilfld
       integer igg
+
       _RL fctile
       _RL sumvol
       _RL gg
@@ -82,30 +83,41 @@ c     == local variables ==
       character*(80) fnameflds
       character*(80) fnamefldw
       character*(80) fnameflde
+
 #if (defined ALLOW_OBCSN_CONTROL || defined ALLOW_OBCSS_CONTROL)
-      _RL tmpfldxz (1-OLx:sNx+OLx,Nr,nSx,nSy)
+      _RL tmpfldxz (1-olx:snx+olx,nr,nsx,nsy)
 #endif
 #if (defined ALLOW_OBCSE_CONTROL || defined ALLOW_OBCSW_CONTROL)
-      _RL tmpfldyz (1-OLy:sNy+OLy,Nr,nSx,nSy)
+      _RL tmpfldyz (1-oly:sny+oly,nr,nsx,nsy)
 #endif
+
       logical doglobalread
       logical ladinit
+
 #ifdef ECCO_VERBOSE
       character*(MAX_LEN_MBUF) msgbuf
 #endif
 
+c     == external functions ==
+
+      integer  ilnblnk
+      external ilnblnk
+
 c     == end of interface ==
+
+#ifdef OBCS_VOLFLUX_COST_CONTRIBUTION
+#ifdef BAROTROPIC_OBVEL_CONTROL
 
       stop 's/r cost_obcsvol needs to be fixed'
 
-      jtlo = myByLo(mythid)
-      jthi = myByHi(mythid)
-      itlo = myBxLo(mythid)
-      ithi = myBxHi(mythid)
+      jtlo = mybylo(mythid)
+      jthi = mybyhi(mythid)
+      itlo = mybxlo(mythid)
+      ithi = mybxhi(mythid)
       jmin = 1
-      jmax = sNy
+      jmax = sny
       imin = 1
-      imax = sNx
+      imax = snx
 
 c--   Read tiled data.
       doglobalread = .false.
@@ -356,8 +368,8 @@ c--   Do the global summation.
       _GLOBAL_SUM_RL( sumvol, mythid )
       objf_obcsvol =  wobcsvol * sumvol* sumvol
 
-#endif /* BAROTROPIC_OBVEL_CONTROL */
-#endif /* OBCS_VOLFLUX_COST_CONTRIBUTION */
+#endif
+#endif
 
 #endif /* ALLOW_CTRL and ALLOW_OBCS */
 

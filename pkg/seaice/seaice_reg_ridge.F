@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/seaice/seaice_reg_ridge.F,v 1.5 2014/10/20 03:20:58 gforget Exp $
+C $Name:  $
+
 #include "SEAICE_OPTIONS.h"
 #ifdef ALLOW_EXF
 # include "EXF_OPTIONS.h"
@@ -73,11 +76,6 @@ C     reciprocal number of ice classes nITD
 C     Helper variables for diagnostics
       _RL DIAGarrayA    (1:sNx,1:sNy)
 #endif /* ALLOW_DIAGNOSTICS */
-#ifdef ALLOW_AUTODIFF_TAMC
-      INTEGER act1, act2, act3, act4
-      INTEGER max1, max2, max3
-      INTEGER iicekey
-#endif
 CEOP
 
 C
@@ -214,13 +212,7 @@ C     Let us keep our fingers crossed, that the model will be benign!
         ENDDO
 #endif /* SEAICE_ITD */
 #ifdef ALLOW_AUTODIFF_TAMC
-CADJ STORE heff(:,:,bi,bj) = comlev1_bibj, key = iicekey,byte=isbyte
-C     The following statement helps TAF to understand that TICES is not
-C     modified/reset everywhere so that it is correctly stored in the
-C     outer checkpoint levels. This is a TAF bug and this statement can
-C     probably be removed again, once this bug is fixed (but it does not
-C     hurt, either).
-CADJ INCOMPLETE TICES
+CADJ STORE heff(:,:,bi,bj)  = comlev1_bibj, key = iicekey,byte=isbyte
 #endif /* ALLOW_AUTODIFF_TAMC */
         DO J=1,sNy
          DO I=1,sNx

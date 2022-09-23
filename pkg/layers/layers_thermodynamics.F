@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/layers/layers_thermodynamics.F,v 1.5 2015/06/15 21:34:07 jmc Exp $
+C $Name:  $
+
 #include "LAYERS_OPTIONS.h"
 C--  File layers_thermodynamics.F:
 C--   Contents

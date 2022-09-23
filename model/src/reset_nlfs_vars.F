@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/model/src/reset_nlfs_vars.F,v 1.2 2014/05/02 16:56:53 jmc Exp $
+C $Name:  $
+
 #include "CPP_OPTIONS.h"
 
 CBOP
@@ -24,6 +27,7 @@ C     == Global variables
 #include "SURFACE.h"
 
 C     !INPUT/OUTPUT PARAMETERS:
+C     == Routine arguments ==
 C     myTime    :: Current time in simulation
 C     myIter    :: Current iteration number in simulation
 C     myThid    :: my Thread Id number
@@ -33,10 +37,9 @@ C     myThid    :: my Thread Id number
 
 C     !LOCAL VARIABLES:
 #ifdef NONLIN_FRSURF
-#ifndef DISABLE_RSTAR_CODE
-C     i, j,     :: loop counter
-C     bi, bj    :: tile indices
-      INTEGER i, j, bi, bj
+C     Local variables
+C     i,j,k,bi,bj :: loop counter
+      INTEGER i,j,bi,bj
 CEOP
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
@@ -44,6 +47,7 @@ C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
       DO bj=myByLo(myThid), myByHi(myThid)
        DO bi=myBxLo(myThid), myBxHi(myThid)
 
+#ifndef DISABLE_RSTAR_CODE
         IF ( fluidIsAir .AND. select_rStar.GE.1 ) THEN
          DO j=1-OLy,sNy+OLy
           DO i=1-OLx,sNx+OLx
@@ -57,12 +61,12 @@ C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
           ENDDO
          ENDDO
         ENDIF
+#endif /* DISABLE_RSTAR_CODE */
 
 C- end bi,bj loop
        ENDDO
       ENDDO
 
-#endif /* DISABLE_RSTAR_CODE */
 #endif /* NONLIN_FRSURF */
 
       RETURN

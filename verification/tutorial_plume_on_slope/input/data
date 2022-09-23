@@ -18,7 +18,6 @@
  diffK4S=0.E4,
  diffKhS=1.E-2,
  diffKzS=1.E-5,
- tempAdvScheme=33,
  f0=0.e-4,
  beta=0.E-11,
  eosType='LINEAR',
@@ -31,7 +30,7 @@
  readBinaryPrec=64,
 #- not safe to use globalFiles in multi-processors runs
 #globalFiles=.TRUE.,
- plotLevel=0,
+ tempAdvScheme=33,
  &
 
 # Elliptic solver parameters
@@ -67,10 +66,10 @@
 
 # Input datasets
  &PARM05
- bathyFile      ='topog.slope',
+ bathyFile='topog.slope',
  hydrogThetaFile='T.init',
- surfQnetFile   ='Qnet.forcing',
+ surfQfile='Qnet.forcing',
 #hydrogThetaFile='T.pickup',
-#uVelInitFile   ='U.pickup',
-#pSurfInitFile  ='Eta.pickup',
+#uVelInitFile='U.pickup',
+#pSurfInitFile='Eta.pickup',
  &

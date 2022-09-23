@@ -1,12 +1,13 @@
+C $Header: /u/gcmpack/MITgcm/pkg/ecco/cost_ssh.F,v 1.24 2015/10/24 18:49:43 gforget Exp $
+C $Name:  $
+
 #include "ECCO_OPTIONS.h"
-#ifdef ALLOW_CTRL
-# include "CTRL_OPTIONS.h"
-#endif
+
 
       subroutine cost_ssh(
-     I                     myIter,
-     I                     myTime,
-     I                     myThid
+     I                     myiter,
+     I                     mytime,
+     I                     mythid
      &                   )
 
 c     ==================================================================
@@ -55,9 +56,9 @@ c     == global variables ==
 
 c     == routine arguments ==
 
-      integer myIter
-      _RL     myTime
-      integer myThid
+      integer myiter
+      _RL     mytime
+      integer mythid
 
 #ifdef ALLOW_SSH_COST_CONTRIBUTION
 c     == local variables ==
@@ -77,10 +78,10 @@ c     == local variables ==
       _RL offset
       _RL costmean
       _RL offset_sum
-      _RL psmean ( 1-OLx:sNx+OLx, 1-OLy:sNy+OLy, nSx, nSy )
-      _RL wwwtp  ( 1-OLx:sNx+OLx, 1-OLy:sNy+OLy           )
-      _RL wwwers ( 1-OLx:sNx+OLx, 1-OLy:sNy+OLy           )
-      _RL wwwgfo ( 1-OLx:sNx+OLx, 1-OLy:sNy+OLy           )
+      _RL psmean ( 1-olx:snx+olx, 1-oly:sny+oly, nsx, nsy )
+      _RL wwwtp  ( 1-olx:snx+olx, 1-oly:sny+oly           )
+      _RL wwwers ( 1-olx:snx+olx, 1-oly:sny+oly           )
+      _RL wwwgfo ( 1-olx:snx+olx, 1-oly:sny+oly           )
       _RL junk
 
       character*(80) fname
@@ -93,14 +94,14 @@ c     == external functions ==
 
 c     == end of interface ==
 
-      jtlo = myByLo(myThid)
-      jthi = myByHi(myThid)
-      itlo = myBxLo(myThid)
-      ithi = myBxHi(myThid)
+      jtlo = mybylo(mythid)
+      jthi = mybyhi(mythid)
+      itlo = mybxlo(mythid)
+      ithi = mybxhi(mythid)
       jmin = 1
-      jmax = sNy
+      jmax = sny
       imin = 1
-      imax = sNx
+      imax = snx
 
 c--   Initialise local variables.
       costmean   = 0. _d 0
@@ -139,8 +140,8 @@ c--   ============
 c--   Read mean field and generate mask
 c--   Convert mean ssh from cm to m
 #ifdef ALLOW_SSH_MEAN_COST_CONTRIBUTION
-      CALL READ_REC_3D_RL( mdtdatfile, cost_iprec, 1,
-     &                     mdt, 1, 1, myThid )
+      call mdsreadfield( mdtdatfile, cost_iprec, cost_yftype, 1,
+     &                   mdt, 1, mythid )
 
       do bj = jtlo,jthi
         do bi = itlo,ithi
@@ -166,7 +167,7 @@ c--   Loop over records for the first time.
 
 c--     Compute the mean over all psbar records.
         call active_read_xy( fname, psbar, irec, doglobalread,
-     &                       ladinit, optimcycle, myThid,
+     &                       ladinit, optimcycle, mythid,
      &                       xx_psbar_mean_dummy )
 
         do bj = jtlo,jthi
@@ -191,8 +192,8 @@ c--   tiles of this instance.
 c--   Sum over this thread tiles.
       do bj = jtlo,jthi
         do bi = itlo,ithi
-          do j = 1,sNy
-            do i = 1,sNx
+          do j = 1,sny
+            do i = 1,snx
               offset     = offset +
      &                     mdtmask(i,j,bi,bj)*cosphi(i,j,bi,bj)*
      &                     (mdt(i,j,bi,bj) - psmean(i,j,bi,bj))
@@ -204,23 +205,23 @@ c--   Sum over this thread tiles.
       enddo
 
 c--   Do a global summation.
-      _GLOBAL_SUM_RL( offset     , myThid )
-      _GLOBAL_SUM_RL( offset_sum , myThid )
+      _GLOBAL_SUM_RL( offset     , mythid )
+      _GLOBAL_SUM_RL( offset_sum , mythid )
 
       if (offset_sum .eq. 0.0) then
-        _BEGIN_MASTER( myThid )
+        _BEGIN_MASTER( mythid )
         write(msgbuf,'(a)') ' cost_ssh: offset_sum = zero!'
         call print_message( msgbuf, standardmessageunit,
-     &                          SQUEEZE_RIGHT , myThid)
-        _END_MASTER( myThid )
+     &                          SQUEEZE_RIGHT , mythid)
+        _END_MASTER( mythid )
 cph        stop   '  ... stopped in cost_ssh.'
       else
-        _BEGIN_MASTER( myThid )
+        _BEGIN_MASTER( mythid )
         write(msgbuf,'(a,d22.15)')
      &          ' cost_ssh: offset_sum = ',offset_sum
         call print_message( msgbuf, standardmessageunit,
-     &                          SQUEEZE_RIGHT , myThid)
-        _END_MASTER( myThid )
+     &                          SQUEEZE_RIGHT , mythid)
+        _END_MASTER( mythid )
       endif
 
       offset = offset / offset_sum
@@ -229,14 +230,14 @@ cph        stop   '  ... stopped in cost_ssh.'
       if ( usePROFILES ) then
       do bj = jtlo,jthi
         do bi = itlo,ithi
-          do j = 1,sNy
-            do i = 1,sNx
+          do j = 1,sny
+            do i = 1,snx
               prof_etan_mean(i,j,bi,bj)=offset+psmean(i,j,bi,bj)
             enddo
           enddo
         enddo
       enddo
-      _EXCH_XY_RL( prof_etan_mean, myThid )
+      _EXCH_XY_RL( prof_etan_mean, mythid )
       endif
 #endif
 
@@ -260,8 +261,8 @@ c--   compute mean ssh difference cost contribution
           enddo
         enddo
       enddo
-      CALL GLOBAL_SUM_R8 (  objf_hmean,  myThid  )
-      CALL GLOBAL_SUM_R8 (  num_hmean,  myThid  )
+      CALL GLOBAL_SUM_R8 (  objf_hmean,  mythid  )
+      CALL GLOBAL_SUM_R8 (  num_hmean,  mythid  )
 #endif /* ALLOW_SSH_TOT */
 #endif /* ALLOW_SSH_MEAN_COST_CONTRIBUTION */
 
@@ -273,28 +274,28 @@ c--   Loop over records for the second time.
       do irec = 1, ndaysrec
 
         call active_read_xy( fname, psbar, irec, doglobalread,
-     &                       ladinit, optimcycle, myThid,
+     &                       ladinit, optimcycle, mythid,
      &                       xx_psbar_mean_dummy )
 
 #ifdef ALLOW_SSH_TPANOM_COST_CONTRIBUTION
       call cost_sla_read( topexfile, topexstartdate, topexperiod,
      &                topexintercept, topexslope,
      &                tpobs, tpmask,
-     &                irec, myThid )
+     &                irec, mythid )
 #endif
 
 #ifdef ALLOW_SSH_ERSANOM_COST_CONTRIBUTION
       call cost_sla_read( ersfile, ersstartdate, ersperiod,
      &                ersintercept, ersslope,
      &                ersobs, ersmask,
-     &                irec, myThid )
+     &                irec, mythid )
 #endif
 
 #ifdef ALLOW_SSH_GFOANOM_COST_CONTRIBUTION
       call cost_sla_read( gfofile, gfostartdate, gfoperiod,
      &                gfointercept, gfoslope,
      &                gfoobs, gfomask,
-     &                irec, myThid )
+     &                irec, mythid )
 #endif
 
         do bj = jtlo,jthi
@@ -396,7 +397,7 @@ c--   End of second loop over records.
         enddo
       enddo
 
+
 #endif /* ifdef ALLOW_SSH_COST_CONTRIBUTION */
 
-      RETURN
-      END
+      end

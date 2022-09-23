@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/longstep/longstep_readparms.F,v 1.4 2014/05/27 23:41:28 jmc Exp $
+C $Name:  $
+
 #include "LONGSTEP_OPTIONS.h"
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
@@ -76,11 +79,7 @@ C     Open and read the data.longstep file
      &                    SQUEEZE_RIGHT , myThid )
 
 C     Close the open data file
-#ifdef SINGLE_DISK_IO
       CLOSE(iUnit)
-#else
-      CLOSE(iUnit,STATUS='DELETE')
-#endif /* SINGLE_DISK_IO */
 
 C     Now set-up any remaining parameters that result from the input
 C     parameters

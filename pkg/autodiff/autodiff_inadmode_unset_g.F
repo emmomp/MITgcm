@@ -1,11 +1,13 @@
+C $Header: /u/gcmpack/MITgcm/pkg/autodiff/autodiff_inadmode_unset_g.F,v 1.3 2012/07/04 20:21:10 jmc Exp $
+C $Name:  $
+
 #include "AUTODIFF_OPTIONS.h"
 
-      SUBROUTINE G_AUTODIFF_INADMODE_UNSET( myTime, myIter, myThid )
+      SUBROUTINE G_AUTODIFF_INADMODE_UNSET( myThid )
 C     *==========================================================*
 C     | SUBROUTINE G_AUTODIFF_INADMODE_UNSET
 C     *==========================================================*
 
-C     !USES:
       IMPLICIT NONE
 C     == Global variables ===
 #include "SIZE.h"
@@ -13,14 +15,11 @@ C     == Global variables ===
 #include "PARAMS.h"
 #include "AUTODIFF_PARAMS.h"
 
-C     !INPUT/OUTPUT PARAMETERS:
-C     myTime    :: Current time in simulation
-C     myIter    :: Current iteration number
-C     myThid    :: my Thread Id number
-      _RL     myTime
-      INTEGER myIter
+C     == Routine arguments ==
+C     myThid :: my Thread Id number
       INTEGER myThid
 
+cph   inAdMode = inAdFalse
       inAdMode = .FALSE.
 
       RETURN

@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/salt_plume/salt_plume_mnc_init.F,v 1.2 2007/11/28 17:55:36 dimitri Exp $
+C $Name:  $
+
 #include "SALT_PLUME_OPTIONS.h"
 
 CBOP 0
@@ -26,8 +29,8 @@ CEOP
 
        CALL MNC_CW_ADD_VNAME('saltPlumeFlux', 'Cen_xy_Hn__-__t', 3,4,
      &                       myThid)
-       CALL MNC_CW_ADD_VATTR_TEXT('saltPlumeFlux','units','g/m^2/s',
-     &                            myThid)
+       CALL MNC_CW_ADD_VATTR_TEXT('saltPlumeFlux','units',
+     &     'psu.kg/m^2/s', myThid)
        CALL MNC_CW_ADD_VATTR_TEXT('saltPlumeFlux','description',
      &     'Net downward salt flux rejected during freezing', myThid)
 

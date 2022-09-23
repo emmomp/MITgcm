@@ -1,9 +1,14 @@
+C $Header: /u/gcmpack/MITgcm/pkg/cost/cost_accumulate_mean.F,v 1.8 2012/08/10 19:36:02 jmc Exp $
+C $Name:  $
+
 #include "COST_OPTIONS.h"
 
-      SUBROUTINE cost_accumulate_mean( myThid )
+      subroutine cost_accumulate_mean( myThid )
 C     *==========================================================*
-C     | SUBROUTINE cost_accumulate_mean                          |
+C     | subroutine cost_accumulate_mean                          |
 C     | o accumulate mean state for cost evalualtion             |
+C     *==========================================================*
+C     |                                                          |
 C     *==========================================================*
       IMPLICIT NONE
 
@@ -18,19 +23,29 @@ C     == Global variables ===
 
 C     == Routine arguments ==
 C     myThid - Thread number for this instance of the routine.
-      INTEGER bi, bj
-      INTEGER myThid
+      integer bi, bj
+      integer myThid
 
 #ifdef ALLOW_COST
 C     == Local variables
-      INTEGER i, j, k
+      _RL thetaRef
+
+      integer i, j, k
+      integer ig, jg
+      integer itlo,ithi
+      integer jtlo,jthi
+
+      jtlo = mybylo(mythid)
+      jthi = mybyhi(mythid)
+      itlo = mybxlo(mythid)
+      ithi = mybxhi(mythid)
 
 C--   Calculate cost function on tile of this instance
-      DO bj = myByLo(myThid), myByHi(myThid)
-        DO bi = myBxLo(myThid), myBxHi(myThid)
-          DO k = 1, Nr
-            DO j=1,sNy
-              DO i=1,sNx
+      do bj = jtlo,jthi
+        do bi = itlo,ithi
+          do k = 1, Nr
+            do j=1,sNy
+              do i=1,sNx
                 cMeanTheta(i,j,k,bi,bj) = cMeanTheta(i,j,k,bi,bj)
      &                + theta(i,j,k,bi,bj)
      &                /lastinterval*deltaTClock
@@ -53,11 +68,11 @@ C--   Calculate cost function on tile of this instance
      &                 /2.*vvel(i,j,k,bi,bj)
      &                 *maskS(i,j,k,bi,bj)*maskC(i,j,k,bi,bj)
      &                 /lastinterval*deltaTClock
-              ENDDO
-            ENDDO
-          ENDDO
-        ENDDO
-      ENDDO
+              end do
+            end do
+          end do
+        end do
+      end do
 
 #endif
 

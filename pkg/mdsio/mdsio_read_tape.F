@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/mdsio/mdsio_read_tape.F,v 1.1 2013/10/17 00:30:46 jmc Exp $
+C $Name:  $
+
 #include "MDSIO_OPTIONS.h"
 
 CBOP

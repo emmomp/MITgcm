@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/obcs/OBCS_PTRACERS.h,v 1.2 2012/03/09 20:13:03 jmc Exp $
+C $Name:  $
+
 #ifdef ALLOW_OBCS
 #ifdef ALLOW_PTRACERS
 

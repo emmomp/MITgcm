@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/ggl90/GGL90_OPTIONS.h,v 1.7 2015/02/19 15:44:12 mlosch Exp $
+C $Name:  $
+
 C     *=============================================================*
 C     | GGL90_OPTIONS.h
 C     | o CPP options file for GGL90 package.

@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/autodiff/adread_adwrite.F,v 1.25 2014/04/04 23:03:59 jmc Exp $
+C $Name:  $
+
 #include "AUTODIFF_OPTIONS.h"
 #ifdef ALLOW_CTRL
 # include "CTRL_OPTIONS.h"
@@ -5,23 +8,14 @@
 
 C     ==================================================================
 C
-C     adread_adwrite.F: routines to handle the I/O of the TAF/TAMC
-C                       generated code. All files are direct access files.
+C     ad_read_write.F: routines to handle the I/O of the TAMC generated
+C                      code. All files are direct access files.
 C     Routines:
-C     o  ADREAD    - Read  RL/RS data from file.
-C     o  ADWRITE   - Write RL/RS data to   file.
+C     o  ADREAD  - Read  data from file.
+C     o  ADWRITE - Write data to   file.
 C
-C     Note on short real variables (when _RS expands to real*4):
-C     ADREAD/ADWRITE handles this case properly as in F77 only addresses
-C     are passed to the subroutine. The size-parameter determines
-C     correctly how the passed array var is passed to
-C     MDS_READ/WRITE_TAPE. Some compiler/flag combinations that check
-C     for subroutine argument consistency will complain about a real*4
-C     array being passed to a real*8 array, but this can be avoided by
-C     adding this file to the list of NOOPTFILES with appropriate
-C     NOOPTFLAGS in the build-options file.
 C
-C     The following input variables are used throughout in the argument
+C     The following input veriables are used throughout in the argument
 C     lists:
 C
 C     name   -  character
@@ -51,9 +45,9 @@ C
 C     For further details on this see the TAMC Users Manual, Appendix B,
 C     User defined Storage Subroutines.
 C
-C     TAF does not provide the leading argument myThid when compiling
-C     the MITgcmUV code. Instead there is a sed script available that
-C     changes the TAF-generated adjoint code.
+C     TAMC does not provide the two leading arguments myThid and myIter
+C     when compiling the MITgcmUV code. Instead the is a sed script avail-
+C     able that does change the TAMC-generated adjoint code.
 C
 C     Only the master thread is allowed to write data and only gobal
 C     model arrays are allowed to be written be the subsequent routines.
@@ -64,7 +58,7 @@ C
 C     ==================================================================
 
 CBOP
-C     !ROUTINE: ADREAD
+C     !ROUTINE: adread
 C     !INTERFACE:
       SUBROUTINE ADREAD(
      I                   myThid,
@@ -75,7 +69,8 @@ C     !INTERFACE:
      O                   var,
      I                   size,
      I                   length,
-     I                   irec )
+     I                   irec
+     &                 )
 
 C     !DESCRIPTION: \bv
 C     ==================================================================
@@ -83,7 +78,7 @@ C     SUBROUTINE adread
 C     ==================================================================
 C     o Read direct access file.
 C     A call to this routine implies an open-read-close sequence
-C     since it uses the MITgcmUV i/o routine MDS_READ_TAPE. Only
+C     since it uses the MITgcmUV i/o routine MDSREADVECTOR. Only
 C     the master thread reads the data. Otherwise each thread would
 C     read from file.
 C     started: Christian Eckert eckert@mit.edu 30-Jun-1999
@@ -99,15 +94,12 @@ C     == global variables ==
 #include "EEPARAMS.h"
 #include "SIZE.h"
 #include "PARAMS.h"
-#ifdef ALLOW_CTRL
-# include "ctrl.h"
-# include "optim.h"
-#endif
-C- OpenAD: this header is not converted to a module --> go after the others
+#include "ctrl.h"
+#include "optim.h"
 #include "AUTODIFF.h"
 
 C     !INPUT/OUTPUT PARAMETERS:
-C     myThid :: number of the thread or instance of the program.
+C     == routine arguments ==
 C     name   :: extended tape name.
 C     len    :: number of characters in name.
 C     tid    :: tape identifier.
@@ -115,22 +107,25 @@ C     vid    :: identifies the variable to be stored on tape.
 C     var    :: values to be stored.
 C     size   :: size in bytes of the type of variable var.
 C     length :: dimension of the variable stored on the tape.
+C     myThid :: number of the thread or instance of the program.
 C     irec   :: record number to be written.
+
       INTEGER myThid
       CHARACTER*(*) name
       INTEGER len
       INTEGER tid
       INTEGER vid
-      real*8  var(*)
       INTEGER size
       INTEGER length
       INTEGER irec
+      real*8  var(*)
 
 C     !FUNCTIONS:
       INTEGER  ILNBLNK
       EXTERNAL ILNBLNK
 
 C     !LOCAL VARIABLES:
+C     == local variables ==
       CHARACTER*(MAX_LEN_FNAM) fname
       CHARACTER*(MAX_LEN_MBUF) msgBuf
       INTEGER filePrec
@@ -188,38 +183,41 @@ C-    only use "WHTAPEIO" when type and length match
 #ifdef ALLOW_AUTODIFF_WHTAPEIO
       IF ( useWHTapeIO ) THEN
 
-cc      IF (n2d*length2d.EQ.length) THEN
+cc      if (n2d*length2d.EQ.length) then
         DO i2d=1,n2d
-          IF (tapeFileUnit.EQ.0) THEN
+          if (tapeFileUnit.EQ.0) THEN
             jrec=irec
-          ELSE
+          else
             tapeFileCounter=tapeFileCounter+1
             jrec=tapeFileCounter+tapeMaxCounter*(irec-1)
-            IF (tapeFileCounter.GT.tapeMaxCounter) THEN
-              WRITE(msgBuf,'(A,2I5)')
-     &              'ADREAD: tapeFileCounter > tapeMaxCounter ',
-     &              tapeFileCounter, tapeMaxCounter
-              CALL PRINT_ERROR( msgBuf, myThid )
-              WRITE(msgBuf,'(2A)') 'for file ', fname(1:lenLoc)
-              CALL PRINT_ERROR( msgBuf, myThid )
-              STOP 'ABNORMAL END: S/R ADREAD'
-            ENDIF
-          ENDIF
+            if (tapeFileCounter.GT.tapeMaxCounter) stop
+          endif
           j2d=(i2d-1)*length2d+1
-          CALL MDS_READ_WHALOS(fname,lenLoc,filePrec,tapeFileUnit,
+          call mds_read_whalos(fname,lenLoc,filePrec,tapeFileUnit,
      &      1,var(j2d),jrec,tapeSingleCpuIO,tapeBufferIO,myThid)
         ENDDO
-cc      ELSE
-C     The other case actually does not (and should not) occur within the
-C     main loop, where we only store global arrays (i.e. with i,j,bi,bj
-C     indices) to disk. At init and final time it is always possible to
-C     recompute or store in memory without much trouble or computational
-C     cost.
+cc      else
+C   The other case actually does not (and should not) occur within the main loop,
+C   where we only store global arrays (i.e. with i,j,bi,bj indices) to disk.
+C     At init and final time it is always be possible to recompute or store in
+C   memory without much trouble or computational cost.
+C
+C    Presently there are three instances where non-global arrays are stored to disk:
+C   (a) the one instance when onetape is used, to store myTime, which is of no effect.
+C   In the_main_loop, we switch onetape to memory tape if ALLOW_AUTODIFF_WHTAPEIO
+C   (b) the two instances when tapelev_ini_bibj_k is used (in convective
+C   _adjustment_ini.F and cost_drifter.F) are disabled at compile time if
+C   ALLOW_AUTODIFF_WHTAPEIO. So is the definition of tapelev_ini_bibj_k,
+C   which is not supported with ALLOW_AUTODIFF_WHTAPEIO (side-note:
+C   tapelev_ini_bibj_k is likely unsafe with mdsreadvector/mdsreadvector)
+C
+C   The issue could be revisited if needed.
+C   But for now we stop if any otehr instance is met.
 cc         WRITE(msgBuf,'(3A)')
-cc     &        'ADREAD: ', name, ' was not saved to tape.'
+cc     &        'ADWRITE: ',name,'was not saved to tape.'
 cc         CALL PRINT_ERROR( msgBuf, myThid )
-cc         STOP 'ABNORMAL END: S/R ADREAD'
-cc      ENDIF
+cc         STOP 'ABNORMAL END: S/R ADWRITE'
+cc      endif
 
       ELSE
 #else
@@ -257,7 +255,7 @@ c     _BARRIER
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
 CBOP
-C     !ROUTINE: ADWRITE
+C     !ROUTINE: adwrite
 C     !INTERFACE:
       SUBROUTINE ADWRITE(
      I                    myThid,
@@ -268,7 +266,8 @@ C     !INTERFACE:
      I                    var,
      I                    size,
      I                    length,
-     I                    irec )
+     I                    irec
+     &                  )
 
 C     !DESCRIPTION: \bv
 C     ==================================================================
@@ -276,7 +275,7 @@ C     SUBROUTINE adwrite
 C     ==================================================================
 C     o Write to direct access file.
 C     A call to this routine implies an open-read-close sequence
-C     since it uses the MITgcmUV i/o routine MDS_WRITE_TAPE. Only
+C     since it uses the MITgcmUV i/o routine MDSREADVECTOR. Only
 C     the master thread writes the data. Otherwise each thread would
 C     write to file. This would result in an excessive waste of
 C     disk space.
@@ -293,15 +292,12 @@ C     == global variables ==
 #include "EEPARAMS.h"
 #include "SIZE.h"
 #include "PARAMS.h"
-#ifdef ALLOW_CTRL
-# include "ctrl.h"
-# include "optim.h"
-#endif
-C- OpenAD: this header is not converted to a module --> go after the others
+#include "ctrl.h"
+#include "optim.h"
 #include "AUTODIFF.h"
 
 C     !INPUT/OUTPUT PARAMETERS:
-C     myThid :: number of the thread or instance of the program.
+C     == routine arguments ==
 C     name   :: extended tape name.
 C     len    :: number of characters in name.
 C     tid    :: tape identifier.
@@ -309,22 +305,25 @@ C     vid    :: identifies the variable to be stored on tape.
 C     var    :: values to be stored.
 C     size   :: size in bytes of the type of variable var.
 C     length :: dimension of the variable stored on the tape.
+C     myThid :: number of the thread or instance of the program.
 C     irec   :: record number to be written.
+
       INTEGER myThid
       CHARACTER*(*) name
       INTEGER len
       INTEGER tid
       INTEGER vid
-      real*8  var(*)
       INTEGER size
       INTEGER length
       INTEGER irec
+      real*8  var(*)
 
 C     !FUNCTIONS:
       INTEGER ILNBLNK
       EXTERNAL ILNBLNK
 
 C     !LOCAL VARIABLES:
+C     == local variables ==
       CHARACTER*(MAX_LEN_FNAM) fname
       CHARACTER*(MAX_LEN_MBUF) msgBuf
       INTEGER filePrec
@@ -383,54 +382,35 @@ C-    only use "WHTAPEIO" when type and length match
 #ifdef ALLOW_AUTODIFF_WHTAPEIO
       IF ( useWHTapeIO ) THEN
 
-cc      IF (n2d*length2d.EQ.length) THEN
+cc      if (n2d*length2d.EQ.length) then
         DO i2d=1,n2d
-          IF (tapeFileUnit.EQ.0) THEN
+          if (tapeFileUnit.EQ.0) THEN
             jrec=irec
-          ELSE
-            tapeFileCounter = tapeFileCounter+1
-            jrec = tapeFileCounter+tapeMaxCounter*(irec-1)
-            IF ( tapeFileCounter.GT.tapeMaxCounter ) THEN
-              WRITE(msgBuf,'(2A,I6,A,I6,A)') 'ADWRITE: ',
-     &            'tapeFileCounter (=',tapeFileCounter,
-     &            ') > tapeMaxCounter (= nWh =', tapeMaxCounter, ')'
-              CALL PRINT_ERROR( msgBuf, myThid )
-              WRITE(msgBuf,'(3A)') 'ADWRITE: ',
-     &            ' for file: ', fname(1:lenLoc)
-              CALL PRINT_ERROR( msgBuf, myThid )
-C     Here, we cannot determine how many tapeFiles we need, so we print
-C     this rather unspecific instruction.
-              WRITE(msgBuf,'(2A)') 'ADWRITE: ',
-     &             '==> Need to increase "nWh" in: MDSIO_BUFF_WH.h'
-              CALL PRINT_ERROR( msgBuf, myThid )
-              WRITE(msgBuf,'(2A)') 'ADWRITE: Tip to find lowest',
-     &             ' allowed "nWh": setting debugLevel >= 3'
-              CALL PRINT_ERROR( msgBuf , myThid )
-              WRITE(msgBuf,'(2A)') 'ADWRITE:  will report ',
-     &             '"tapeFileCounter" to STDOUT (can grep for)'
-              CALL PRINT_ERROR( msgBuf , myThid )
-              STOP 'ABNORMAL END: S/R ADWRITE'
-            ENDIF
-#ifdef ALLOW_DEBUG
-            IF ( debugLevel.GE.debLevC ) THEN
-C     Print tapeFileCounter to help find minimum tapeMaxCounter=nWh value
-              WRITE(msgBuf,'(A,I6)') 'ADWRITE:  tapeFileCounter =',
-     &            tapeFileCounter
-              CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
-     &                      SQUEEZE_RIGHT, myThid )
-            ENDIF
-#endif
-          ENDIF
+          else
+            tapeFileCounter=tapeFileCounter+1
+            jrec=tapeFileCounter+tapeMaxCounter*(irec-1)
+            if (tapeFileCounter.GT.tapeMaxCounter) then
+               write(msgBuf,'(A,2I5)')
+     &              'ADWRITE: tapeFileCounter > tapeMaxCounter ',
+     &              tapeFileCounter, tapeMaxCounter
+               CALL PRINT_MESSAGE( msgBuf, errorMessageUnit,
+     &                             SQUEEZE_RIGHT, myThid )
+               write(msgBuf,'(2A)') 'for file ', fname(1:lenLoc)
+               CALL PRINT_MESSAGE( msgBuf, errorMessageUnit,
+     &                             SQUEEZE_RIGHT, myThid )
+               STOP 'in S/R ADWRITE'
+            endif
+          endif
           j2d=(i2d-1)*length2d+1
-          CALL MDS_WRITE_WHALOS(fname,lenLoc,filePrec,tapeFileUnit,
+          call mds_write_whalos(fname,lenLoc,filePrec,tapeFileUnit,
      &      1,var(j2d),jrec,tapeSingleCpuIO,tapeBufferIO,myThid)
         ENDDO
-cc      ELSE
-cc       WRITE(msgBuf,'(3A)')
+cc      else
+cc       write(msgBuf,'(3A)')
 cc     &      'ADWRITE: ',fname(1:lenLoc),'was not read from tape.'
-cc       CALL PRINT_MESSAGE( msgBuf, errorMessageUnit,
+cc       call print_message( msgBuf, errorMessageUnit,
 cc     &                     SQUEEZE_RIGHT , myThid)
-cc      ENDIF
+cc      endif
 
       ELSE
 #else

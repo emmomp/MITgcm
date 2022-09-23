@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/opps/opps_calc.F,v 1.14 2016/03/10 20:57:11 jmc Exp $
+C $Name:  $
+
 #include "OPPS_OPTIONS.h"
 #undef OPPS_ORGCODE
 
@@ -14,7 +17,6 @@ C !ROUTINE: OPPS_CALC
 C !INTERFACE: ======================================================
       SUBROUTINE OPPS_CALC(
      U     tracerEnv,
-     O     OPPSconvectCount,
      I     wVel,
      I     kMax, nTracer, nTracerInuse,
      I     I, J, bi, bj, myTime, myIter, myThid )
@@ -64,25 +66,22 @@ C \ev
 
       IMPLICIT NONE
 
-C !USES: ==============================================================
+C !USES: ============================================================
 #include "SIZE.h"
 #include "EEPARAMS.h"
 #include "PARAMS.h"
 #include "OPPS.h"
 #include "GRID.h"
 
-C !INPUT/OUTPUT PARAMETERS: ============================================
+C !INPUT PARAMETERS: ===================================================
 C Routine arguments
-C     OPPSconvectCount :: counter for freqency of convection events
 C     bi, bj :: array indices on which to apply calculations
 C     myTime :: Current time in simulation
-      INTEGER KMax, nTracer, nTracerInUse
-      _RL tracerEnv(Nr,nTracer)
-      _RL OPPSconvectCount(1-OLx:sNx+OLx,1-OLy:sNy+OLy,Nr)
-      _RL wVel(Nr)
-      INTEGER I, J, bi, bj
-      _RL     myTime
+
+      INTEGER I, J, bi, bj, KMax, nTracer, nTracerInUse
       INTEGER myThid, myIter
+      _RL     myTime
+      _RL tracerEnv(Nr,nTracer),wVel(Nr)
 
 #ifdef ALLOW_OPPS
 C !FUNCTIONS: ==========================================================
@@ -418,7 +417,8 @@ C end loop on number of time integration steps
 
 C     count convection event in this grid cell
 
-       OPPSconvectCount(I,J,K) = OPPSconvectCount(I,J,K) + 1. _d 0
+       OPPSconvectCount(I,J,K,bi,bj) =
+     &      OPPSconvectCount(I,J,K,bi,bj) + 1. _d 0
 
 C     jump here if k = maxdepth or if level not unstable, go to next
 C     profile point

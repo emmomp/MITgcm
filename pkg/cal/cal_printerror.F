@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/cal/cal_printerror.F,v 1.8 2016/02/18 20:30:39 heimbach Exp $
+C $Name:  $
+
 #include "CAL_OPTIONS.h"
 
       subroutine cal_PrintError(

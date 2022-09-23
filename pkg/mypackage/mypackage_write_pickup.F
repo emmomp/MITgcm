@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/mypackage/mypackage_write_pickup.F,v 1.5 2013/01/13 22:46:38 jmc Exp $
+C $Name:  $
+
 #include "MYPACKAGE_OPTIONS.h"
 
 CBOP

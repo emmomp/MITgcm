@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/compon_communic/mitcoupler_tile_register.F,v 1.3 2013/11/27 21:51:15 jmc Exp $
+C $Name:  $
+
 !=======================================================================
       subroutine MITCOUPLER_tile_register( compName, nnx, nny )
       implicit none

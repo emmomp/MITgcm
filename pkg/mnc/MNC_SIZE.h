@@ -1,3 +1,5 @@
+C $Header: /u/gcmpack/MITgcm/pkg/mnc/MNC_SIZE.h,v 1.9 2008/06/23 20:52:58 utke Exp $
+C $Name:  $
 C
 
       integer MNC_MAX_ID, MNC_MAX_FID

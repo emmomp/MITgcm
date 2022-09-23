@@ -1,5 +1,5 @@
-# Packages (lines beginning "#" are comments)
+# Packages
  &PACKAGES
   useGMRedi=.TRUE.,
-# useDiagnostics=.TRUE.,
+  useKPP=.FALSE.,
  &

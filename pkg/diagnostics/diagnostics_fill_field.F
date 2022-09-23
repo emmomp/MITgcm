@@ -1,9 +1,11 @@
+C $Header: /u/gcmpack/MITgcm/pkg/diagnostics/diagnostics_fill_field.F,v 1.7 2010/04/03 17:34:39 jmc Exp $
+C $Name:  $
+
 #include "DIAG_OPTIONS.h"
 
 C--   File diagnostics_fill_field.F:
 C--    Contents:
 C--    o DIAGNOSTICS_FILL_FIELD
-C--    o DIAGNOSTICS_HF_CUMUL
 C--    o DIAGNOSTICS_CUMULATE
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
@@ -13,7 +15,7 @@ C     !INTERFACE:
       SUBROUTINE DIAGNOSTICS_FILL_FIELD(
      I               inpFldRL, fracFldRL, inpFldRS, fracFldRS,
      I               scaleFact, power, arrType, nLevFrac,
-     I               ndId, ipointer, kLev, nLevs,
+     I               ndiagnum, ipointer, kLev, nLevs,
      I               bibjFlg, biArg, bjArg, myThid )
 
 C     !DESCRIPTION:
@@ -44,9 +46,8 @@ C     scaleFact :: scaling factor
 C     power     :: option to fill-in with the field square (power=2)
 C     arrType   :: select which array & fraction (RL/RS) to process:
 C                  0: both RL ; 1: inpRL & fracRS ; 2: inpRS,fracRL ; 3: both RS
-C     nLevFrac  :: >0: number of levels of the fraction field ; =0: no fraction
-C               :: used ; =-1: use thickness factor "hFac"
-C     ndId      :: Diagnostics Id number (in available diag list) of diag to process
+C     nLevFrac  :: number of levels of the fraction field, =0: do not use fraction
+C     ndiagnum  :: Diagnostics Number (in available diag list) of diag to process
 C     ipointer  :: Pointer to the slot in qdiag to fill
 C     kLev      :: Integer flag for vertical levels:
 C                  > 0 (any integer): WHICH single level to increment in qdiag.
@@ -80,27 +81,26 @@ C***********************************************************************
       INTEGER power
       INTEGER arrType
       INTEGER nLevFrac
-      INTEGER ndId, ipointer
+      INTEGER ndiagnum, ipointer
       INTEGER kLev, nLevs, bibjFlg, biArg, bjArg
       INTEGER myThid
 CEOP
 
 C     !LOCAL VARIABLES:
 C ===============
-C     useFract  :: flag to increment (or not) with fraction-weighted inpFld
-C     thickFac  :: if > 0, to increment with thickness-weighted inpFld
+C     useFract  :: flag to increment (or not) with fraction-weigted inpFld
       LOGICAL useFract
-      INTEGER sizF, thickFac
+      INTEGER sizF
       INTEGER sizI1,sizI2,sizJ1,sizJ2
       INTEGER sizTx,sizTy
       INTEGER iRun, jRun, k, bi, bj
       INTEGER kFirst, kLast
-      INTEGER kd, kd0, ksgn, km, kStore
+      INTEGER kd, kd0, ksgn, kStore
       CHARACTER*8 parms1
       CHARACTER*(MAX_LEN_MBUF) msgBuf
 
 C If-sequence to see if we are a valid and an active diagnostic
-c     IF ( ndId.NE.0 .AND. ipointer.NE.0 ) THEN
+c     IF ( ndiagnum.NE.0 .AND. ipointer.NE.0 ) THEN
 
        IF ( bibjFlg.GE.0 .AND. ABS(kLev).LE.1 ) THEN
 C Increment the counter for the diagnostic
@@ -119,20 +119,16 @@ C Increment the counter for the diagnostic
 
 C-      select range for 1rst & 2nd indices to accumulate
 C         depending on variable location on C-grid,
-        thickFac = 0
-        parms1 = gdiag(ndId)(1:8)
+        parms1 = gdiag(ndiagnum)(1:8)
         IF ( parms1(2:2).EQ.'M' ) THEN
          iRun = sNx
          jRun = sNy
-         thickFac = 1
         ELSEIF ( parms1(2:2).EQ.'U' ) THEN
          iRun = sNx+1
          jRun = sNy
-         thickFac = 2
         ELSEIF ( parms1(2:2).EQ.'V' ) THEN
          iRun = sNx
          jRun = sNy+1
-         thickFac = 3
         ELSEIF ( parms1(2:2).EQ.'Z' ) THEN
          iRun = sNx+1
          jRun = sNy+1
@@ -142,7 +138,7 @@ C         depending on variable location on C-grid,
         ENDIF
 
 C-      Dimension of the input array:
-        IF (ABS(bibjFlg).EQ.3) THEN
+        IF (abs(bibjFlg).EQ.3) THEN
           sizI1 = 1
           sizI2 = sNx
           sizJ1 = 1
@@ -155,7 +151,7 @@ C-      Dimension of the input array:
           sizJ1 = 1-OLy
           sizJ2 = sNy+OLy
         ENDIF
-        IF (ABS(bibjFlg).GE.2) THEN
+        IF (abs(bibjFlg).GE.2) THEN
          sizTx = 1
          sizTy = 1
         ELSE
@@ -188,8 +184,7 @@ C         and do the loop >> do k=kFirst,kLast ; kd = kd0 + k*ksgn <<
           ksgn = 0
           kd0 = ipointer + kLev - 1
         ENDIF
-C-      Set thickness and fraction-weight option :
-        IF ( nLevFrac.GE.0 ) thickFac = 0
+C-      Set fraction-weight option :
         useFract = nLevFrac.GT.0
         IF ( useFract ) THEN
           sizF = nLevFrac
@@ -199,13 +194,13 @@ C-      Set thickness and fraction-weight option :
 
 C-      Check for consistency with Nb of levels reserved in storage array
         kStore = kd0 + MAX(ksgn*kFirst,ksgn*kLast) - ipointer + 1
-        IF ( kStore.GT.kdiag(ndId) ) THEN
+        IF ( kStore.GT.kdiag(ndiagnum) ) THEN
          _BEGIN_MASTER(myThid)
           WRITE(msgBuf,'(2A,I4,A)') 'DIAGNOSTICS_FILL_FIELD: ',
-     &     'exceed Nb of levels(=',kdiag(ndId),' ) reserved '
+     &     'exceed Nb of levels(=',kdiag(ndiagnum),' ) reserved '
           CALL PRINT_ERROR( msgBuf , myThid )
           WRITE(msgBuf,'(2A,I6,2A)') 'DIAGNOSTICS_FILL_FIELD: ',
-     &     'for Diagnostics #', ndId, ' : ', cdiag(ndId)
+     &     'for Diagnostics #', ndiagnum, ' : ', cdiag(ndiagnum)
           CALL PRINT_ERROR( msgBuf , myThid )
           WRITE(msgBuf,'(2A,2I4,I3)') 'calling DIAGNOSTICS_FILL_FIELD ',
      I     'with kLev,nLevs,bibjFlg=', kLev,nLevs,bibjFlg
@@ -223,24 +218,13 @@ C-      Check for consistency with Nb of levels reserved in storage array
           DO bi=myBxLo(myThid), myBxHi(myThid)
            DO k = kFirst,kLast
             kd = kd0 + ksgn*k
-            IF ( thickFac.EQ.0 ) THEN
-             CALL DIAGNOSTICS_CUMULATE(
+            CALL DIAGNOSTICS_CUMULATE(
      U                  qdiag(1-OLx,1-OLy,kd,bi,bj),
      I                  inpFldRL, fracFldRL, inpFldRS, fracFldRS,
      I                  scaleFact, power, arrType, useFract, sizF,
      I                  sizI1,sizI2,sizJ1,sizJ2,nLevs,sizTx,sizTy,
-     I                  iRun, jRun, k, bi, bj,
-     I                  myThid )
-            ELSE
-             km = kd - ipointer + 1
-             CALL DIAGNOSTICS_HF_CUMUL(
-     U                  qdiag(1-OLx,1-OLy,kd,bi,bj),
-     I                  inpFldRL, inpFldRS,
-     I                  scaleFact, power, arrType, thickFac,
-     I                  sizI1,sizI2,sizJ1,sizJ2,nLevs,sizTx,sizTy,
-     I                  iRun, jRun, k, km,
-     I                  bi, bj, myThid )
-            ENDIF
+     I                  iRun,jRun,k,bi,bj,
+     I                  myThid)
            ENDDO
           ENDDO
          ENDDO
@@ -249,159 +233,24 @@ C-      Check for consistency with Nb of levels reserved in storage array
           bj = MIN(bjArg,sizTy)
           DO k = kFirst,kLast
             kd = kd0 + ksgn*k
-            IF ( thickFac.EQ.0 ) THEN
-             CALL DIAGNOSTICS_CUMULATE(
+            CALL DIAGNOSTICS_CUMULATE(
      U                  qdiag(1-OLx,1-OLy,kd,biArg,bjArg),
      I                  inpFldRL, fracFldRL, inpFldRS, fracFldRS,
      I                  scaleFact, power, arrType, useFract, sizF,
      I                  sizI1,sizI2,sizJ1,sizJ2,nLevs,sizTx,sizTy,
-     I                  iRun, jRun, k, bi, bj,
-     I                  myThid )
-            ELSE
-             km = kd - ipointer + 1
-             CALL DIAGNOSTICS_HF_CUMUL(
-     U                  qdiag(1-OLx,1-OLy,kd,biArg,bjArg),
-     I                  inpFldRL, inpFldRS,
-     I                  scaleFact, power, arrType, thickFac,
-     I                  sizI1,sizI2,sizJ1,sizJ2,nLevs,sizTx,sizTy,
-     I                  iRun, jRun, k, km,
-     I                  biArg, bjArg, myThid )
-            ENDIF
+     I                  iRun,jRun,k,bi,bj,
+     I                  myThid)
           ENDDO
         ENDIF
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
 c     ELSE
-c     IF (myThid.EQ.1) WRITE(6,1000) cdiag(ndId)
+c     IF (myThid.EQ.1) WRITE(6,1000) cdiag(ndiagnum)
 
 c     ENDIF
 
 c1000 format(' ',' Warning: Trying to write to diagnostic ',a8,
 c    &        ' But it is not a valid (or active) name ')
-      RETURN
-      END
-
-C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
-
-CBOP
-C     !ROUTINE: DIAGNOSTICS_HF_CUMUL
-C     !INTERFACE:
-      SUBROUTINE DIAGNOSTICS_HF_CUMUL(
-     U                  cumFld,
-     I                  inpFldRL, inpFldRS,
-     I                  scaleFact, power, arrType, thickFac,
-     I                  sizI1,sizI2,sizJ1,sizJ2,sizK,sizTx,sizTy,
-     I                  iRun, jRun, k, km,
-     I                  bi, bj, myThid )
-
-C     !DESCRIPTION:
-C     Update array cumFld
-C     by adding content of input field array inpFld
-C     weighted by thickness factor "hFac"
-C     over the range [1:iRun],[1:jRun]
-
-C     !USES:
-      IMPLICIT NONE
-
-#include "EEPARAMS.h"
-#include "SIZE.h"
-#include "GRID.h"
-
-C     !INPUT/OUTPUT PARAMETERS:
-C     == Routine Arguments ==
-C     cumFld      :: cumulative array (updated)
-C     inpFldRL    :: input field array to add to cumFld (arrType=0,1)
-C     inpFldRS    :: input field array to add to cumFld (arrType=2,3)
-C     scaleFact   :: scaling factor
-C     power       :: option to fill-in with the field square (power=2)
-C     arrType     :: select which array & fraction (RL/RS) to process:
-C                    0: both RL ; 1: inpRL & fracRS ; 2: inpRS,fracRL ; 3: both RS
-C     thickFac    :: which hFac array to use: 1,2,3 = hFacC,W,S
-C     sizI1,sizI2 :: size of inpFld array: 1rst index range (min,max)
-C     sizJ1,sizJ2 :: size of inpFld array: 2nd  index range (min,max)
-C     sizK        :: size of inpFld array: 3rd  dimension
-C     sizTx,sizTy :: size of inpFld array: tile dimensions
-C     iRun,jRun   :: range of 1rst & 2nd index
-C     k           :: level of inpFld array to add to cumFld array
-C     km          :: level of hFac array to use as weight for inpFld
-C     bi, bj      :: indices of tile to process (cumulate in qdiag)
-C     myThid      :: my Thread Id number
-      _RL cumFld(1-OLx:sNx+OLx,1-OLy:sNy+OLy)
-      INTEGER sizI1,sizI2,sizJ1,sizJ2
-      INTEGER sizK,sizTx,sizTy
-      _RL inpFldRL(sizI1:sizI2,sizJ1:sizJ2,sizK,sizTx,sizTy)
-      _RS inpFldRS(sizI1:sizI2,sizJ1:sizJ2,sizK,sizTx,sizTy)
-      _RL scaleFact
-      INTEGER power
-      INTEGER arrType, thickFac
-      INTEGER iRun, jRun, k, km, bi, bj
-      INTEGER myThid
-CEOP
-
-C     !LOCAL VARIABLES:
-C     i, j     :: loop indices
-C     ti, tj   :: tile indices of inpFld to process
-      INTEGER i, j
-      INTEGER ti, tj
-      _RL tmpFld(sNx+1,sNy+1)
-
-C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
-
-      ti = MIN(bi,sizTx)
-      tj = MIN(bj,sizTy)
-      IF ( arrType.EQ.0 .OR. arrType.EQ.1 ) THEN
-        DO j = 1,jRun
-         DO i = 1,iRun
-          tmpFld(i,j) = scaleFact*inpFldRL(i,j,k,ti,tj)
-         ENDDO
-        ENDDO
-      ELSEIF ( arrType.EQ.2 .OR. arrType.EQ.3 ) THEN
-        DO j = 1,jRun
-         DO i = 1,iRun
-          tmpFld(i,j) = scaleFact*inpFldRS(i,j,k,ti,tj)
-         ENDDO
-        ENDDO
-      ELSE
-        STOP 'DIAGNOSTICS_HF_CUMUL: invalid arrType'
-      ENDIF
-
-      IF ( power.EQ.2 ) THEN
-        DO j = 1,jRun
-         DO i = 1,iRun
-          tmpFld(i,j) = tmpFld(i,j)*tmpFld(i,j)
-         ENDDO
-        ENDDO
-      ENDIF
-
-      IF ( thickFac.EQ.1 ) THEN
-        DO j = 1,jRun
-         DO i = 1,iRun
-          cumFld(i,j) = cumFld(i,j)
-     &                + tmpFld(i,j)*hFacC(i,j,km,bi,bj)
-         ENDDO
-        ENDDO
-      ELSEIF ( thickFac.EQ.2 ) THEN
-        DO j = 1,jRun
-         DO i = 1,iRun
-          cumFld(i,j) = cumFld(i,j)
-     &                + tmpFld(i,j)*hFacW(i,j,km,bi,bj)
-         ENDDO
-        ENDDO
-      ELSEIF ( thickFac.EQ.3 ) THEN
-        DO j = 1,jRun
-         DO i = 1,iRun
-          cumFld(i,j) = cumFld(i,j)
-     &                + tmpFld(i,j)*hFacS(i,j,km,bi,bj)
-         ENDDO
-        ENDDO
-      ELSE
-        DO j = 1,jRun
-         DO i = 1,iRun
-          cumFld(i,j) = cumFld(i,j) + tmpFld(i,j)
-         ENDDO
-        ENDDO
-      ENDIF
-
       RETURN
       END
 
@@ -415,7 +264,7 @@ C     !INTERFACE:
      I                  inpFldRL, frcFldRL, inpFldRS, frcFldRS,
      I                  scaleFact, power, arrType, useFract, sizF,
      I                  sizI1,sizI2,sizJ1,sizJ2,sizK,sizTx,sizTy,
-     I                  iRun, jRun, k, bi, bj,
+     I                  iRun,jRun,k,bi,bj,
      I                  myThid )
 
 C     !DESCRIPTION:
@@ -447,7 +296,7 @@ C     sizJ1,sizJ2 :: size of inpFld array: 2nd  index range (min,max)
 C     sizK        :: size of inpFld array: 3rd  dimension
 C     sizTx,sizTy :: size of inpFld array: tile dimensions
 C     iRun,jRun   :: range of 1rst & 2nd index
-C     k,bi,bj     :: level and tile indices of inpFld array to add to cumFld array
+C     k,bi,bj     :: level and tile indices of inFld array to add to cumFld array
 C     myThid      :: my Thread Id number
       _RL cumFld(1-OLx:sNx+OLx,1-OLy:sNy+OLy)
       INTEGER sizI1,sizI2,sizJ1,sizJ2

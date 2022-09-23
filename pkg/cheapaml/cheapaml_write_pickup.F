@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/cheapaml/cheapaml_write_pickup.F,v 1.10 2013/01/13 22:46:38 jmc Exp $
+C $Name:  $
+
 #include "CHEAPAML_OPTIONS.h"
 
 CBOP

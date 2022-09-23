@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/generic_advdiff/gad_calc_rhs.F,v 1.74 2015/08/05 20:12:44 jmc Exp $
+C $Name:  $
+
 #include "GAD_OPTIONS.h"
 
 CBOP
@@ -10,9 +13,9 @@ C !INTERFACE: ==========================================================
      I           uTrans, vTrans, rTrans, rTransKp1,
      I           diffKh, diffK4, KappaR, diffKr4, TracerN, TracAB,
      I           deltaTLev, trIdentity,
-     I           advectionSchArg, vertAdvecSchArg,
+     I           advectionScheme, vertAdvecScheme,
      I           calcAdvection, implicitAdvection, applyAB_onTracer,
-     I           trUseDiffKr4, trUseGMRedi, trUseKPP, trUseSmolHack,
+     I           trUseDiffKr4, trUseGMRedi, trUseKPP,
      O           fZon, fMer,
      U           fVerT, gTracer,
      I           myTime, myIter, myThid )
@@ -71,15 +74,14 @@ C                     if applying AB on tracer field rather than on tendency gTr
 C TracAB           :: current tracer field (@ time-step n if applying AB on gTr
 C                     or extrapolated fwd in time to n+1/2 if applying AB on Tr)
 C trIdentity       :: tracer identifier (required for KPP,GM)
-C advectionSchArg  :: advection scheme to use (Horizontal plane)
-C vertAdvecSchArg  :: advection scheme to use (Vertical direction)
+C advectionScheme  :: advection scheme to use (Horizontal plane)
+C vertAdvecScheme  :: advection scheme to use (Vertical direction)
 C calcAdvection    :: =False if Advec computed with multiDim scheme
 C implicitAdvection:: =True if vertical Advec computed implicitly
 C applyAB_onTracer :: apply Adams-Bashforth on Tracer (rather than on gTr)
 C trUseDiffKr4     :: true if this tracer uses vertical bi-harmonic diffusion
 C trUseGMRedi      :: true if this tracer uses GM-Redi
 C trUseKPP         :: true if this tracer uses KPP
-C trUseSmolHack    :: true if this tracer uses Smolarkiewicz-Hack to remain > 0
 C myTime           :: current time
 C myIter           :: iteration number
 C myThid           :: thread number
@@ -102,10 +104,10 @@ C myThid           :: thread number
       _RL TracAB (1-OLx:sNx+OLx,1-OLy:sNy+OLy,Nr)
       _RL deltaTLev(Nr)
       INTEGER trIdentity
-      INTEGER advectionSchArg, vertAdvecSchArg
+      INTEGER advectionScheme, vertAdvecScheme
       LOGICAL calcAdvection
       LOGICAL implicitAdvection, applyAB_onTracer
-      LOGICAL trUseDiffKr4, trUseGMRedi, trUseKPP, trUseSmolHack
+      LOGICAL trUseDiffKr4, trUseGMRedi, trUseKPP
       _RL     myTime
       INTEGER myIter, myThid
 
@@ -127,15 +129,12 @@ C !FUNCTIONS:       ====================================================
 
 C !LOCAL VARIABLES: ====================================================
 C i,j              :: loop indices
-C advectionScheme  :: local copy of routine argument advectionSchArg
-C vertAdvecScheme  :: local copy of routine argument vertAdvecSchArg
 C df4              :: used for storing del^2 T for bi-harmonic term
 C af               :: advective flux
 C df               :: diffusive flux
 C localT           :: local copy of tracer field
 C locABT           :: local copy of (AB-extrapolated) tracer field
       INTEGER i,j
-      INTEGER advectionScheme, vertAdvecScheme
       _RS maskLocW(1-OLx:sNx+OLx,1-OLy:sNy+OLy)
       _RS maskLocS(1-OLx:sNx+OLx,1-OLy:sNy+OLy)
       _RL df4   (1-OLx:sNx+OLx,1-OLy:sNy+OLy)
@@ -145,7 +144,7 @@ C locABT           :: local copy of (AB-extrapolated) tracer field
       _RL locABT(1-OLx:sNx+OLx,1-OLy:sNy+OLy)
       _RL advFac, rAdvFac
 #ifdef GAD_SMOLARKIEWICZ_HACK
-      _RL outFlux, trac, gTrFac
+      _RL outFlux, trac, fac, gTrFac
 #endif
 #ifdef ALLOW_DIAGNOSTICS
       CHARACTER*8 diagName
@@ -153,26 +152,11 @@ C locABT           :: local copy of (AB-extrapolated) tracer field
 #endif
 CEOP
 
-C     make local copies to be tampered with if necessary
-      advectionScheme = advectionSchArg
-      vertAdvecScheme = vertAdvecSchArg
 #ifdef ALLOW_AUTODIFF
 C--   only the kUp part of fverT is set in this subroutine
 C--   the kDown is still required
       fVerT(1,1,kDown) = fVerT(1,1,kDown)
-C
-      IF ( inAdMode .AND. useApproxAdvectionInAdMode ) THEN
-C     In AD-mode, we change non-linear, potentially unstable AD advection
-C     schemes to linear schemes with more stability. So far only DST3 with
-C     flux limiting is replaced by DST3 without flux limiting, but any
-C     combination is possible.
-       IF ( advectionSchArg.EQ.ENUM_DST3_FLUX_LIMIT )
-     &      advectionScheme = ENUM_DST3
-       IF ( vertAdvecSchArg.EQ.ENUM_DST3_FLUX_LIMIT )
-     &      vertAdvecScheme = ENUM_DST3
-C     here is room for more advection schemes as this becomes necessary
-      ENDIF
-#endif /* ALLOW_AUTODIFF */
+#endif
 
 #ifdef ALLOW_DIAGNOSTICS
 C--   Set diagnostic suffix for the current tracer
@@ -229,7 +213,7 @@ C--   Initialize net flux in X direction
 
 C-    Advective flux in X
       IF (calcAdvection) THEN
-        IF ( advectionScheme.EQ.ENUM_CENTERED_2ND ) THEN
+        IF (advectionScheme.EQ.ENUM_CENTERED_2ND) THEN
            CALL GAD_C2_ADV_X( bi,bj,k, uTrans, locABT, af, myThid )
         ELSEIF ( advectionScheme.EQ.ENUM_UPWIND_1RST
      &          .OR. advectionScheme.EQ.ENUM_DST2 ) THEN
@@ -246,26 +230,35 @@ C-    Advective flux in X
 #endif /* ALLOW_OBCS */
           ENDDO
          ENDDO
-         IF ( advectionScheme.EQ.ENUM_FLUX_LIMIT ) THEN
+         IF (advectionScheme.EQ.ENUM_FLUX_LIMIT) THEN
            CALL GAD_FLUXLIMIT_ADV_X( bi,bj,k, .TRUE., deltaTLev(k),
      I              uTrans, uFld, maskLocW, locABT,
      O              af, myThid )
-         ELSEIF ( advectionScheme.EQ.ENUM_UPWIND_3RD ) THEN
+         ELSEIF (advectionScheme.EQ.ENUM_UPWIND_3RD ) THEN
            CALL GAD_U3_ADV_X( bi,bj,k, uTrans, maskLocW, locABT,
      O              af, myThid )
-         ELSEIF ( advectionScheme.EQ.ENUM_CENTERED_4TH ) THEN
+         ELSEIF (advectionScheme.EQ.ENUM_CENTERED_4TH) THEN
            CALL GAD_C4_ADV_X( bi,bj,k, uTrans, maskLocW, locABT,
      O              af, myThid )
-         ELSEIF ( advectionScheme.EQ.ENUM_DST3 ) THEN
+#ifdef ALLOW_AUTODIFF
+         ELSEIF( advectionScheme.EQ.ENUM_DST3 .OR.
+     &          (advectionScheme.EQ.ENUM_DST3_FLUX_LIMIT .AND. inAdMode)
+     &         ) THEN
+cph This block is to trick the adjoint:
+cph If inAdExact=.FALSE., we want to use DST3
+cph with limiters in forward, but without limiters in reverse.
+#else /* ALLOW_AUTODIFF */
+         ELSEIF( advectionScheme.EQ.ENUM_DST3 ) THEN
+#endif /* ALLOW_AUTODIFF */
            CALL GAD_DST3_ADV_X( bi,bj,k, .TRUE., deltaTLev(k),
      I              uTrans, uFld, maskLocW, locABT,
      O              af, myThid )
-         ELSEIF ( advectionScheme.EQ.ENUM_DST3_FLUX_LIMIT ) THEN
+         ELSEIF (advectionScheme.EQ.ENUM_DST3_FLUX_LIMIT ) THEN
            CALL GAD_DST3FL_ADV_X( bi,bj,k, .TRUE., deltaTLev(k),
      I              uTrans, uFld, maskLocW, locABT,
      O              af, myThid )
 #ifndef ALLOW_AUTODIFF
-         ELSEIF ( advectionScheme.EQ.ENUM_OS7MP ) THEN
+         ELSEIF (advectionScheme.EQ.ENUM_OS7MP ) THEN
            CALL GAD_OS7MP_ADV_X( bi,bj,k, .TRUE., deltaTLev(k),
      I              uTrans, uFld, maskLocW, locABT,
      O              af, myThid )
@@ -323,7 +316,7 @@ C-    GM/Redi flux in X
       IF ( trUseGMRedi ) THEN
         CALL GMREDI_XTRANSPORT(
      I         trIdentity, bi, bj, k, iMin, iMax+1, jMin, jMax,
-     I         xA, maskUp, TracerN,
+     I         xA, TracerN,
      U         df,
      I         myThid )
       ENDIF
@@ -360,7 +353,7 @@ C--   Initialize net flux in Y direction
 
 C-    Advective flux in Y
       IF (calcAdvection) THEN
-        IF ( advectionScheme.EQ.ENUM_CENTERED_2ND ) THEN
+        IF (advectionScheme.EQ.ENUM_CENTERED_2ND) THEN
            CALL GAD_C2_ADV_Y( bi,bj,k, vTrans, locABT, af, myThid )
         ELSEIF ( advectionScheme.EQ.ENUM_UPWIND_1RST
      &          .OR. advectionScheme.EQ.ENUM_DST2 ) THEN
@@ -377,26 +370,35 @@ C-    Advective flux in Y
 #endif /* ALLOW_OBCS */
           ENDDO
          ENDDO
-         IF ( advectionScheme.EQ.ENUM_FLUX_LIMIT ) THEN
+         IF (advectionScheme.EQ.ENUM_FLUX_LIMIT) THEN
            CALL GAD_FLUXLIMIT_ADV_Y( bi,bj,k, .TRUE., deltaTLev(k),
      I              vTrans, vFld, maskLocS, locABT,
      O              af, myThid )
-         ELSEIF ( advectionScheme.EQ.ENUM_UPWIND_3RD ) THEN
+         ELSEIF (advectionScheme.EQ.ENUM_UPWIND_3RD ) THEN
            CALL GAD_U3_ADV_Y( bi,bj,k, vTrans, maskLocS, locABT,
      O              af, myThid )
-         ELSEIF ( advectionScheme.EQ.ENUM_CENTERED_4TH ) THEN
+         ELSEIF (advectionScheme.EQ.ENUM_CENTERED_4TH) THEN
            CALL GAD_C4_ADV_Y( bi,bj,k, vTrans, maskLocS, locABT,
      O              af, myThid )
-         ELSEIF ( advectionScheme.EQ.ENUM_DST3 ) THEN
+#ifdef ALLOW_AUTODIFF
+         ELSEIF( advectionScheme.EQ.ENUM_DST3 .OR.
+     &          (advectionScheme.EQ.ENUM_DST3_FLUX_LIMIT .AND. inAdMode)
+     &         ) THEN
+cph This block is to trick the adjoint:
+cph If inAdExact=.FALSE., we want to use DST3
+cph with limiters in forward, but without limiters in reverse.
+#else /* ALLOW_AUTODIFF */
+         ELSEIF( advectionScheme.EQ.ENUM_DST3 ) THEN
+#endif /* ALLOW_AUTODIFF */
            CALL GAD_DST3_ADV_Y( bi,bj,k, .TRUE., deltaTLev(k),
      I              vTrans, vFld, maskLocS, locABT,
      O              af, myThid )
-         ELSEIF ( advectionScheme.EQ.ENUM_DST3_FLUX_LIMIT ) THEN
+         ELSEIF (advectionScheme.EQ.ENUM_DST3_FLUX_LIMIT ) THEN
            CALL GAD_DST3FL_ADV_Y( bi,bj,k, .TRUE., deltaTLev(k),
      I              vTrans, vFld, maskLocS, locABT,
      O              af, myThid )
 #ifndef ALLOW_AUTODIFF
-         ELSEIF ( advectionScheme.EQ.ENUM_OS7MP ) THEN
+         ELSEIF (advectionScheme.EQ.ENUM_OS7MP ) THEN
            CALL GAD_OS7MP_ADV_Y( bi,bj,k, .TRUE., deltaTLev(k),
      I              vTrans, vFld, maskLocS, locABT,
      O              af, myThid )
@@ -454,7 +456,7 @@ C-    GM/Redi flux in Y
       IF ( trUseGMRedi ) THEN
         CALL GMREDI_YTRANSPORT(
      I         trIdentity, bi, bj, k, iMin, iMax, jMin, jMax+1,
-     I         yA, maskUp, TracerN,
+     I         yA, TracerN,
      U         df,
      I         myThid )
       ENDIF
@@ -494,31 +496,40 @@ C- a hack to prevent Water-Vapor vert.transport into the stratospheric level Nr
 #endif
        IF ( applyAB_onTracer ) THEN
 C-    Compute vertical advective flux in the interior using TracAB:
-        IF ( vertAdvecScheme.EQ.ENUM_CENTERED_2ND ) THEN
+        IF (vertAdvecScheme.EQ.ENUM_CENTERED_2ND) THEN
            CALL GAD_C2_ADV_R( bi,bj,k, rTrans, TracAB, af, myThid )
         ELSEIF ( vertAdvecScheme.EQ.ENUM_UPWIND_1RST
      &          .OR. vertAdvecScheme.EQ.ENUM_DST2 ) THEN
            CALL GAD_DST2U1_ADV_R( bi,bj,k,vertAdvecScheme,deltaTLev(k),
      I              rTrans, wFld, TracAB,
      O              af, myThid )
-        ELSEIF ( vertAdvecScheme.EQ.ENUM_FLUX_LIMIT ) THEN
+        ELSEIF (vertAdvecScheme.EQ.ENUM_FLUX_LIMIT) THEN
            CALL GAD_FLUXLIMIT_ADV_R( bi,bj,k, deltaTLev(k),
      I              rTrans, wFld, TracAB,
      O              af, myThid )
-        ELSEIF ( vertAdvecScheme.EQ.ENUM_UPWIND_3RD ) THEN
+        ELSEIF (vertAdvecScheme.EQ.ENUM_UPWIND_3RD ) THEN
            CALL GAD_U3_ADV_R( bi,bj,k, rTrans, TracAB, af, myThid )
         ELSEIF (vertAdvecScheme.EQ.ENUM_CENTERED_4TH) THEN
            CALL GAD_C4_ADV_R( bi,bj,k, rTrans, TracAB, af, myThid )
-        ELSEIF ( vertAdvecScheme.EQ.ENUM_DST3 ) THEN
+#ifdef ALLOW_AUTODIFF
+        ELSEIF( vertAdvecScheme.EQ.ENUM_DST3 .OR.
+     &         (vertAdvecScheme.EQ.ENUM_DST3_FLUX_LIMIT .AND. inAdMode)
+     &        ) THEN
+cph This block is to trick the adjoint:
+cph If inAdExact=.FALSE., we want to use DST3
+cph with limiters in forward, but without limiters in reverse.
+#else /* ALLOW_AUTODIFF */
+        ELSEIF( vertAdvecScheme.EQ.ENUM_DST3 ) THEN
+#endif /* ALLOW_AUTODIFF */
            CALL GAD_DST3_ADV_R( bi,bj,k, deltaTLev(k),
      I              rTrans, wFld, TracAB,
      O              af, myThid )
-        ELSEIF ( vertAdvecScheme.EQ.ENUM_DST3_FLUX_LIMIT ) THEN
+        ELSEIF (vertAdvecScheme.EQ.ENUM_DST3_FLUX_LIMIT ) THEN
            CALL GAD_DST3FL_ADV_R( bi,bj,k, deltaTLev(k),
      I              rTrans, wFld, TracAB,
      O              af, myThid )
 #ifndef ALLOW_AUTODIFF
-        ELSEIF ( vertAdvecScheme.EQ.ENUM_OS7MP ) THEN
+        ELSEIF (vertAdvecScheme.EQ.ENUM_OS7MP ) THEN
            CALL GAD_OS7MP_ADV_R( bi,bj,k, deltaTLev(k),
      I              rTrans, wFld, TracAB,
      O              af, myThid )
@@ -528,31 +539,40 @@ C-    Compute vertical advective flux in the interior using TracAB:
         ENDIF
        ELSE
 C-    Compute vertical advective flux in the interior using TracerN:
-        IF ( vertAdvecScheme.EQ.ENUM_CENTERED_2ND ) THEN
+        IF (vertAdvecScheme.EQ.ENUM_CENTERED_2ND) THEN
            CALL GAD_C2_ADV_R( bi,bj,k, rTrans, TracerN, af, myThid )
         ELSEIF ( vertAdvecScheme.EQ.ENUM_UPWIND_1RST
      &          .OR. vertAdvecScheme.EQ.ENUM_DST2 ) THEN
            CALL GAD_DST2U1_ADV_R( bi,bj,k,vertAdvecScheme,deltaTLev(k),
      I              rTrans, wFld, TracerN,
      O              af, myThid )
-        ELSEIF ( vertAdvecScheme.EQ.ENUM_FLUX_LIMIT ) THEN
+        ELSEIF (vertAdvecScheme.EQ.ENUM_FLUX_LIMIT) THEN
            CALL GAD_FLUXLIMIT_ADV_R( bi,bj,k, deltaTLev(k),
      I              rTrans, wFld, TracerN,
      O              af, myThid )
-        ELSEIF ( vertAdvecScheme.EQ.ENUM_UPWIND_3RD ) THEN
+        ELSEIF (vertAdvecScheme.EQ.ENUM_UPWIND_3RD ) THEN
            CALL GAD_U3_ADV_R( bi,bj,k, rTrans, TracerN, af, myThid )
-        ELSEIF ( vertAdvecScheme.EQ.ENUM_CENTERED_4TH ) THEN
+        ELSEIF (vertAdvecScheme.EQ.ENUM_CENTERED_4TH) THEN
            CALL GAD_C4_ADV_R( bi,bj,k, rTrans, TracerN, af, myThid )
+#ifdef ALLOW_AUTODIFF
+        ELSEIF( vertAdvecScheme.EQ.ENUM_DST3 .OR.
+     &         (vertAdvecScheme.EQ.ENUM_DST3_FLUX_LIMIT .AND. inAdMode)
+     &        ) THEN
+cph This block is to trick the adjoint:
+cph If inAdExact=.FALSE., we want to use DST3
+cph with limiters in forward, but without limiters in reverse.
+#else /* ALLOW_AUTODIFF */
         ELSEIF( vertAdvecScheme.EQ.ENUM_DST3 ) THEN
+#endif /* ALLOW_AUTODIFF */
            CALL GAD_DST3_ADV_R( bi,bj,k, deltaTLev(k),
      I              rTrans, wFld, TracerN,
      O              af, myThid )
-        ELSEIF ( vertAdvecScheme.EQ.ENUM_DST3_FLUX_LIMIT ) THEN
+        ELSEIF (vertAdvecScheme.EQ.ENUM_DST3_FLUX_LIMIT ) THEN
            CALL GAD_DST3FL_ADV_R( bi,bj,k, deltaTLev(k),
      I              rTrans, wFld, TracerN,
      O              af, myThid )
 #ifndef ALLOW_AUTODIFF
-        ELSEIF ( vertAdvecScheme.EQ.ENUM_OS7MP ) THEN
+        ELSEIF (vertAdvecScheme.EQ.ENUM_OS7MP ) THEN
            CALL GAD_OS7MP_ADV_R( bi,bj,k, deltaTLev(k),
      I              rTrans, wFld, TracerN,
      O              af, myThid )
@@ -593,15 +613,11 @@ C           boundary condition.
         ENDDO
        ENDDO
       ELSE
-        CALL GAD_DIFF_R(
-     I                    bi,bj,k, maskup, KappaR, TracerN,
-     O                    df, myThid )
+        CALL GAD_DIFF_R(bi,bj,k,KappaR,TracerN,df,myThid)
       ENDIF
 
       IF ( trUseDiffKr4 ) THEN
-        CALL GAD_BIHARM_R(
-     I                    bi,bj,k, maskUp, diffKr4, TracerN,
-     U                    df, myThid )
+        CALL GAD_BIHARM_R( bi,bj,k, diffKr4, TracerN, df, myThid )
       ENDIF
 
 #ifdef ALLOW_GMREDI
@@ -609,7 +625,7 @@ C-    GM/Redi flux in R
       IF ( trUseGMRedi ) THEN
         CALL GMREDI_RTRANSPORT(
      I         trIdentity, bi, bj, k, iMin, iMax, jMin, jMax,
-     I         maskUp, TracerN,
+     I         TracerN,
      U         df,
      I         myThid )
       ENDIF
@@ -617,7 +633,7 @@ C-    GM/Redi flux in R
 
       DO j=1-OLy,sNy+OLy
        DO i=1-OLx,sNx+OLx
-        fVerT(i,j,kUp) = fVerT(i,j,kUp) + df(i,j)
+        fVerT(i,j,kUp) = fVerT(i,j,kUp) + df(i,j)*maskUp(i,j)
        ENDDO
       ENDDO
 
@@ -696,7 +712,10 @@ C        does it only if k=1 (never the case here)
 coj   Hack to make redi (and everything else in this s/r) positive
 coj   (see Smolarkiewicz MWR 1989 and Bott MWR 1989).
 coj   Only works if 'down' is k+1 and k loop in thermodynamics is k=Nr,1,-1
-      IF ( trUseSmolHack ) THEN
+coj
+coj   Apply to all tracers except temperature
+      IF ( trIdentity.NE.GAD_TEMPERATURE .AND.
+     &     trIdentity.NE.GAD_SALINITY ) THEN
        DO j=1-OLy,sNy+OLy-1
         DO i=1-OLx,sNx+OLx-1
 coj   Add outgoing fluxes
@@ -714,14 +733,14 @@ coj   SmolarkiewiczMaxFrac, scale them down
          IF (outFlux.GT.0. _d 0 .AND.
      &       outFlux.GT.SmolarkiewiczMaxFrac*trac) THEN
 coj   If tracer is already negative, scale flux to zero
-           gTrFac = MAX(0. _d 0,SmolarkiewiczMaxFrac*trac/outFlux)
+           fac = MAX(0. _d 0,SmolarkiewiczMaxFrac*trac/outFlux)
 
-           IF (fZon(i+1,j).GT.0. _d 0) fZon(i+1,j)=gTrFac*fZon(i+1,j)
-           IF (-fZon(i,j) .GT.0. _d 0) fZon(i,j)  =gTrFac*fZon(i,j)
-           IF (fMer(i,j+1).GT.0. _d 0) fMer(i,j+1)=gTrFac*fMer(i,j+1)
-           IF (-fMer(i,j) .GT.0. _d 0) fMer(i,j)  =gTrFac*fMer(i,j)
+           IF (fZon(i+1,j).GT.0. _d 0) fZon(i+1,j)=fac*fZon(i+1,j)
+           IF (-fZon(i,j) .GT.0. _d 0) fZon(i,j)  =fac*fZon(i,j)
+           IF (fMer(i,j+1).GT.0. _d 0) fMer(i,j+1)=fac*fMer(i,j+1)
+           IF (-fMer(i,j) .GT.0. _d 0) fMer(i,j)  =fac*fMer(i,j)
            IF (-fVerT(i,j,kUp)*rkSign .GT.0. _d 0)
-     &       fVerT(i,j,kUp)=gTrFac*fVerT(i,j,kUp)
+     &       fVerT(i,j,kUp)=fac*fVerT(i,j,kUp)
 
            IF (k.LT.Nr .AND. fVerT(i,j,kDown)*rkSign.GT.0. _d 0) THEN
 coj   Down flux is special: it has already been applied in lower layer,
@@ -733,7 +752,7 @@ coj   undo down flux, ...
      &         *recip_rhoFacC(k+1)
      &         *( -fVerT(i,j,kDown)*rkSign )
 coj   ... scale ...
-             fVerT(i,j,kDown)=gTrFac*fVerT(i,j,kDown)
+             fVerT(i,j,kDown)=fac*fVerT(i,j,kDown)
 coj   ... and reapply
              gTracer(i,j,k+1) = gTracer(i,j,k+1)
      &        +_recip_hFacC(i,j,k+1,bi,bj)*recip_drF(k+1)
@@ -746,7 +765,7 @@ coj   ... and reapply
         ENDDO
        ENDDO
       ENDIF
-#endif /* GAD_SMOLARKIEWICZ_HACK */
+#endif
 
 C--   Divergence of fluxes
 C     Anelastic: scale vertical fluxes by rhoFac and leave Horizontal fluxes unchanged

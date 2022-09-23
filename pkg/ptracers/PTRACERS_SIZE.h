@@ -1,10 +1,13 @@
+C $Header: /u/gcmpack/MITgcm/pkg/ptracers/PTRACERS_SIZE.h,v 1.4 2006/02/15 04:00:44 heimbach Exp $
+C $Name:  $
+
 #ifdef ALLOW_PTRACERS
 
 CBOP
 C    !ROUTINE: PTRACERS_SIZE.h
 C    !INTERFACE:
 C #include PTRACERS_SIZE.h
-
+ 
 C    !DESCRIPTION:
 C Contains passive tracer array size (number of tracers).
 
@@ -16,6 +19,7 @@ C     Number of tracers
       PARAMETER(PTRACERS_num = 1 )
 
 #ifdef ALLOW_AUTODIFF_TAMC
+      INTEGER    iptrkey
       INTEGER    maxpass
       PARAMETER( maxpass     = PTRACERS_num + 2 )
 #endif

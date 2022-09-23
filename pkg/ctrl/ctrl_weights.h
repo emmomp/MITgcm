@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/ctrl/ctrl_weights.h,v 1.11 2014/10/09 00:49:27 gforget Exp $
+C $Name:  $
+
 c     Define dummy weights as a placeholder
       common /ctrl_weights_dummy_r/
      &                        wtheta, wsalt,
@@ -17,8 +20,9 @@ c     Define dummy weights as a placeholder
       _RL wedtaux ( nr,nsx,nsy )
       _RL wedtauy ( nr,nsx,nsy )
 
-#ifdef ALLOW_COST_HFLUXM
+#if (defined (ALLOW_COST_HFLUXM) || defined (ALLOW_HFLUXM_CONTROL))
 c     whfluxm       - weight for heat flux.
       common /cost_weights_r/ whfluxm
       _RL whfluxm (1-olx:snx+olx,1-oly:sny+oly,   nsx,nsy)
 #endif
+

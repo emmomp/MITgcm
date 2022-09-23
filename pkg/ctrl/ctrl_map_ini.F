@@ -1,7 +1,7 @@
+C $Header: /u/gcmpack/MITgcm/pkg/ctrl/ctrl_map_ini.F,v 1.45 2015/02/18 12:31:10 heimbach Exp $
+C $Name:  $
+
 #include "CTRL_OPTIONS.h"
-#ifdef ALLOW_AUTODIFF
-# include "AUTODIFF_OPTIONS.h"
-#endif
 #ifdef ALLOW_ECCO
 # include "ECCO_OPTIONS.h"
 #endif
@@ -49,9 +49,6 @@ c     == global variables ==
 c#include "PTRACERS_PARAMS.h"
 # include "PTRACERS_FIELDS.h"
 #endif
-# if (defined ALLOW_AUTODIFF_TAMC && !defined DISABLE_CTRL_THETA_LIMIT)
-#  include "tamc.h"
-# endif
 #endif /* ECCO_CTRL_DEPRECATED */
 
 C     !INPUT/OUTPUT PARAMETERS:
@@ -78,8 +75,7 @@ c     == local variables ==
       character*( 80)   fnamegeneric
 
       _RL     fac
-      _RL     tmpfld2d(1-olx:snx+olx,1-oly:sny+oly,   nsx,nsy)
-      _RL     tmpfld3d(1-olx:snx+olx,1-oly:sny+oly,nr,nsx,nsy)
+      _RL tmptest
 
 c     == external ==
       integer  ilnblnk
@@ -108,28 +104,6 @@ CEOP
         fac = 0. _d 0
       endif
 
-      do bj = jtlo,jthi
-        do bi = itlo,ithi
-          do j = 1-oly,sny+oly
-            do i = 1-olx,snx+olx
-              tmpfld2d(i,j,bi,bj) = 0. _d 0
-            enddo
-          enddo
-        enddo
-      enddo
-
-      do bj = jtlo,jthi
-        do bi = itlo,ithi
-          do k = 1,nr
-            do j = 1-oly,sny+oly
-              do i = 1-olx,snx+olx
-                tmpfld3d(i,j,k,bi,bj) = 0. _d 0
-              enddo
-            enddo
-          enddo
-        enddo
-      enddo
-
 #ifdef ALLOW_THETA0_CONTROL
 c--   Temperature field.
       il=ilnblnk( xx_theta_file )
@@ -152,28 +126,16 @@ c--   Temperature field.
 #endif
                 theta(i,j,k,bi,bj) = theta(i,j,k,bi,bj) +
      &                               fac*tmpfld3d(i,j,k,bi,bj)
-              enddo
-            enddo
-          enddo
-        enddo
-      enddo
-# ifndef DISABLE_CTRL_THETA_LIMIT
-#  ifdef ALLOW_AUTODIFF_TAMC
-CADJ STORE theta = tapelev_init, key = 1, kind = isbyte
-#  endif
-      do bj = jtlo,jthi
-        do bi = itlo,ithi
-          do k = 1,nr
-            do j = jmin,jmax
-              do i = imin,imax
+#ifndef DISABLE_CTRL_THETA_LIMIT
                 if(theta(i,j,k,bi,bj).lt.-2.0)
      &               theta(i,j,k,bi,bj)= -2.0
+#endif
               enddo
             enddo
           enddo
-        enddo
+       enddo
       enddo
-# endif
+
 #endif
 
 #ifdef ALLOW_SALT0_CONTROL

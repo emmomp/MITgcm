@@ -1,4 +1,6 @@
 /*
+ * $Header: /u/gcmpack/MITgcm/pkg/atm_ocn_coupler/setdir.c,v 1.1 2013/10/25 17:31:29 jmc Exp $
+ * $Name:  $
 */
 
 #include <stdlib.h>

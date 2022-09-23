@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/verification/halfpipe_streamice/code_oad/ctrl_map_ini_genarr.F,v 1.3 2015/01/30 19:19:19 heimbach Exp $
+C $Name:  $
+
 #include "CTRL_OPTIONS.h"
 #include "STREAMICE_OPTIONS.h"
 
@@ -62,12 +65,6 @@ C     == local variables ==
       character*( 80)   fnamegeneric
       character*(MAX_LEN_MBUF) msgBuf
       _RL     fac
-#ifdef ALLOW_GENARR2D_CONTROL
-      _RL     tmpfld2d(1-olx:snx+olx,1-oly:sny+oly,   nsx,nsy)
-#endif
-#ifdef ALLOW_GENARR3D_CONTROL
-      _RL     tmpfld3d(1-olx:snx+olx,1-oly:sny+oly,nr,nsx,nsy)
-#endif
 CEOP
 
       jmin = 1

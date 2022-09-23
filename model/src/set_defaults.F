@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/model/src/set_defaults.F,v 1.181 2017/03/24 21:56:45 jmc Exp $
+C $Name:  $
+
 #include "PACKAGES_CONFIG.h"
 #include "CPP_OPTIONS.h"
 
@@ -52,7 +55,6 @@ C-    Vertical gridding
       DO k=1,Nr+1
        delRc(k)           = UNSET_RL
       ENDDO
-      useMin4hFacEdges    = .FALSE.
 C-    vertical profile
       tRefFile            = ' '
       sRefFile            = ' '
@@ -101,7 +103,6 @@ C--   Set default "physical" parameters
       nh_Am2              = 1. _d 0
       gravity             = 9.81 _d 0
       gBaro               = UNSET_RL
-      surf_pRef           = 101325. _d 0
       rhoNil              = 999.8 _d 0
       rhoConst            = UNSET_RL
 C-- jmc : the default is to set rhoConstFresh to rhoConst (=rhoNil by default)
@@ -118,7 +119,6 @@ C-    Earth rotation period is 86400*365.25/366.25 (use to be 1.day)
 C-    viscosity and diffusivity default value:
       viscAh              = 0. _d 3
       smag3D_coeff        = 1. _d -2
-      smag3D_diffCoeff    = 0. _d 0
       viscAhGrid          = 0. _d 0
       viscAhGridMin       = 0. _d 0
       viscAhGridMax       = 1. _d 21
@@ -126,7 +126,6 @@ C-    viscosity and diffusivity default value:
       viscAhReMax         = 0. _d 0
       viscC2leith         = 0. _d 0
       viscC2leithD        = 0. _d 0
-      viscC2LeithQG       = 0. _d 0
       viscC2smag          = 0. _d 0
       viscArDefault       = 0. _d -3
       viscFacAdj          = 1. _d 0
@@ -176,7 +175,6 @@ C-    viscosity and diffusivity default value:
       buoyancyRelation    = 'OCEANIC'
       selectP_inEOS_Zc    = UNSET_I
       smoothAbsFuncRange  = 0. _d 0
-      sIceLoadFac         = 1. _d 0
       hFacMin             = 1. _d 0
       hFacMinDrDefault    = 0. _d 0
       implicitIntGravWave = .FALSE.
@@ -186,7 +184,6 @@ C-    viscosity and diffusivity default value:
       momViscosity        = .TRUE.
       momAdvection        = .TRUE.
       momForcing          = .TRUE.
-      momTidalForcing     = .TRUE.
       useCoriolis         = .TRUE.
       momPressureForcing  = .TRUE.
       momStepping         = .TRUE.
@@ -194,11 +191,9 @@ C-    viscosity and diffusivity default value:
       tempStepping        = .TRUE.
       tempAdvection       = .TRUE.
       tempForcing         = .TRUE.
-      temp_stayPositive   = .FALSE.
       saltStepping        = .TRUE.
       saltAdvection       = .TRUE.
       saltForcing         = .TRUE.
-      salt_stayPositive   = .FALSE.
       addFrictionHeating  = .FALSE.
       metricTerms         = .TRUE.
       useNHMTerms         = .FALSE.
@@ -228,9 +223,10 @@ C-    viscosity and diffusivity default value:
       multiDimAdvection   = .TRUE.
       useMultiDimAdvec    = .FALSE.
       useCDscheme         = .FALSE.
-      selectCoriScheme    = UNSET_I
-      selectVortScheme    = UNSET_I
+      useEnergyConservingCoriolis = .FALSE.
+      useJamartWetPoints  = .FALSE.
       useJamartMomAdv     = .FALSE.
+      selectVortScheme    = UNSET_I
       upwindVorticity     = .FALSE.
       highOrderVorticity  = .FALSE.
       useAbsVorticity     = .FALSE.
@@ -282,15 +278,15 @@ C--   Atmospheric physical parameters (e.g.: EOS)
 
 C--   Elliptic solver parameters
       cg2dMaxIters       = 150
-      cg2dMinItersNSA    = 0
       cg2dTargetResidual = 1. _d -7
       cg2dTargetResWunit = -1.
+      cg2dChkResFreq     = 1
       cg2dUseMinResSol   = UNSET_I
       cg2dpcOffDFac      = 0.51 _d 0
       cg2dPreCondFreq    = 1
       cg3dMaxIters       = 150
       cg3dTargetResidual = 1. _d -7
-      useNSACGSolver     = .FALSE.
+      cg3dChkResFreq     = 1
       useSRCGSolver      = .FALSE.
 
 C--   Time stepping parameters
@@ -386,7 +382,6 @@ C--   Input files
       vVelInitFile    = ' '
       pSurfInitFile   = ' '
       pLoadFile       = ' '
-      geoPotAnomFile  = ' '
       addMassFile     = ' '
       eddyPsiXFile    = ' '
       eddyPsiYFile    = ' '

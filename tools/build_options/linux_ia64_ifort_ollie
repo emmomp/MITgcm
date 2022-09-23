@@ -1,5 +1,7 @@
 #!/bin/bash
 #
+#  $Header: /u/gcmpack/MITgcm/tools/build_options/linux_ia64_ifort_ollie,v 1.3 2016/09/21 14:05:43 mlosch Exp $
+#  $Name:  $
 #
 # derived from linux_amd64_ifort, tested on ollie.awi.de (CRAY CS400)
 #
@@ -59,16 +61,12 @@ if test "x$IEEE" = x ; then     #- with optimisation:
     NOOPTFILES='obcs_init_fixed.F'
 else
   if test "x$DEVEL" = x ; then  #- no optimisation + IEEE :
-    # "-fp-model [keyword]" is the recommended method of controlling precision
-    FOPTIM='-O0 -noalign -xHost -ip -fp-model consistent'
-# alternatives, see man pages for details
-#   FOPTIM='-O0 -noalign -xHost -ip -mp1'
-#   FOPTIM='-O0 -noalign -xHost -ip -fp-model precise'
-#   FOPTIM='-O0 -noalign -xHost -ip -mieee-fp'
+    # "-mp" is for ieee "maintain precision"
+    FOPTIM='-O0 -noalign -xHost -ip -mp'
   else                          #- development/check options:
 #    FFLAGS="$FFLAGS -warn all -warn nounused"
     FFLAGS="$FFLAGS -warn unused"
-    FOPTIM="-fpe0 -check all -ftrapuv -fp-model precise"
+    FOPTIM="-fpe0 -check all -ftrapuv"
     FOPTIM="$FOPTIM -O0 -noalign -g -traceback"
   fi
 fi
@@ -81,23 +79,20 @@ INCLUDEDIRS=''
 INCLUDES=''
 LIBS=''
 
-# the extra -Wl,-rpath,${NETCDF_LIB} makes sure that the path to the
-# dynamics libraries is hardwired in the executable and does not depend
-# on which module you have loaded
 if [ "x$NETCDF_ROOT" != x ] ; then
     INCLUDEDIRS="${NETCDF_ROOT}/include"
     INCLUDES="-I${NETCDF_ROOT}/include"
-    LIBS="-L${NETCDF_ROOT}/lib -Wl,-rpath,${NETCDF_ROOT}/lib"
+    LIBS="-L${NETCDF_ROOT}/lib"
 elif [ "x$NETCDF_HOME" != x ]; then
     INCLUDEDIRS="${NETCDF_HOME}/include"
     INCLUDES="-I${NETCDF_HOME}/include"
-    LIBS="-L${NETCDF_HOME}/lib -Wl,-rpath,${NETCDF_HOME}/lib"
+    LIBS="-L${NETCDF_HOME}/lib"
 elif [ "x$NETCDF_INC" != x -a "x$NETCDF_LIB" != x ]; then
     NETCDF_INC=`echo $NETCDF_INC | sed 's/-I//g'`
     NETCDF_LIB=`echo $NETCDF_LIB | sed 's/-L//g'`
     INCLUDEDIRS="${NETCDF_INC}"
     INCLUDES="-I${NETCDF_INC}"
-    LIBS="-L${NETCDF_LIB} -Wl,-rpath,${NETCDF_LIB}"
+    LIBS="-L${NETCDF_LIB}"
 fi
 
 if [ -n "$MPI_INC_DIR" -a "x$MPI" = xtrue ] ; then

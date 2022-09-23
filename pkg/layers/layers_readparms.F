@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/layers/layers_readparms.F,v 1.10 2015/06/12 16:21:31 jmc Exp $
+C $Name:  $
+
 #include "LAYERS_OPTIONS.h"
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
@@ -91,11 +94,7 @@ C     Read parameters from open data file
       CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
      &    SQUEEZE_RIGHT , 1)
 C     Close the open data file
-#ifdef SINGLE_DISK_IO
       CLOSE(iUnit)
-#else
-      CLOSE(iUnit,STATUS='DELETE')
-#endif /* SINGLE_DISK_IO */
 
 C--   Process old params setting (single averaging tracer)
       IF ( LAYER_nb.LT.0 .OR. LAYER_nb.GT.3 ) THEN
@@ -147,7 +146,6 @@ C--   Set layers_num according to layers_name:
         IF ( layers_name(iLa).EQ.'TH ' ) layers_num(iLa) = 1
         IF ( layers_name(iLa).EQ.'SLT' ) layers_num(iLa) = 2
         IF ( layers_name(iLa).EQ.'RHO' ) layers_num(iLa) = 3
-        IF ( layers_name(iLa).EQ.'MSE' ) layers_num(iLa) = 4
         IF ( layers_name(iLa).NE.' ' .AND.
      &       layers_num(iLa).EQ.0 ) THEN
           WRITE(msgBuf,'(2A,I2,3A)') 'LAYERS_READPARMS: ',
@@ -170,34 +168,6 @@ C--   Make sure the layers_bounds we just read is big enough
           errCount = errCount + 1
          ENDIF
         ENDDO
-       ENDIF
-#ifndef LAYERS_PRHO_REF
-       IF ( layers_num(iLa).EQ.3 ) THEN
-        WRITE(msgBuf,'(2A,I4)')
-     &      'S/R LAYERS_READPARMS: ',
-     &      'Layering in density requires to define LAYERS_PRHO_REF'
-          CALL PRINT_ERROR( msgBuf, myThid )
-          errCount = errCount + 1
-       ENDIF
-#endif
-#ifndef LAYERS_MSE
-       IF ( layers_num(iLa).EQ.4 ) THEN
-        WRITE(msgBuf,'(2A,I4)')
-     &      'S/R LAYERS_READPARMS: ',
-     &      'Layering in MSE requires to define LAYERS_MSE'
-          CALL PRINT_ERROR( msgBuf, myThid )
-          errCount = errCount + 1
-       ENDIF
-#endif
-C- Check MSE is not used with grey atmosphere nor with fizhi
-       IF ( layers_num(iLa).EQ.4 ) THEN
-        IF ( useAtm_Phys .OR. useFizhi ) THEN
-         WRITE(msgBuf,'(2A,I4)')
-     &       'S/R LAYERS_READPARMS: ',
-     &       'Layering in MSE only work with Aim_v23'
-          CALL PRINT_ERROR( msgBuf, myThid )
-          errCount = errCount + 1
-        ENDIF
        ENDIF
       ENDDO
 

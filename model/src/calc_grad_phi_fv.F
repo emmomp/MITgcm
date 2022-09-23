@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/model/src/calc_grad_phi_fv.F,v 1.1 2013/01/04 21:07:07 jmc Exp $
+C $Name:  $
+
 #include "CPP_OPTIONS.h"
 
 CBOP

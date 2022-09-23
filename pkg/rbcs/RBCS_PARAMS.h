@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/rbcs/RBCS_PARAMS.h,v 1.3 2013/12/31 22:21:47 jmc Exp $
+C $Name:  $
+
 #ifdef ALLOW_RBCS
 
 CBOP
@@ -37,7 +40,7 @@ C
       LOGICAL useRBCsalt
       CHARACTER*(MAX_LEN_FNAM) relaxMaskUFile
       CHARACTER*(MAX_LEN_FNAM) relaxMaskVFile
-      CHARACTER*(MAX_LEN_FNAM) relaxMaskTrFile(maskLEN)
+      CHARACTER*(MAX_LEN_FNAM) relaxMaskFile(maskLEN)
       CHARACTER*(MAX_LEN_FNAM) relaxUFile
       CHARACTER*(MAX_LEN_FNAM) relaxVFile
       CHARACTER*(MAX_LEN_FNAM) relaxTFile
@@ -64,7 +67,7 @@ C
       COMMON /RBCS_PARM01_C/
      &          relaxMaskUFile,
      &          relaxMaskVFile,
-     &          relaxMaskTrFile,
+     &          relaxMaskFile,
      &          relaxUFile,
      &          relaxVFile,
      &          relaxTFile,

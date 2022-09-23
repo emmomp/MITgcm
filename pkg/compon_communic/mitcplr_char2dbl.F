@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/compon_communic/mitcplr_char2dbl.F,v 1.1 2009/09/14 16:19:09 jmc Exp $
+C $Name:  $
+
 !=======================================================================
       subroutine mitcplr_char2dbl( carg, rarg )
       implicit none

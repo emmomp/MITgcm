@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/diagnostics/diagnostics_summary.F,v 1.7 2011/06/06 15:42:58 jmc Exp $
+C $Name:  $
+
 #include "DIAG_OPTIONS.h"
 
 CBOP 0
@@ -27,7 +30,7 @@ C     myThid :: my Thread Id number
 CEOP
 
 C     !LOCAL VARIABLES:
-      INTEGER md, ld, ndId, ipt, im
+      INTEGER md, ld, ipt, im
       INTEGER j, k, k1, k2, l
       INTEGER  dUnit, stdUnit, iLen
       INTEGER xNew, xOld, ii, nDup
@@ -56,7 +59,7 @@ C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
         IF ( outpSummary ) THEN
          WRITE(fn,'(A,I10.10,A)') 'diagnostics_status.',myIter,'.txt'
          iLen = ILNBLNK(fn)
-         CALL MDSFINDUNIT( dUnit, myThid )
+         CALL MDSFINDUNIT( dUnit, mythid )
          OPEN(dUnit,file=fn(1:iLen),status='unknown',form='formatted')
          WRITE(msgBuf,'(2A)')
      &   ' write diagnostics summary to file: ',fn(1:iLen)
@@ -107,17 +110,16 @@ C     write a summary diagnostics state:
          ENDIF
          WRITE(dUnit,'(A)') ccFlds
          DO md=1,nActive(ld)
-           ndId = ABS(jdiag(md,ld))
            WRITE(msgBuf,'(I6,3A,2(I7,A),I4,A)')
      &       jdiag(md,ld),' |', flds(md,ld),'|',idiag(md,ld),' |',
-     &       mdiag(md,ld),' |', kdiag(ndId),' |'
+     &       mdiag(md,ld),' |', kdiag(jdiag(md,ld)),' |'
            ipt = ABS(idiag(md,ld))
            IF (ipt.NE.0 .AND. averageCycle(ld).GT.1) THEN
              xOld=ndiag(ipt,1,1)
              nDup = 1
              cSep = ', '
              DO l=1,averageCycle(ld)
-               ii = ipt+l*kdiag(ndId)
+               ii = ipt+l*kdiag(jdiag(md,ld))
                IF (l.EQ.averageCycle(ld)) THEN
                  cSep = ' |'
                  xNew=xOld+1

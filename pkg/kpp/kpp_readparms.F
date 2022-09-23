@@ -1,3 +1,5 @@
+C $Header: /u/gcmpack/MITgcm/pkg/kpp/kpp_readparms.F,v 1.22 2014/05/27 23:41:29 jmc Exp $
+C $Name:  $
 #include "KPP_OPTIONS.h"
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
@@ -23,21 +25,16 @@ CEOP
 
 C     !LOCAL VARIABLES:
 #ifdef ALLOW_KPP
-C     msgBuf     :: Informational/error message buffer
-C     errIO      :: IO error flag
-C     iUnit      :: Work variable for IO unit number
+C     msgBuf      - Informational/error message buffer
+C     errIO       - IO error flag
+C     iUnit       - Work variable for IO unit number
       CHARACTER*(MAX_LEN_MBUF) msgBuf
       INTEGER errIO, iUnit
-C-    retired parameters:
-C     nRetired   :: Count number of "retired" parameters found in namelist.
-      INTEGER nRetired
-      LOGICAL KPPmixingMaps
-      INTEGER num_v_smooth_BV, num_z_smooth_sh, num_m_smooth_sh
 
 C--   KPP vertical mixing parameters
       NAMELIST /KPP_PARM01/
      & kpp_freq, kpp_dumpFreq, kpp_taveFreq,
-     & KPPwriteState, KPP_ghatUseTotalDiffus,
+     & KPPmixingMaps, KPPwriteState, KPP_ghatUseTotalDiffus,
      & KPPuseDoubleDiff, LimitHblStable,
      & minKPPhbl,
      & epsln, phepsi, epsilon, vonk, dB_dz,
@@ -45,13 +42,12 @@ C--   KPP vertical mixing parameters
      & conas, concs, conc3, zetas,
      & Ricr, cekman, cmonob, concv, hbf,
      & zmin, zmax, umin, umax,
-     & num_v_smooth_Ri,
+     & num_v_smooth_Ri, num_v_smooth_BV,
+     & num_z_smooth_sh, num_m_smooth_sh,
      & Riinfty, BVSQcon, difm0, difs0, dift0,
      & difmcon, difscon, diftcon,
      & Rrho0, dsfmax,
-     & cstar,
-     & KPPmixingMaps,
-     & num_v_smooth_BV, num_z_smooth_sh, num_m_smooth_sh
+     & cstar
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
 
@@ -67,12 +63,12 @@ C     print a (weak) warning if data.kpp is found
 
       _BEGIN_MASTER(myThid)
 
-      WRITE(msgBuf,'(A)') ' KPP_READPARMS: opening data.kpp'
+      WRITE(msgBuf,'(A)') ' KPP_INIT: opening data.kpp'
       CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
-     &                    SQUEEZE_RIGHT, myThid )
-      errIO = 0
+     &                    SQUEEZE_RIGHT , 1)
+
       CALL OPEN_COPY_DATA_FILE(
-     I                          'data.kpp', 'KPP_READPARMS',
+     I                          'data.kpp', 'KPP_INIT',
      O                          iUnit,
      I                          myThid )
 
@@ -80,6 +76,7 @@ C--   set default KPP vertical mixing parameters
       kpp_freq               = deltaTClock
       kpp_dumpFreq           = dumpFreq
       kpp_taveFreq           = taveFreq
+      KPPmixingMaps          = .FALSE.
       KPPwriteState          = .FALSE.
       KPPuseDoubleDiff       = .FALSE.
       LimitHblStable         = .TRUE.
@@ -125,6 +122,9 @@ C     "kmixinit" and "wscale"
 C     parameters for subroutine "Ri_iwmix"
 
       num_v_smooth_Ri = 0
+      num_v_smooth_BV = 0
+      num_z_smooth_sh = 0
+      num_m_smooth_sh = 0
       Riinfty =  0.7 _d 0
       BVSQcon = -0.2 _d -4
 
@@ -145,86 +145,32 @@ C     parameters for subroutine "blmix"
 
       cstar   = 10.
 
-C-    Retired parameters: initialised to unlikely value:
-      nRetired = 0
-      KPPmixingMaps   = .FALSE.
-      num_v_smooth_BV = UNSET_I
-      num_z_smooth_sh = UNSET_I
-      num_m_smooth_sh = UNSET_I
-
 C-----------------------------------------------------------------------
 
 C--   Read settings from model parameter file "data.kpp".
-      WRITE(msgBuf,'(A)') ' KPP_READPARMS ; starts to read KPP_PARM01'
-      CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
-     &                    SQUEEZE_RIGHT, myThid )
-      READ( UNIT=iUnit, NML=KPP_PARM01 )
-c     READ( UNIT=iUnit, NML=KPP_PARM01, IOSTAT=errIO )
-c     WRITE(msgBuf,'(A,I6,A)')
-c    & ' KPP_READPARMS ; read KPP_PARM01 (', errIO, ' )'
-c     CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
-c    &                    SQUEEZE_RIGHT, myThid )
+      READ(UNIT=iUnit,NML=KPP_PARM01,IOSTAT=errIO)
       IF ( errIO .LT. 0 ) THEN
        WRITE(msgBuf,'(A)')
-     &  'S/R KPP_READPARMS: Error reading parameter file "data.kpp"'
-       CALL PRINT_ERROR( msgBuf, myThid )
+     &  'S/R INI_PARMS'
+       CALL PRINT_ERROR( msgBuf , 1)
        WRITE(msgBuf,'(A)')
-     &  'S/R KPP_READPARMS: Problem in namelist KPP_PARM01'
-       CALL PRINT_ERROR( msgBuf, myThid )
-       STOP 'ABNORMAL END: S/R KPP_READPARMS'
-      ELSE
-       WRITE(msgBuf,'(A)') ' KPP_READPARMS ; read KPP_PARM01 : OK'
-       CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
-     &                     SQUEEZE_RIGHT, myThid )
+     &  'Error reading numerical model '
+       CALL PRINT_ERROR( msgBuf , 1)
+       WRITE(msgBuf,'(A)')
+     &  'parameter file "data.kpp"'
+       CALL PRINT_ERROR( msgBuf , 1)
+       WRITE(msgBuf,'(A)')
+     &  'Problem in namelist KPP_PARM01'
+       CALL PRINT_ERROR( msgBuf , 1)
+C      CALL MODELDATA_EXAMPLE( myThid )
+       STOP 'ABNORMAL END: S/R KPP_INIT'
       ENDIF
 
-#ifdef SINGLE_DISK_IO
       CLOSE(iUnit)
-#else
-      CLOSE(iUnit,STATUS='DELETE')
-#endif /* SINGLE_DISK_IO */
 
-      WRITE(msgBuf,'(A)') ' KPP_READPARMS: finished reading data.kpp'
+      WRITE(msgBuf,'(A)') ' KPP_INIT: finished reading data.kpp'
       CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
-     &                    SQUEEZE_RIGHT, myThid )
-
-C--   Print message and stop when retired parameters were found in namelist
-      IF ( KPPmixingMaps ) THEN
-        nRetired = nRetired + 1
-        WRITE(msgBuf,'(2A)') 'S/R KPP_READPARMS: "KPPmixingMaps"',
-     &                       ' no longer allowed in file "data.kpp"'
-        CALL PRINT_ERROR( msgBuf, myThid )
-      ENDIF
-      IF ( num_v_smooth_BV .NE. UNSET_I ) THEN
-        nRetired = nRetired + 1
-        WRITE(msgBuf,'(2A)') 'S/R KPP_READPARMS: "num_v_smooth_BV"',
-     &                       ' no longer allowed in file "data.kpp"'
-        CALL PRINT_ERROR( msgBuf, myThid )
-      ENDIF
-      IF ( num_z_smooth_sh .NE. UNSET_I ) THEN
-        nRetired = nRetired + 1
-        WRITE(msgBuf,'(2A)') 'S/R KPP_READPARMS: "num_z_smooth_sh"',
-     &                       ' no longer allowed in file "data.kpp"'
-        CALL PRINT_ERROR( msgBuf, myThid )
-      ENDIF
-      IF ( num_m_smooth_sh .NE. UNSET_I ) THEN
-        nRetired = nRetired + 1
-        WRITE(msgBuf,'(2A)') 'S/R KPP_READPARMS: "num_m_smooth_sh"',
-     &                       ' no longer allowed in file "data.kpp"'
-        CALL PRINT_ERROR( msgBuf, myThid )
-      ENDIF
-
-      IF ( nRetired .GT. 0 ) THEN
-       WRITE(msgBuf,'(2A)') 'S/R KPP_READPARMS: ',
-     &  'Error reading file "data.kpp":'
-       CALL PRINT_ERROR( msgBuf, myThid )
-       WRITE(msgBuf,'(I4,A)') nRetired,
-     &      ' out-of-date parameters were found in the namelist(s)'
-       CALL PRINT_ERROR( msgBuf, myThid )
-c      errCount = errCount + 1
-       CALL ALL_PROC_DIE( 0 )
-       STOP 'ABNORMAL END: S/R KPP_READPARMS'
-      ENDIF
+     &                    SQUEEZE_RIGHT , 1)
 
       _END_MASTER(myThid)
 

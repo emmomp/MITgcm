@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/ctrl/ctrl_init_wet.F,v 1.19 2015/05/26 23:53:06 gforget Exp $
+C $Name:  $
+
 #include "CTRL_OPTIONS.h"
 
       subroutine ctrl_init_wet( mythid )
@@ -20,9 +23,9 @@ c     == global variables ==
 #ifdef ALLOW_OBCS_CONTROL
 # include "OBCS_GRID.h"
 #endif
-#ifdef ALLOW_SHELFICE
+#ifdef ALLOW_SHIFWFLX_CONTROL
 # include "SHELFICE.h"
-#endif /* ALLOW_SHELFICE */
+#endif /* ALLOW_SHIFWFLX_CONTROL */
 
 c     == routine arguments ==
 
@@ -37,21 +40,19 @@ c     == local variables ==
       integer jmin,jmax
       integer imin,imax
       integer ntmp2(4)
+      integer iobcs
       integer nwetc3d
       integer nwettmp
-#ifdef ALLOW_SHELFICE
+#ifdef ALLOW_SHIFWFLX_CONTROL
       integer ntmpshi
 #endif
 #ifdef ALLOW_OBCS_CONTROL
-      integer iobcs
       integer ntmpob(nobcs)
-      character*(80) ymaskobcs
 #endif
-#ifdef ALLOW_EFLUXP0_CONTROL
       _RL dummy
-#endif /* ALLOW_EFLUXP0_CONTROL */
       _RS dummyRS
 
+      character*(80) ymaskobcs
       character*(max_len_mbuf) msgbuf
 
 c--   Set loop ranges.
@@ -75,7 +76,7 @@ c--   Initialise the counters.
             nwetstile(bi,bj,k) = 0
             nwetwtile(bi,bj,k) = 0
             nwetvtile(bi,bj,k) = 0
-#ifdef ALLOW_SHELFICE
+#ifdef ALLOW_SHIFWFLX_CONTROL
             nwetitile(bi,bj,k) = 0
 #endif
           enddo
@@ -130,12 +131,12 @@ c--             Vertical mask.
                   nwetvtile(bi,bj,k) = nwetvtile(bi,bj,k) + 1
                 endif
 #endif
-#ifdef ALLOW_SHELFICE
+#ifdef ALLOW_SHIFWFLX_CONTROL
 c--             Ice shelf mask.
                 if (maskSHI(i,j,k,bi,bj) .eq. 1.) then
                  nwetitile(bi,bj,k) = nwetitile(bi,bj,k) + 1
                 endif
-#endif /* ALLOW_SHELFICE */
+#endif /* ALLOW_SHIFWFLX_CONTROL */
               enddo
             enddo
           enddo
@@ -180,57 +181,71 @@ c--   Determine the total number of control variables.
       nvarlength = 0
       do i = 1,maxcvars
 c
-       if ( ncvarindex(i) .ne. -1 ) then
-        nvartype = nvartype + 1
-        do bj = jtlo,jthi
-         do bi = itlo,ithi
-          do k = 1,ncvarnrmax(i)
-           if ( ncvargrd(i) .eq. 'c' ) then
-            nvarlength = nvarlength + ncvarrecs(i)*nwetctile(bi,bj,k)
-           else if ( ncvargrd(i) .eq. 's' ) then
-            nvarlength = nvarlength + ncvarrecs(i)*nwetstile(bi,bj,k)
-           else if ( ncvargrd(i) .eq. 'w' ) then
-            nvarlength = nvarlength + ncvarrecs(i)*nwetwtile(bi,bj,k)
-           else if ( ncvargrd(i) .eq. 'v' ) then
-            nvarlength = nvarlength + ncvarrecs(i)*nwetvtile(bi,bj,k)
-#ifdef ALLOW_SHELFICE
+         if ( ncvarindex(i) .ne. -1 ) then
+            nvartype = nvartype + 1
+            do bj = jtlo,jthi
+               do bi = itlo,ithi
+                  do k = 1,ncvarnrmax(i)
+                     if ( ncvargrd(i) .eq. 'c' ) then
+                        nvarlength = nvarlength +
+     &                       ncvarrecs(i)*nwetctile(bi,bj,k)
+                     else if ( ncvargrd(i) .eq. 's' ) then
+                        nvarlength = nvarlength +
+     &                       ncvarrecs(i)*nwetstile(bi,bj,k)
+                     else if ( ncvargrd(i) .eq. 'w' ) then
+                        nvarlength = nvarlength +
+     &                       ncvarrecs(i)*nwetwtile(bi,bj,k)
+                     else if ( ncvargrd(i) .eq. 'v' ) then
+                        nvarlength = nvarlength +
+     &                       ncvarrecs(i)*nwetvtile(bi,bj,k)
+#ifdef ALLOW_SHIFWFLX_CONTROL
 c--             Ice shelf mask.
-           else if ( ncvargrd(i) .eq. 'i') then
-            nvarlength = nvarlength + ncvarrecs(i)*nwetitile(bi,bj,k)
-#endif /* ALLOW_SHELFICE */
-           else if ( ncvargrd(i) .eq. 'm' ) then
+                     else if ( ncvargrd(i) .eq. 'i') then
+                        nvarlength = nvarlength +
+     &                       ncvarrecs(i)*nwetitile(bi,bj,k)
+#endif /* ALLOW_SHIFWFLX_CONTROL */
+                     else if ( ncvargrd(i) .eq. 'm' ) then
 #ifdef ALLOW_OBCS_CONTROL
-            do iobcs = 1, nobcs
+                        do iobcs = 1, nobcs
 cgg   This overcounts the number of o.b. control points by a factor of "nobcs".
 cgg   As an ad-hoc solution I have divided by nobcs everywhere.
+                           if ( i .eq. 11 ) then
 #ifdef ALLOW_OBCSN_CONTROL
-             if ( i .eq. 11 ) nvarlength = nvarlength
-     &            + nwetobcsn(bi,bj,k,iobcs)*(ncvarrecs(i)/nobcs)
+                              nvarlength = nvarlength +
+     &                             (ncvarrecs(i)/nobcs)
+     &                             *nwetobcsn(bi,bj,k,iobcs)
 #endif
+                           else if ( i .eq. 12 ) then
 #ifdef ALLOW_OBCSS_CONTROL
-             if ( i .eq. 12 ) nvarlength = nvarlength
-     &            + nwetobcss(bi,bj,k,iobcs)*(ncvarrecs(i)/nobcs)
+                              nvarlength = nvarlength +
+     &                             (ncvarrecs(i)/nobcs)
+     &                             *nwetobcss(bi,bj,k,iobcs)
 #endif
+                           else if ( i .eq. 13 ) then
 #ifdef ALLOW_OBCSW_CONTROL
-             if ( i .eq. 13 ) nvarlength = nvarlength
-     &            + nwetobcsw(bi,bj,k,iobcs)*(ncvarrecs(i)/nobcs)
+                              nvarlength = nvarlength +
+     &                             (ncvarrecs(i)/nobcs)
+     &                             *nwetobcsw(bi,bj,k,iobcs)
 #endif
+                           else if ( i .eq. 14 ) then
 #ifdef ALLOW_OBCSE_CONTROL
-             if ( i .eq. 14 ) nvarlength = nvarlength
-     &            + nwetobcse(bi,bj,k,iobcs)*(ncvarrecs(i)/nobcs)
+                              nvarlength = nvarlength +
+     &                             (ncvarrecs(i)/nobcs)
+     &                             *nwetobcse(bi,bj,k,iobcs)
 #endif
+                           end if
+                        enddo
+#endif
+                     else
+                        print*,'ctrl_init: invalid grid location'
+                        print*,'     control variable = ',ncvarindex(i)
+                        print*,'     grid location    = ',ncvargrd(i)
+                        stop   ' ... stopped in ctrl_init'
+                     endif
+                  enddo
+               enddo
             enddo
-#endif
-           else
-            print*,'ctrl_init_wet: invalid grid location'
-            print*,'     control variable = ',ncvarindex(i)
-            print*,'     grid location    = ',ncvargrd(i)
-            stop   ' ... stopped in ctrl_init_wet'
-           endif
-          enddo
-         enddo
-        enddo
-       endif
+         endif
       enddo
 
 cph(
@@ -525,7 +540,7 @@ c
       call print_message( msgbuf, standardmessageunit,
      &    SQUEEZE_RIGHT , mythid)
 
-#ifdef ALLOW_SHELFICE
+#ifdef ALLOW_SHIFWFLX_CONTROL
       write(msgbuf,'(a,2x,I10)')
      &     'ctrl-wet 17a:surface wet I = ', nwetitile(1,1,1)
       call print_message( msgbuf, standardmessageunit,
@@ -555,7 +570,7 @@ c
        ntmpshi=ntmpshi+nWetiGlobal(k)
       enddo
       write(msgbuf,'(a,2x,I10)')
-     &    'ctrl-wet 17c: global SUM(K) shelfice ', ntmpshi
+     &    'ctrl-wet 17c: global SUM(K) shifwflx ', ntmpshi
       call print_message( msgbuf, standardmessageunit,
      &    SQUEEZE_RIGHT , mythid)
 
@@ -566,11 +581,11 @@ c
 #endif
 
       write(msgbuf,'(a,2x,I10)')
-     &     'ctrl_init_wet: no. of control variables: ', nvartype
+     &     'ctrl_init: no. of control variables: ', nvartype
       call print_message( msgbuf, standardmessageunit,
      &     SQUEEZE_RIGHT , mythid)
       write(msgbuf,'(a,2x,I10)')
-     &     'ctrl_init_wet: control vector length:    ', nvarlength
+     &     'ctrl_init: control vector length:    ', nvarlength
       call print_message( msgbuf, standardmessageunit,
      &     SQUEEZE_RIGHT , mythid)
 
@@ -592,10 +607,10 @@ c#else
       CALL ACTIVE_WRITE_GEN_RS( 'maskCtrlS', maskS, 'XY', Nr,
      I                          1, .FALSE., 0, mythid, dummyRS )
 c#endif
-#ifdef ALLOW_EFLUXP0_CONTROL
+#if (defined (ALLOW_EFLUXP0_CONTROL))
       call active_write_xyz( 'maskhFacV', hFacV, 1, 0, mythid, dummy)
 #endif
-#ifdef ALLOW_SHELFICE
+#ifdef ALLOW_SHIFWFLX_CONTROL
 c#ifdef REAL4_IS_SLOW
 c     call active_write_xyz( 'maskCtrlI', maskSHI, 1, 0, mythid, dummy)
 c#else
@@ -603,7 +618,6 @@ c#else
      I                          1, .FALSE., 0, mythid, dummyRS )
 c#endif
 #endif
-
 #endif /* ALLOW_AUTODIFF */
 
       RETURN

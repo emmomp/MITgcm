@@ -1,3 +1,5 @@
+C $Header: /u/gcmpack/MITgcm/pkg/ebm/ebm_readparms.F,v 1.4 2014/05/27 23:56:23 jmc Exp $
+C $Name:  $
 #include "EBM_OPTIONS.h"
 
 CBOP 0
@@ -59,7 +61,7 @@ C     print a (weak) warning if data.ebm is found
       WRITE(msgBuf,'(A)') ' EBM_READPARMS: opening data.ebm'
       CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
      &                    SQUEEZE_RIGHT, myThid )
-      errIO = 0
+
       CALL OPEN_COPY_DATA_FILE(
      I                          'data.ebm', 'EBM_READPARMS',
      O                          iUnit,
@@ -73,8 +75,7 @@ C--   set default
 C-----------------------------------------------------------------------
 
 C--   Read settings from model parameter file "data.ebm".
-      READ( UNIT=iUnit, NML=EBM_PARM01 )
-c     READ( UNIT=iUnit, NML=EBM_PARM01, IOSTAT=errIO )
+      READ(UNIT=iUnit,NML=EBM_PARM01,IOSTAT=errIO)
       IF ( errIO .LT. 0 ) THEN
        WRITE(msgBuf,'(A)') 'S/R EBM_READPARMS'
        CALL PRINT_ERROR( msgBuf, myThid )
@@ -84,14 +85,11 @@ c     READ( UNIT=iUnit, NML=EBM_PARM01, IOSTAT=errIO )
        CALL PRINT_ERROR( msgBuf, myThid )
        WRITE(msgBuf,'(A)') 'Problem in namelist EBM_PARM01'
        CALL PRINT_ERROR( msgBuf, myThid )
+C      CALL MODELDATA_EXAMPLE( myThid )
        STOP 'ABNORMAL END: S/R EBM_READPARMS'
       ENDIF
 C     Close the open data file
-#ifdef SINGLE_DISK_IO
       CLOSE(iUnit)
-#else
-      CLOSE(iUnit,STATUS='DELETE')
-#endif /* SINGLE_DISK_IO */
 
       WRITE(msgBuf,'(A)') ' EBM_READPARMS: finished reading data.ebm'
       CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,

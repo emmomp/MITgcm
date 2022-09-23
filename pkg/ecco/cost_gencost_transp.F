@@ -1,15 +1,24 @@
+C $Header: /u/gcmpack/MITgcm/pkg/ecco/cost_gencost_transp.F,v 1.4 2015/11/12 13:22:14 atn Exp $
+C $Name:  $
+
 #include "ECCO_OPTIONS.h"
 
-      SUBROUTINE COST_GENCOST_TRANSP( myThid )
+      subroutine cost_gencost_transp(mythid)
 
-C     ==================================================================
-C     SUBROUTINE COST_GENCOST_TRANSP
-C     ==================================================================
-C     o Evaluate cost function contributions of section transport.
+c     ==================================================================
+c     SUBROUTINE cost_gencost_transp
+c     ==================================================================
+c
+c     o Evaluate cost function contributions of section transport.
+c
+c     ==================================================================
+c     SUBROUTINE cost_gencost_boxmean
+c     ==================================================================
 
-      IMPLICIT NONE
+      implicit none
 
-C     == global variables ==
+c     == global variables ==
+
 #include "EEPARAMS.h"
 #include "SIZE.h"
 #include "PARAMS.h"
@@ -18,64 +27,83 @@ C     == global variables ==
 # include "cal.h"
 #endif
 #ifdef ALLOW_ECCO
-# include "ECCO_SIZE.h"
-# include "ECCO.h"
+# include "ecco.h"
 #endif
 
-C     == routine arguments ==
-      INTEGER myThid
+c     == routine arguments ==
+      integer mythid
 
 #ifdef ALLOW_GENCOST_CONTRIBUTION
-C     == external functions ==
-      INTEGER  ILNBLNK
-      EXTERNAL ILNBLNK
 
-C     == local variables ==
-      INTEGER nrecloc, localrec
-      INTEGER localstartdate(4)
+c     == local variables ==
 
-      _RL myobs   (1-OLx:sNx+OLx,1-OLy:sNy+OLy,Nr,nSx,nSy)
-      _RL mybar   (1-OLx:sNx+OLx,1-OLy:sNy+OLy,Nr,nSx,nSy)
-      _RL localdif(1-OLx:sNx+OLx,1-OLy:sNy+OLy,Nr,nSx,nSy)
-      _RL difmask (1-OLx:sNx+OLx,1-OLy:sNy+OLy,Nr,nSx,nSy)
-      _RL localtmp(1-OLx:sNx+OLx,1-OLy:sNy+OLy,Nr,nSx,nSy)
+      integer nnzobs, nnzbar
+      parameter (nnzbar = Nr, nnzobs = Nr)
+      integer nrecloc, localrec
+      integer localstartdate(4)
 
-      _RL dummy, facCost, facNum
+      _RL myobs     (1-olx:snx+olx,1-oly:sny+oly,nr,nsx,nsy)
+      _RL mybar     (1-olx:snx+olx,1-oly:sny+oly,nr,nsx,nsy)
+      _RL localdif  (1-olx:snx+olx,1-oly:sny+oly,nr,nsx,nsy)
+      _RL difmask   (1-olx:snx+olx,1-oly:sny+oly,nr,nsx,nsy)
+      _RL localweight(1-olx:snx+olx,1-oly:sny+oly,nr,nsx,nsy)
+      _RL localtmp   (1-olx:snx+olx,1-oly:sny+oly,nr,nsx,nsy)
+
+      _RL dummy,facCost,facNum
+c- facNum is 1 divided by the number of tiles in SIZE dot h
+      parameter  ( facNum = 1./float(nPx) )
       _RL localperiod
       _RL spminloc, spmaxloc, spzeroloc
-      _RL tmpMeanTile(nSx,nSy), tmpNumTile(nSx,nSy)
-      _RL tmpMeanGlo, tmpNumGlo
 
-      INTEGER kgen(NGENCOST3D)
-      INTEGER bi, bj
-      INTEGER k
-      INTEGER obsrec, irec
-      INTEGER il,k2
-      INTEGER icount, icount_transp
-      LOGICAL dosumsq, dovarwei, doreadobs
-      LOGICAL exst
+      _RL tmpMeanTile(nSx,nSy),tmpNumTile(nSx,nSy)
+      _RL tmpMeanGlo,tmpNumGlo
 
-      INTEGER preproc_i(NGENPPROC)
+      character*(MAX_LEN_FNAM) mybarfile
+      character*(MAX_LEN_FNAM) myobsfile
+
+      integer kgen(NGENCOST3D)
+      integer bi,bj
+      integer i,j,k
+      integer itlo,ithi
+      integer jtlo,jthi
+      integer obsrec,irec,jrec
+      integer il,k2
+      integer icount,icount_transp
+      logical dosumsq, dovarwei, doreadobs
+
+      integer preproc_i(NGENPPROC)
       _RL preproc_r(NGENPPROC)
-      CHARACTER*(MAX_LEN_FNAM) mybarfile
-      CHARACTER*(MAX_LEN_FNAM) preproc(NGENPPROC)
-      CHARACTER*(MAX_LEN_FNAM) preproc_c(NGENPPROC)
-      CHARACTER*(MAX_LEN_MBUF) msgBuf
-      CHARACTER*(128) fname1, fname0
-C     == end of interface ==
+      character*(MAX_LEN_FNAM) preproc(NGENPPROC)
+      character*(MAX_LEN_FNAM) preproc_c(NGENPPROC)
 
-C=============== PART 0: initilization ===================
 
-C- facNum is 1 divided by the number of tiles in SIZE dot h
-      facNum = nSx*nPx
-      facNum = 1. _d 0 / facNum
+      logical doglobalread
+      logical ladinit
+      character*(MAX_LEN_MBUF) msgbuf
+      character*(128) fname1, fname0
 
-C-- detect the relevant gencost indices
+      logical exst
+
+c     == external functions ==
+
+      integer  ilnblnk
+      external ilnblnk
+
+c     == end of interface ==
+
+      jtlo = mybylo(mythid)
+      jthi = mybyhi(mythid)
+      itlo = mybxlo(mythid)
+      ithi = mybxhi(mythid)
+
+c=============== PART 0: initilization ===================
+
+c-- detect the relevant gencost indices
       do k=1,NGENCOST3D
         kgen(k)=0
       enddo
 
-C-- write a report of how many transport costs
+c-- write a report of how many transport costs
       write(msgbuf,'(A)') 'Inside cost_gencost_transp:'
       CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
      &                    SQUEEZE_RIGHT, myThid )
@@ -86,7 +114,7 @@ C-- write a report of how many transport costs
      &     (using_gencost(k)) ) then
           icount_transp=icount_transp+1
           kgen(icount_transp)=k
-          il=ILNBLNK(gencost_barfile(kgen(icount_transp)))
+          il=ilnblnk(gencost_barfile(kgen(icount_transp)))
           write(msgbuf,'(A,i4,A,A)') 'Cost ',kgen(icount_transp),
      &    ': ',gencost_barfile(kgen(icount_transp))(1:il)
           CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
@@ -95,30 +123,29 @@ C-- write a report of how many transport costs
         endif
       enddo
 
-C-- write a report of how many transport costs
+c-- write a report of how many transport costs
 
       do icount=1,icount_transp
-       if (kgen(icount).NE.0) then
+      if (kgen(icount).NE.0) then
 
-C ========
+c ========
 
-C-- initialize objf and num:
-        DO bj = myByLo(myThid), myByHi(myThid)
-         DO bi = myBxLo(myThid), myBxHi(myThid)
+c-- initialize objf and num:
+        DO bj=jtlo,jthi
+         DO bi=itlo,ithi
             objf_gencost(bi,bj,kgen(icount))=0. _d 0
             num_gencost(bi,bj,kgen(icount))=0. _d 0
          ENDDO
         ENDDO
 
-C--   Initialise local variables.
+c--   Initialise local variables.
         nrecloc=0
         nrecloc=gencost_nrec(kgen(icount))
 
-C-- only enters if there is at least 1 record
+c-- only enters if there is at least 1 record 
         if(nrecloc.gt.0) then
 
-          facCost = nrecloc
-          facCost = 1. _d 0 / facCost
+          facCost=1. _d 0 / float(nrecloc)
 
           localperiod=0.
           localperiod=gencost_period(kgen(icount))
@@ -127,8 +154,8 @@ C-- only enters if there is at least 1 record
           spmaxloc=gencost_spmax(kgen(icount))
           spzeroloc=gencost_spzero(kgen(icount))
 
-C prefer to have preproc match nosumsq but can not seem to get syntax
-C to work for comparison of characters so match dosumsq for now.
+c prefer to have preproc match nosumsq but can not seem to get syntax
+c to work for comparison of characters so match dosumsq for now.
           dosumsq=.FALSE.
           dovarwei=.FALSE.
           do k2 = 1, NGENPPROC
@@ -140,107 +167,110 @@ C to work for comparison of characters so match dosumsq for now.
             if (preproc(k2)(1:7).EQ.'dosumsq') dosumsq=.TRUE.
           enddo
 
-C-- report of dosumsq flag to make sure it is false
-          il=ILNBLNK(gencost_name(kgen(icount)))
-          write(msgBuf,'(3A,L5,2A)')
+c-- report of dosumsq flag to make sure it is false
+          il=ilnblnk(gencost_name(kgen(icount)))
+          write(msgbuf,'(3A,L5,2A)') 
      &    'Cost ',gencost_name(kgen(icount))(1:il),
      &    ' dosumsq: ',dosumsq,' preproc(1): ',preproc(1)(1:7)
           CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
      &                        SQUEEZE_RIGHT, myThid )
 
-C-- set mybarfile
+c-- set mybarfile
           mybarfile=gencost_barfile(kgen(icount))
 
-C-- set obsfile if defined. Not use for now. send warning
+c-- set obsfile if defined. Not use for now. send warning
           doreadobs=.FALSE.
           if( .not. gencost_datafile(kgen(icount)).eq.' ') then
 c            doreadobs=.TRUE.
-            write(msgBuf,'(A)')
+            write(msgbuf,'(A)') 
      &      '**WARNING** S/R COST_GENCOST_TRANSP: gencost_datafile '
             CALL PRINT_MESSAGE( msgBuf, errorMessageUnit,
      &                          SQUEEZE_RIGHT, myThid )
-            write(msgBuf,'(A)')
+            write(msgbuf,'(A)') 
      &      'are currently ignored. Adjust the S/R to add code.'
             CALL PRINT_MESSAGE( msgBuf, errorMessageUnit,
      &                          SQUEEZE_RIGHT, myThid )
           endif
 
-C model mask[W,S]: already included in transp calc in ecco_phys
+c model mask[W,S]: already included in transp calc in ecco_phys
 
-C--------- PART 0.1 read weights --------------------
+c--------- PART 0.1 read weights --------------------
 
-C-- read mask in gencost_mask
-C-- for now, assume non-time-variable mask
+c-- read mask in errfile, already stored under msktrVol[W,S]
+c-- for now, assume non-time-variable mask
 
-C=============== PART 1: main loop ===================
+c=============== PART 1: main loop ===================
           do irec = 1,nrecloc
 
-C--------- PART 1.1 read barfiles ------------------
+c--------- PART 1.1 read barfiles ------------------
 
-C-- set all bars to zeros:
+c-- set all bars to zeros:
             call ecco_zero(mybar,Nr,zeroRL,myThid)
 
-C gencost_mask and fname0 are dummy, get fname1 from mybarfile
+c gencost_errfile and fname0 are dummy, get fname1 from mybarfile
             exst=.FALSE.
             call ecco_zero(localtmp,Nr,zeroRL,myThid)
-            call cost_gencal(mybarfile,gencost_mask(kgen(icount)),
+            call cost_gencal(mybarfile,gencost_errfile(kgen(icount)),
      &       irec,localstartdate,localperiod,fname1,
-     &       fname0,localrec,obsrec,exst,myThid)
-            call cost_genread(fname1,mybar,localtmp,irec,Nr,Nr,
+     &       fname0,localrec,obsrec,exst,mythid)
+            call cost_genread(fname1,mybar,localtmp,irec,nnzbar,
      &       nrecloc,preproc,preproc_c,preproc_i,preproc_r,
-     &       dummy,myThid)
+     &       dummy,mythid)
 
-C--------- PART 1.2 read data --------------------
 
-C-- ignore for now, but use doreadobs flag if needed
-C-- be careful of recomputation when put inside if-end block
+c--------- PART 1.2 read data --------------------
+
+c-- ignore for now, but use doreadobs flag if needed
+c-- be careful of recomputation when put inside if-end block
 c            if(doreadobs) then
             call ecco_zero(myobs,Nr,zeroRL,myThid)
 c            endif
 
-C--------- PART 1.3 Cost calculation -------------
 
-C-- keep total at each irec to print out for time-series
-            DO bj = myByLo(myThid), myByHi(myThid)
-             DO bi = myBxLo(myThid), myBxHi(myThid)
-               tmpMeanTile(bi,bj) = 0. _d 0
-               tmpNumTile(bi,bj) = 0. _d 0
-             ENDDO
+c--------- PART 1.3 Cost calculation -------------
+
+
+c-- keep total at each irec to print out for time-series
+            DO bj = jtlo,jthi
+              DO bi = itlo,ithi
+                tmpMeanTile(bi,bj) = 0. _d 0
+                tmpNumTile(bi,bj) = 0. _d 0
+              ENDDO
             ENDDO
 
-C compute obs minus bar (localdif) and mask (difmask)
-C note localtmp is set to 1.
-            call ecco_zero(localtmp,Nr,oneRL,myThid)
-            call ecco_zero(localdif,Nr,zeroRL,myThid)
-            call ecco_zero(difmask,Nr,zeroRL,myThid)
+c compute obs minus bar (localdif) and mask (difmask) 
+c note localtmp is set to 1.
+            call ecco_zero(localtmp,nnzobs,oneRL,mythid)
+            call ecco_zero(localdif,nnzobs,zeroRL,mythid)
+            call ecco_zero(difmask,nnzobs,zeroRL,mythid)
 
-C take care to set sp[min,max,zero]loc carefully to not
-C filter out signal.  Can consider skip diffmsk step
+c take care to set sp[min,max,zero]loc carefully to not
+c filter out signal.  Can consider skip diffmsk step
             call ecco_diffmsk(
-     I       mybar, myobs, localtmp,
-     I       Nr, Nr,spminloc, spmaxloc, spzeroloc,
+     I       mybar, nnzbar, myobs, nnzobs, localtmp,
+     I       spminloc, spmaxloc, spzeroloc,
      O       localdif, difmask,
      I       myThid )
 
-            call ecco_zero(localtmp,Nr,oneRL,myThid)
+            call ecco_zero(localtmp,nnzobs,oneRL,mythid)
             call ecco_addcost(
-     I       localdif,localtmp,difmask,Nr,Nr,dosumsq,
+     I       localdif,localtmp,difmask,nnzobs,dosumsq,
      O       tmpMeanTile,tmpNumTile,
-     I       myThid)
+     I       mythid)
 
-cC either use ecco_diffmsk and ecco_addcost from above or simplify
-cC to call below. For now keep syntax consistent with gencost
-c            call ecco_zero(localtmp,Nr,oneRL,myThid)
+cc either use ecco_diffmsk and ecco_addcost from above or simplify
+cc to call below. For now keep syntax consistent with gencost
+c            call ecco_zero(localtmp,nnzobs,oneRL,mythid)
 c            call ecco_addcost(
-c     I       mybar,localtmp,localtmp,Nr,Nr,dosumsq,
+c     I       mybar,localtmp,localtmp,nnzobs,dosumsq,
 c     O       tmpMeanTile,tmpNumTile,
-c     I       myThid)
+c     I       mythid)
 
-C global sums for display of time series
-C note tmpNumGlo is the constant total wet points in the gencost_mask[W,S]
+c global sums for display of time series
+c note tmpNumGlo is the constant total wet points in the msktrVol[W,S]
             tmpMeanGlo = 0. _d 0
             tmpNumGlo = 0. _d 0
-            il=ILNBLNK(gencost_barfile(kgen(icount)))
+            il=ilnblnk(gencost_barfile(kgen(icount)))
             CALL GLOBAL_SUM_TILE_RL( tmpMeanTile, tmpMeanGlo, myThid )
             CALL GLOBAL_SUM_TILE_RL( tmpNumTile, tmpNumGlo, myThid )
             WRITE(msgBuf,'(2A,I3,A,1PE21.14,1PE21.14)')
@@ -249,32 +279,32 @@ C note tmpNumGlo is the constant total wet points in the gencost_mask[W,S]
             CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
      &                          SQUEEZE_RIGHT, myThid )
 
-C sum that is actually be used in cost function
-            DO bj = myByLo(myThid), myByHi(myThid)
-             DO bi = myBxLo(myThid), myBxHi(myThid)
-               objf_gencost(bi,bj,kgen(icount))=
-     &            objf_gencost(bi,bj,kgen(icount))+tmpMeanTile(bi,bj)
-             ENDDO
+c sum that is actually be used in cost function
+            DO bj = jtlo,jthi
+              DO bi = itlo,ithi
+                objf_gencost(bi,bj,kgen(icount))=
+     &             objf_gencost(bi,bj,kgen(icount))+tmpMeanTile(bi,bj)
+              ENDDO
             ENDDO
 
           enddo !irec
 
-C-- last step:
-C-- divide by number of record to get mean transport:
-C-- make num_gencost equals number of months/days used
-          DO bj = myByLo(myThid), myByHi(myThid)
-           DO bi = myBxLo(myThid), myBxHi(myThid)
-             objf_gencost(bi,bj,kgen(icount))=
-     &          objf_gencost(bi,bj,kgen(icount))*facCost
-             num_gencost(bi,bj,kgen(icount))=nrecloc*facNum
-           ENDDO
-          ENDDO
+c-- last step: 
+c-- divide by number of record to get mean transport:
+c-- make num_gencost equals number of months/days used
+          do bj = jtlo,jthi
+            do bi = itlo,ithi
+              objf_gencost(bi,bj,kgen(icount))=
+     &           objf_gencost(bi,bj,kgen(icount))*facCost
+              num_gencost(bi,bj,kgen(icount))=nrecloc*facNum
+            enddo
+          enddo
 
         endif !if (nrecloc.gt.0)
-       endif !if (kgen.NE.0)
+      endif !if (kgen.NE.0)
       enddo !icount_transp
 
 #endif /* ALLOW_GENCOST_CONTRIBUTION */
 
       RETURN
-      END
+      end

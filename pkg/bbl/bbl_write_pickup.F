@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/bbl/bbl_write_pickup.F,v 1.3 2013/01/13 22:46:37 jmc Exp $
+C $Name:  $
+
 #include "BBL_OPTIONS.h"
 
 CBOP

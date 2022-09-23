@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/gmredi/gmredi_calc_diff.F,v 1.11 2011/12/12 15:34:08 mlosch Exp $
+C $Name:  $
+
 #include "GMREDI_OPTIONS.h"
 
       SUBROUTINE GMREDI_CALC_DIFF( 

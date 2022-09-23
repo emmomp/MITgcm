@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/verification/advect_xy/code/ini_vel.F,v 1.2 2008/08/24 23:16:54 jmc Exp $
+C $Name:  $
+
 #include "CPP_OPTIONS.h"
 
 CBOP

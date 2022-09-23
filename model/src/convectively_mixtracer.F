@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/model/src/convectively_mixtracer.F,v 1.3 2012/03/05 01:11:43 jmc Exp $
+C $Name:  $
+
 #include "CPP_OPTIONS.h"
 
 CBOP

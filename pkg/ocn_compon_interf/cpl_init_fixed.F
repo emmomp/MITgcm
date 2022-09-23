@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/ocn_compon_interf/cpl_init_fixed.F,v 1.6 2016/01/06 00:36:34 jmc Exp $
+C $Name:  $
+
 #include "OCN_CPL_OPTIONS.h"
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
@@ -58,7 +61,7 @@ CEOP
         CALL MNC_CW_ADD_VNAME('SFxtave','Cen_xy_Hn__-__t',3,4,myThid)
         CALL MNC_CW_ADD_VATTR_TEXT('SFxtave','long_name',
      &       'salt flux from sea-ice', myThid)
-        CALL MNC_CW_ADD_VATTR_TEXT('SFxtave','units','g/m^2/s',
+        CALL MNC_CW_ADD_VATTR_TEXT('SFxtave','units','psu.kg/m^2/s',
      &       myThid)
 
         CALL MNC_CW_ADD_VNAME('SICtave','Cen_xy_Hn__-__t',3,4,myThid)
@@ -79,7 +82,7 @@ CEOP
         CALL MNC_CW_ADD_VNAME('SSStave','Cen_xy_Hn__-__t',3,4,myThid)
         CALL MNC_CW_ADD_VATTR_TEXT('SSStave','long_name',
      &       'ocean surface salinity', myThid)
-        CALL MNC_CW_ADD_VATTR_TEXT('SSStave','units','g/kg', myThid)
+        CALL MNC_CW_ADD_VATTR_TEXT('SSStave','units','psu', myThid)
 
         CALL MNC_CW_ADD_VNAME('vSqtave','Cen_xy_Hn__-__t',3,4,myThid)
         CALL MNC_CW_ADD_VATTR_TEXT('vSqtave','long_name',

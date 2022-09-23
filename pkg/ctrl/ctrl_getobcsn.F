@@ -1,10 +1,16 @@
+C $Header: /u/gcmpack/MITgcm/pkg/ctrl/ctrl_getobcsn.F,v 1.17 2014/10/09 00:49:26 gforget Exp $
+C $Name:  $
+
 #include "CTRL_OPTIONS.h"
 #ifdef ALLOW_OBCS
 # include "OBCS_OPTIONS.h"
 #endif
 
       subroutine ctrl_getobcsn(
-     I                          myTime, myIter, myThid )
+     I                             mytime,
+     I                             myiter,
+     I                             mythid
+     &                           )
 
 c     ==================================================================
 c     SUBROUTINE ctrl_getobcsn
@@ -14,8 +20,8 @@ c     o Get northern obc of the control vector and add it
 c       to dyn. fields
 c
 c     started: heimbach@mit.edu, 29-Aug-2001
-c     modified: gebbie@mit.edu, 18-Mar-2003
 c
+c     modified: gebbie@mit.edu, 18-Mar-2003
 c     ==================================================================
 c     SUBROUTINE ctrl_getobcsn
 c     ==================================================================
@@ -39,50 +45,65 @@ c#include "OBCS_PARAMS.h"
 #endif /* ALLOW_OBCSN_CONTROL */
 
 c     == routine arguments ==
-      _RL     myTime
-      integer myIter
-      integer myThid
+      _RL     mytime
+      integer myiter
+      integer mythid
 
 #ifdef ALLOW_OBCSN_CONTROL
-c     == external functions ==
-      integer  ilnblnk
-      external ilnblnk
-
 c     == local variables ==
+
       integer bi,bj
       integer i,j,k
       integer itlo,ithi
       integer jtlo,jthi
+      integer jmin,jmax
       integer imin,imax
       integer ilobcsn
       integer iobcs
       integer jp1
+
+      _RL     dummy
       _RL     obcsnfac
       logical obcsnfirst
       logical obcsnchanged
       integer obcsncount0
       integer obcsncount1
-cgg      _RL maskxz   (1-OLx:sNx+OLx,Nr,nSx,nSy)
-      _RL tmpfldxz (1-OLx:sNx+OLx,Nr,nSx,nSy)
+
+cgg      _RL maskxz   (1-olx:snx+olx,nr,nsx,nsy)
+      _RL tmpfldxz (1-olx:snx+olx,nr,nsx,nsy)
+
       logical doglobalread
       logical ladinit
+
       character*(80) fnameobcsn
+
 #ifdef ALLOW_OBCS_CONTROL_MODES
       integer nk,nz
-      _RL     tmpz (Nr,nSx,nSy)
+      _RL     tmpz (nr,nsx,nsy)
       _RL     stmp
 #endif
 
+c     == external functions ==
+
+      integer  ilnblnk
+      external ilnblnk
+
+
 c     == end of interface ==
 
-      jtlo = myByLo(myThid)
-      jthi = myByHi(myThid)
-      itlo = myBxLo(myThid)
-      ithi = myBxHi(myThid)
+      jtlo = mybylo(mythid)
+      jthi = mybyhi(mythid)
+      itlo = mybxlo(mythid)
+      ithi = mybxhi(mythid)
+cgg      jmin = 1-oly
+cgg      jmax = sny+oly
 cgg      imin = 1-olx
 cgg      imax = snx+olx
+
+      jmin = 1
+      jmax = sny
       imin = 1
-      imax = sNx
+      imax = snx
       jp1  = 0
 
 c--   Now, read the control vector.
@@ -100,10 +121,9 @@ c--   Get the counters, flags, and the interpolation factor.
      I                   xx_obcsnstartdate, xx_obcsnperiod,
      O                   obcsnfac, obcsnfirst, obcsnchanged,
      O                   obcsncount0,obcsncount1,
-     I                   myTime, myIter, myThid )
+     I                   mytime, myiter, mythid )
 
       do iobcs = 1,nobcs
-
        if ( obcsnfirst ) then
         call active_read_xz( fnameobcsn, tmpfldxz,
      &                       (obcsncount0-1)*nobcs+iobcs,
@@ -151,7 +171,7 @@ cih    Compute absolute velocities from the barotropic-baroclinic modes.
            enddo
           endif
 #endif
-          do k = 1,Nr
+          do k = 1,nr
            do i = imin,imax
             xx_obcsn1(i,k,bi,bj,iobcs)  = tmpfldxz (i,k,bi,bj)
 cgg   &                                    *   maskxz (i,k,bi,bj)
@@ -165,7 +185,7 @@ cgg   &                                    *   maskxz (i,k,bi,bj)
 
         do bj = jtlo,jthi
          do bi = itlo,ithi
-          do k = 1,Nr
+          do k = 1,nr
            do i = imin,imax
             xx_obcsn0(i,k,bi,bj,iobcs) = xx_obcsn1(i,k,bi,bj,iobcs)
             tmpfldxz (i,k,bi,bj)       = 0. _d 0
@@ -220,7 +240,7 @@ cih    Compute absolute velocities from the barotropic-baroclinic modes.
            enddo
           endif
 #endif
-          do k = 1,Nr
+          do k = 1,nr
            do i = imin,imax
             xx_obcsn1 (i,k,bi,bj,iobcs) = tmpfldxz (i,k,bi,bj)
 cgg   &                                        *   maskxz (i,k,bi,bj)
@@ -228,15 +248,16 @@ cgg   &                                        *   maskxz (i,k,bi,bj)
           enddo
          enddo
         enddo
+
        endif
 
 c--   Add control to model variable.
        do bj = jtlo,jthi
         do bi = itlo,ithi
 c--   Calculate mask for tracer cells (0 => land, 1 => water).
-         do k = 1,Nr
-          do i = 1,sNx
-           j = OB_Jn(i,bi,bj)
+         do k = 1,nr
+          do i = 1,snx
+           j = OB_Jn(I,bi,bj)
            IF ( j.EQ.OB_indexNone ) j = 1
            if (iobcs .EQ. 1) then
             OBNt(i,k,bi,bj) = OBNt (i,k,bi,bj)

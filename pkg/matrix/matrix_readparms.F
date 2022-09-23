@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/matrix/matrix_readparms.F,v 1.5 2014/05/27 23:47:42 jmc Exp $
+C $Name:  $
+
 #include "MATRIX_OPTIONS.h"
 
 C     !ROUTINE: MATRIX_READPARMS
@@ -61,11 +64,7 @@ C     print a (weak) warning if data.matrix is found
      &                   SQUEEZE_RIGHT , 1)
 
 C Close the open data file
-#ifdef SINGLE_DISK_IO
       CLOSE(iUnit)
-#else
-      CLOSE(iUnit,STATUS='DELETE')
-#endif /* SINGLE_DISK_IO */
       _END_MASTER(myThid)
 
 C Everyone else must wait for the parameters to be loaded

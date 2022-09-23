@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/mnc/mnc_readparms.F,v 1.37 2015/02/24 19:59:22 jmc Exp $
+C $Name:  $
+
 #include "MNC_OPTIONS.h"
 
 C--  File mnc_readparms.F
@@ -128,11 +131,7 @@ C     Set the file name
       CALL OPEN_COPY_DATA_FILE(data_file(1:nl),'MNC_READPARMS',
      &     ku, myThid )
       READ(ku,NML=MNC_01)
-#ifdef SINGLE_DISK_IO
       CLOSE(ku)
-#else
-      CLOSE(ku,STATUS='DELETE')
-#endif /* SINGLE_DISK_IO */
 
       WRITE(msgBuf,'(a)') ' MNC_READPARMS: finished reading data.mnc'
       CALL PRINT_MESSAGE(msgBuf,standardMessageUnit,

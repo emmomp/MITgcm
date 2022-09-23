@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/monitor/mon_surfcor.F,v 1.14 2011/05/16 22:04:15 jmc Exp $
+C $Name:  $
+
 #include "MONITOR_OPTIONS.h"
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|

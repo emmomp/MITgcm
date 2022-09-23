@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/cost/cost_dependent_init.F,v 1.14 2014/04/04 21:04:47 jmc Exp $
+C $Name:  $
+
 #include "COST_OPTIONS.h"
 
       subroutine cost_dependent_init( mythid )
@@ -30,15 +33,18 @@ c     == routine arguments ==
 
 c     == local variables ==
 
-#if ( defined ALLOW_COST_VECTOR || defined  ALLOW_COST_STATE_FINAL )
-      integer i
-#endif
-#ifdef ALLOW_COST_STATE_FINAL
-      integer j, k
-#endif
+      integer i,j,k
       integer bi,bj
+      integer itlo,ithi
+      integer jtlo,jthi
+
+c     == external functions ==
 
 c     == end of interface ==
+      jtlo = mybylo(mythid)
+      jthi = mybyhi(mythid)
+      itlo = mybxlo(mythid)
+      ithi = mybxhi(mythid)
 
 #ifdef ALLOW_OPENAD
       fc%v = 0.0
@@ -56,8 +62,8 @@ c     == end of interface ==
       endif
 #endif
 
-      do bj = myByLo(mythid), myByHi(mythid)
-       do bi = myBxLo(mythid), myBxHi(mythid)
+      do bj = jtlo,jthi
+       do bi = itlo,ithi
 #ifdef ALLOW_COST_VECTOR
         do i=1,sNx
          objf_vector(i,bi,bj) = 0. _d 0

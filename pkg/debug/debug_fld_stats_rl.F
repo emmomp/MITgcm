@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/debug/debug_fld_stats_rl.F,v 1.4 2016/07/26 16:23:52 jmc Exp $
+C $Name:  $
+
 #include "DEBUG_OPTIONS.h"
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|

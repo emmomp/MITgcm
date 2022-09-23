@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/streamice/streamice_advect_2dtracer.F,v 1.3 2014/09/09 23:09:21 jmc Exp $
+C $Name:  $
+
 #include "STREAMICE_OPTIONS.h"
 #ifdef ALLOW_AUTODIFF
 # include "AUTODIFF_OPTIONS.h"
@@ -219,7 +222,7 @@ CADJ STORE trac2d  = comlev1, key=ikey_dynamics
 
 #endif
 
-      _EXCH_XY_RL(trac2d, myThid)
+      _EXCH_XY_RL (trac2d, myThid)
 
       WRITE(msgBuf,'(A)') 'END STREAMICE_ADVECT_THICKNESS'
        CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,

@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/obcs/obcs_readparms.F,v 1.48 2014/11/25 01:07:23 jmc Exp $
+C $Name:  $
+
 #include "OBCS_OPTIONS.h"
 
 CBOP
@@ -42,16 +45,11 @@ C     === Routine arguments ===
 
 C     !LOCAL VARIABLES:
 C     === Local variables ===
-C     msgBuf       :: Informational/error message buffer
-C     iUnit        :: Work variable for IO unit number
-C  OB_indexUnset   :: OB index value for places where no OB is defined
-C  OB_singleJnorth :: global/uniform Northern OB position index
-C  OB_singleJsouth :: global/uniform Southern OB position index
-C  OB_singleIeast  :: global/uniform Eastern  OB position index
-C  OB_singleIwest  :: global/uniform Western  OB position index
+C     msgBuf      :: Informational/error message buffer
+C     iUnit       :: Work variable for IO unit number
+C  OB_indexUnset  :: OB index value for places where no OB is defined
       CHARACTER*(MAX_LEN_MBUF) msgBuf
       INTEGER iUnit
-      INTEGER errCount
       INTEGER i, j
       INTEGER bi, bj, iG, jG, iGm, jGm
       INTEGER OB_indexUnset
@@ -83,11 +81,6 @@ C For convenience, negative values for Jnorth/Ieast refer to
 C points relative to the Northern/Eastern edges of the model
 C eg. OB_Jnorth(3)=-1  means that the point (3,Ny) is a northern O-B.
 C
-C When the OB index value is uniform across the full domain, one can set
-C a unique OB index value using local parameter OB_singleJnorth/south,
-C  OB_singleIeast/west, (same index convention) instead of multiple/repeating
-C index setting
-C
 C With exch2, the global domain used for specifying the boundary (and
 C boundary value files) is different for N,S and E,W boundaries:
 C - for N,S, the facets are stacked in x (like W2_mapIO=-1)
@@ -110,10 +103,6 @@ C OB_Iwest(W2_maxYStackNy)  :: global index array of western  open-boundary poin
       INTEGER OB_Ieast(Ny)
       INTEGER OB_Iwest(Ny)
 #endif
-      INTEGER OB_singleJnorth
-      INTEGER OB_singleJsouth
-      INTEGER OB_singleIeast
-      INTEGER OB_singleIwest
 
 C With exch2, we use different global domains for specifying
 C N,S resp. E,W boundaries (and for reading in the corresponding data):
@@ -136,8 +125,6 @@ C     retired parameters
      &          OBNconnectFile, OBSconnectFile,
      &          OBEconnectFile, OBWconnectFile,
      &          OB_Jnorth,OB_Jsouth,OB_Ieast,OB_Iwest,
-     &          OB_singleJnorth, OB_singleJsouth,
-     &          OB_singleIeast, OB_singleIwest,
      &          useOrlanskiNorth,useOrlanskiSouth,
      &          useOrlanskiEast,useOrlanskiWest,
      &          useStevensNorth,useStevensSouth,
@@ -165,8 +152,7 @@ C     retired parameters
      &          OBCSsponge_UatNS, OBCSsponge_UatEW,
      &          OBCSsponge_VatNS, OBCSsponge_VatEW,
      &          OBCSsponge_Theta, OBCSsponge_Salt, useLinearSponge,
-     &          useOBCSbalance, OBCSbalanceSurf,
-     &          useOBCStides, useOBCSprescribe,
+     &          useOBCSbalance, useOBCStides, useOBCSprescribe,
      &          OBCS_balanceFacN, OBCS_balanceFacS,
      &          OBCS_balanceFacE, OBCS_balanceFacW,
      &          useOBCSYearlyFields, OBCSfixTopo,
@@ -239,10 +225,6 @@ C--   Default flags and values for OBCS
        OB_Ieast(j) = OB_indexUnset
        OB_Iwest(j) = OB_indexUnset
       ENDDO
-      OB_singleJnorth = OB_indexUnset
-      OB_singleJsouth = OB_indexUnset
-      OB_singleIeast = OB_indexUnset
-      OB_singleIwest = OB_indexUnset
       OBCS_indexStatus = 0
       useOrlanskiNorth   =.FALSE.
       useOrlanskiSouth   =.FALSE.
@@ -268,7 +250,6 @@ C--   Default flags and values for OBCS
       OBCSsponge_Salt    =.TRUE.
       useLinearSponge    =.FALSE.
       useOBCSbalance     =.FALSE.
-      OBCSbalanceSurf    =.FALSE.
       OBCS_balanceFacN   = 1. _d 0
       OBCS_balanceFacS   = 1. _d 0
       OBCS_balanceFacE   = 1. _d 0
@@ -438,11 +419,7 @@ C     seaice sponge layer is turned off by default
      &                    SQUEEZE_RIGHT , myThid )
 
 C--   Close the open data file
-#ifdef SINGLE_DISK_IO
       CLOSE(iUnit)
-#else
-      CLOSE(iUnit,STATUS='DELETE')
-#endif /* SINGLE_DISK_IO */
 
 C-    retired parameter
       IF ( nRetired .GT. 0 ) THEN
@@ -455,72 +432,6 @@ C-    retired parameter
        STOP 'ABNORMAL END: S/R OBCS_READPARMS'
       ENDIF
 
-C-    Acount for single/uniform position OB setting:
-      errCount = 0
-      IF ( OB_singleIeast.NE.OB_indexUnset ) THEN
-        DO j=1,OBEW_Ny
-          IF ( OB_Ieast(j).EQ.OB_indexUnset ) THEN
-            OB_Ieast(j) = OB_singleIeast
-          ELSEIF ( OB_Ieast(j).NE.OB_singleIeast ) THEN
-            errCount = errCount + 1
-          ENDIF
-        ENDDO
-      ENDIF
-      IF ( errCount .NE. 0 ) THEN
-        WRITE(msgBuf,'(2A)') 'OBCS_READPARMS: ',
-     &  'Inconsistent setting of OB_Ieast/OB_singleIeast'
-        CALL PRINT_ERROR( msgBuf, myThid )
-        STOP 'ABNORMAL END: S/R OBCS_READPARMS'
-      ENDIF
-
-      IF ( OB_singleIwest.NE.OB_indexUnset ) THEN
-        DO j=1,OBEW_Ny
-          IF ( OB_Iwest(j).EQ.OB_indexUnset ) THEN
-            OB_Iwest(j) = OB_singleIwest
-          ELSEIF ( OB_Iwest(j).NE.OB_singleIwest ) THEN
-            errCount = errCount + 1
-          ENDIF
-        ENDDO
-      ENDIF
-      IF ( errCount .NE. 0 ) THEN
-        WRITE(msgBuf,'(2A)') 'OBCS_READPARMS: ',
-     &  'Inconsistent setting of OB_Iwest/OB_singleIwest'
-        CALL PRINT_ERROR( msgBuf, myThid )
-        STOP 'ABNORMAL END: S/R OBCS_READPARMS'
-      ENDIF
-
-      IF ( OB_singleJnorth.NE.OB_indexUnset ) THEN
-        DO i=1,OBNS_Nx
-          IF ( OB_Jnorth(i).EQ.OB_indexUnset ) THEN
-            OB_Jnorth(i) = OB_singleJnorth
-          ELSEIF ( OB_Jnorth(i).NE.OB_singleJnorth ) THEN
-            errCount = errCount + 1
-          ENDIF
-        ENDDO
-      ENDIF
-      IF ( errCount .NE. 0 ) THEN
-        WRITE(msgBuf,'(2A)') 'OBCS_READPARMS: ',
-     &  'Inconsistent setting of OB_Jnorth/OB_singleJnorth'
-        CALL PRINT_ERROR( msgBuf, myThid )
-        STOP 'ABNORMAL END: S/R OBCS_READPARMS'
-      ENDIF
-
-      IF ( OB_singleJsouth.NE.OB_indexUnset ) THEN
-        DO i=1,OBNS_Nx
-          IF ( OB_Jsouth(i).EQ.OB_indexUnset ) THEN
-            OB_Jsouth(i) = OB_singleJsouth
-          ELSEIF ( OB_Jsouth(i).NE.OB_singleJsouth ) THEN
-            errCount = errCount + 1
-          ENDIF
-        ENDDO
-      ENDIF
-      IF ( errCount .NE. 0 ) THEN
-        WRITE(msgBuf,'(2A)') 'OBCS_READPARMS: ',
-     &  'Inconsistent setting of OB_Jsouth/OB_singleJsouth'
-        CALL PRINT_ERROR( msgBuf, myThid )
-        STOP 'ABNORMAL END: S/R OBCS_READPARMS'
-      ENDIF
-
 C-    Account for periodicity if negative indices were supplied
       DO j=1,OBEW_Ny
        IF ( OB_Ieast(j) .NE.OB_indexUnset .AND.
@@ -530,7 +441,6 @@ C-    Account for periodicity if negative indices were supplied
        IF ( OB_Jnorth(i).NE.OB_indexUnset .AND.
      &      OB_Jnorth(i).LT.0 ) OB_Jnorth(i)=OB_Jnorth(i)+OBNS_Ny+1
       ENDDO
-
       IF ( debugLevel.GE.debLevA ) THEN
         CALL WRITE_0D_I( OB_indexUnset, INDEX_NONE,' OB_indexUnset =',
      &                   ' /* unset OB index value (i.e. no OB) */')
@@ -562,7 +472,6 @@ c       write(*,*) 'OB Iw =',OB_Iwest
         CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
      &                      SQUEEZE_RIGHT, myThid )
       ENDIF
-      OBCSbalanceSurf = OBCSbalanceSurf .AND. useOBCSbalance
 
 C--   Continue master-thread only since global OB indices (+ OB_indexUnset)
 C     are not shared (not in common block).

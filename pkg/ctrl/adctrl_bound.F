@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/ctrl/adctrl_bound.F,v 1.11 2012/08/12 19:34:22 jmc Exp $
+C $Name:  $
+
 #include "CTRL_OPTIONS.h"
 
 C--  File ctrl_bound.F:
@@ -11,7 +14,7 @@ C     !ROUTINE: ADCTRL_BOUND_3D
 C     !INTERFACE:
       SUBROUTINE ADCTRL_BOUND_3D(
      U                fieldCur, adjFieldCur,
-     I                mask3D, boundsVec, myThid )
+     I                maskFld3d, boundsVec, myThid )
 
 C     !DESCRIPTION: \bv
 C     *==========================================================*
@@ -28,9 +31,9 @@ C     !USES:
 #include "EEPARAMS.h"
 
 C     !INPUT/OUTPUT PARAMETERS:
-      _RL fieldCur   (1-OLx:sNx+OLx,1-OLy:sNy+OLy,Nr,nSx,nSy)
-      _RL adjFieldCur(1-OLx:sNx+OLx,1-OLy:sNy+OLy,Nr,nSx,nSy)
-      _RS mask3D     (1-OLx:sNx+OLx,1-OLy:sNy+OLy,Nr,nSx,nSy)
+      _RL fieldCur   (1-Olx:sNx+Olx,1-Oly:sNy+Oly,Nr,nSx,nSy)
+      _RL adjFieldCur(1-Olx:sNx+Olx,1-Oly:sNy+Oly,Nr,nSx,nSy)
+      _RS maskFld3d  (1-Olx:sNx+Olx,1-Oly:sNy+Oly,Nr,nSx,nSy)
       _RL boundsVec(5)
       INTEGER myThid
 
@@ -63,7 +66,7 @@ C  otherwise    => error
           DO k = 1,Nr
            DO j = 1,sNy
             DO i = 1,sNx
-              IF (mask3D(i,j,k,bi,bj).NE.0.) THEN
+              IF (maskFld3d(i,j,k,bi,bj).NE.0.) THEN
                 xCur=fieldCur(i,j,k,bi,bj)
                 adxCur=adjFieldCur(i,j,k,bi,bj)
                 IF ( (xCur.GT.x2).AND.(adxCur.LT.0.) ) THEN
@@ -101,7 +104,7 @@ C     !ROUTINE: ADCTRL_BOUND_2D
 C     !INTERFACE:
       SUBROUTINE ADCTRL_BOUND_2D(
      U                fieldCur, adjFieldCur,
-     I                mask2D, boundsVec, myThid )
+     I                maskFld3d, boundsVec, myThid )
 
 C     !DESCRIPTION: \bv
 C     *==========================================================*
@@ -118,9 +121,9 @@ C     !USES:
 #include "EEPARAMS.h"
 
 C     !INPUT/OUTPUT PARAMETERS:
-      _RL fieldCur   (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
-      _RL adjFieldCur(1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
-      _RS mask2D     (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
+      _RL fieldCur   (1-Olx:sNx+Olx,1-Oly:sNy+Oly,   nSx,nSy)
+      _RL adjFieldCur(1-Olx:sNx+Olx,1-Oly:sNy+Oly,   nSx,nSy)
+      _RS maskFld3d  (1-Olx:sNx+Olx,1-Oly:sNy+Oly,Nr,nSx,nSy)
       _RL boundsVec(5)
       INTEGER myThid
 
@@ -152,7 +155,7 @@ C  otherwise    => error
 
            DO j = 1,sNy
             DO i = 1,sNx
-              IF (mask2D(i,j,bi,bj).NE.0.) THEN
+              IF (maskFld3d(i,j,1,bi,bj).NE.0.) THEN
                 xCur=fieldCur(i,j,bi,bj)
                 adxCur=adjFieldCur(i,j,bi,bj)
                 IF ( (xCur.GT.x2).AND.(adxCur.LT.0.) ) THEN

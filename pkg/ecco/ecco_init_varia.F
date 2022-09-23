@@ -1,6 +1,10 @@
-#include "ECCO_OPTIONS.h"
+C $Header: /u/gcmpack/MITgcm/pkg/ecco/ecco_init_varia.F,v 1.2 2014/09/29 16:47:50 gforget Exp $
+C $Name:  $
 
-      subroutine ecco_init_varia( myThid )
+#include "ECCO_OPTIONS.h"
+#include "AD_CONFIG.h"
+
+      subroutine ecco_init_varia( mythid )
 
 c     ==================================================================
 c     SUBROUTINE ecco_init_varia
@@ -19,15 +23,15 @@ c     == global variables ==
 #include "EEPARAMS.h"
 #include "SIZE.h"
 #include "GRID.h"
-#include "ECCO_SIZE.h"
-#include "ECCO.h"
+
+#include "ecco_cost.h"
 #ifdef ALLOW_COST
 # include "cost.h"
 #endif
 
 c     == routine arguments ==
 
-      integer myThid
+      integer mythid
 
 c     == local variables ==
 
@@ -51,5 +55,6 @@ c     == end of interface ==
 
       _BARRIER
 
-      RETURN
-      END
+      return
+      end
+

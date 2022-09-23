@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/model/src/forcing_surf_relax.F,v 1.1 2013/07/04 23:02:48 jmc Exp $
+C $Name:  $
+
 #include "PACKAGES_CONFIG.h"
 #include "CPP_OPTIONS.h"
 
@@ -192,8 +195,8 @@ C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
         ENDDO
         IF ( balancePrintMean ) THEN
          _BEGIN_MASTER( myThid )
-         WRITE(msgBuf,'(2A,1PE21.14,A,I10)') 'rm Global mean of',
-     &                ' SSTrelax= ', globAver, '  @ it=', myIter
+         WRITE(msgBuf,'(A,E24.17)')
+     &        'rm Global mean of SSTrelax =',  globAver
          CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
      &                       SQUEEZE_RIGHT, myThid )
          _END_MASTER( myThid )
@@ -228,8 +231,8 @@ C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
         ENDDO
         IF ( balancePrintMean ) THEN
          _BEGIN_MASTER( myThid )
-         WRITE(msgBuf,'(2A,1PE21.14,A,I10)') 'rm Global mean of',
-     &                ' SSSrelax= ', globAver, '  @ it=', myIter
+         WRITE(msgBuf,'(A,E24.17)')
+     &        'rm Global mean of SSSrelax =',  globAver
          CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
      &                       SQUEEZE_RIGHT, myThid )
          _END_MASTER( myThid )

@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/grdchk/grdchk_getadxx.F,v 1.42 2015/02/18 12:31:10 heimbach Exp $
+C $Name:  $
+
 #include "GRDCHK_OPTIONS.h"
 #ifdef ALLOW_CTRL
 # include "CTRL_OPTIONS.h"
@@ -12,7 +15,8 @@
      I                       jtilepos,
      I                       xx_comp,
      I                       ierr,
-     I                       mythid )
+     I                       mythid
+     &                     )
 
 c     ==================================================================
 c     SUBROUTINE grdchk_getadxx
@@ -41,9 +45,10 @@ c     == global variables ==
 #include "grdchk.h"
 
 c     == routine arguments ==
+
       integer icvrec
-      integer itile
       integer jtile
+      integer itile
       integer layer
       integer itilepos
       integer jtilepos
@@ -52,18 +57,17 @@ c     == routine arguments ==
       integer mythid
 
 #ifdef ALLOW_GRDCHK
-c--   == external ==
-      integer  ilnblnk
-      external ilnblnk
-
 c     == local variables ==
+
       integer iarr
       integer il
       integer dumiter
       _RL     dumtime
       _RL     dummy
+
       logical doglobalread
       logical ladinit
+
 #if (defined ALLOW_OBCSN_CONTROL || defined ALLOW_OBCSS_CONTROL)
       _RL tmpfldxz (1-olx:snx+olx,nr,nsx,nsy)
 #endif
@@ -72,7 +76,15 @@ c     == local variables ==
 #endif
       _RL loctmp2d (1-olx:snx+olx,1-oly:sny+oly,nsx,nsy)
       _RL loctmp3d (1-olx:snx+olx,1-oly:sny+oly,Nr,nsx,nsy)
+
       character*(80) fname
+
+      integer i,j,k
+
+c--   == external ==
+
+      integer  ilnblnk
+      external ilnblnk
 
 c--   == end of interface ==
 

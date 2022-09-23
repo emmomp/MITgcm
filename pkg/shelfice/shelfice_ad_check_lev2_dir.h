@@ -1,6 +1,7 @@
+C $Header: /u/gcmpack/MITgcm/pkg/shelfice/shelfice_ad_check_lev2_dir.h,v 1.3 2014/01/17 21:56:30 jmc Exp $
+C $Name:  $
+
 #ifdef ALLOW_SHELFICE
-CADJ STORE shelficeMass     = tapelev2, key = ilev_2
-CADJ STORE kTopC            = tapelvi2, key = ilev_2
 CADJ STORE shelficeForcingT = tapelev2, key = ilev_2
 CADJ STORE shelficeForcingS = tapelev2, key = ilev_2
 CADJ STORE cMeanSHIforT     = tapelev2, key = ilev_2

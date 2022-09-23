@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/atm_phys/ATM_PHYS_PARAMS.h,v 1.3 2015/12/21 20:04:57 jmc Exp $
+C $Name:  $
+
 #ifdef ALLOW_ATM_PHYS
 
 C--   ATM_PHYS parameters
@@ -23,13 +26,10 @@ C     atmPhys_sstFile  :: name of initial SST [in K] file
 C     atmPhys_qFlxFile :: name of Q-flux file
 C     atmPhys_mxldFile :: name of Mixed-Layer Depth file
 C     atmPhys_albedoFile :: name of Albedo file
-C     atmPhys_ozoneFile  :: name of annual mean ozone concentration file
-C                           (units: mol/mol i.e. volume mixing ratio)
       CHARACTER*(MAX_LEN_FNAM) atmPhys_sstFile
       CHARACTER*(MAX_LEN_FNAM) atmPhys_qFlxFile
       CHARACTER*(MAX_LEN_FNAM) atmPhys_mxldFile
       CHARACTER*(MAX_LEN_FNAM) atmPhys_albedoFile
-      CHARACTER*(MAX_LEN_FNAM) atmPhys_ozoneFile
 
       COMMON /ATM_PHYS_PARAMS_L/
      &       atmPhys_addTendT, atmPhys_addTendS,
@@ -38,8 +38,8 @@ C                           (units: mol/mol i.e. volume mixing ratio)
       COMMON /ATM_PHYS_PARAMS_R/
      &       atmPhys_tauDampUV, atmPhys_dampUVfac
       COMMON /ATM_PHYS_PARAMS_C/
-     &       atmPhys_sstFile, atmPhys_qFlxFile, atmPhys_mxldFile,
-     &       atmPhys_albedoFile, atmPhys_ozoneFile
+     &       atmPhys_sstFile,  atmPhys_qFlxFile,
+     &       atmPhys_mxldFile, atmPhys_albedoFile
 
 C-- from driver-atmosphere module:
       logical  module_is_initialized

@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/kpp/kpp_routines.F,v 1.57 2016/11/30 00:14:14 jmc Exp $
+C $Name:  $
+
 #include "KPP_OPTIONS.h"
 #ifdef ALLOW_AUTODIFF
 # include "AUTODIFF_OPTIONS.h"
@@ -92,9 +95,9 @@ c           e.g., hbl(sNx,sNy) -> hbl(imt),
 c           where hbl(i,j) -> hbl((j-1)*sNx+i)
       INTEGER bi, bj
       _RL     myTime
-      INTEGER myIter
-      INTEGER myThid
-      INTEGER kmtj (imt   )
+      integer myIter
+      integer myThid
+      integer kmtj (imt   )
       _RL shsq     (imt,Nr)
       _RL dvsq     (imt,Nr)
       _RL ustar    (imt   )
@@ -115,7 +118,7 @@ c           where hbl(i,j) -> hbl((j-1)*sNx+i)
       _RL diffusKzS(imt,Nr)
       _RL diffusKzT(imt,Nr)
 
-      INTEGER ikppkey
+      integer ikppkey
 
 c output
 c     diffus (imt,1)  - vertical viscosity coefficient                  (m^2/s)
@@ -140,7 +143,7 @@ c     blmc   (imt,Nr,mdiff) - boundary layer mixing coefficients
 c     sigma  (imt         ) - normalized depth (d / hbl)
 c     Rib    (imt,Nr      ) - bulk Richardson number
 
-      INTEGER kbl(imt         )
+      integer kbl(imt         )
       _RL bfsfc  (imt         )
       _RL casea  (imt         )
       _RL stable (imt         )
@@ -149,7 +152,7 @@ c     Rib    (imt,Nr      ) - bulk Richardson number
       _RL sigma  (imt         )
       _RL Rib    (imt,Nr      )
 
-      INTEGER i, k, md
+      integer i, k, md
 
 c-----------------------------------------------------------------------
 c compute interior mixing coefficients everywhere, due to constant
@@ -165,7 +168,7 @@ CADJ STORE ghat  = comlev1_kpp, key=ikppkey, kind=isbyte
 CADJ STORE dbloc = comlev1_kpp, key=ikppkey, kind=isbyte
 #endif
 cph)
-      CALL Ri_iwmix (
+      call Ri_iwmix (
      I       kmtj, shsq, dbloc, ghat
      I     , diffusKzS, diffusKzT
      I     , ikppkey
@@ -187,13 +190,13 @@ c set seafloor values to zero and fill extra "Nrp1" coefficients
 c for blmix
 c-----------------------------------------------------------------------
 
-      DO md = 1, mdiff
-       DO k=1,Nrp1
-        DO i = 1,imt
-         IF (k.GE.kmtj(i)) diffus(i,k,md) = 0.0
-        ENDDO
-       ENDDO
-      ENDDO
+      do md = 1, mdiff
+       do k=1,Nrp1
+         do i = 1,imt
+             if(k.ge.kmtj(i))  diffus(i,k,md) = 0.0
+            end do
+         end do
+      end do
 
 c-----------------------------------------------------------------------
 c compute boundary layer mixing coefficients:
@@ -201,7 +204,7 @@ c
 c diagnose the new boundary layer depth
 c-----------------------------------------------------------------------
 
-      CALL bldepth (
+      call bldepth (
      I       kmtj
      I     , dvsq, dbloc, Ritop, ustar, bo, bosol
 #ifdef ALLOW_SALT_PLUME
@@ -224,7 +227,7 @@ c-----------------------------------------------------------------------
 c compute boundary layer diffusivities
 c-----------------------------------------------------------------------
 
-      CALL blmix (
+      call blmix (
      I       ustar, bfsfc, hbl, stable, casea, diffus, kbl
      O     , dkm1, blmc, ghat, sigma, ikppkey
      I     , myThid )
@@ -241,7 +244,7 @@ c-----------------------------------------------------------------------
 c enhance diffusivity at interface kbl - 1
 c-----------------------------------------------------------------------
 
-      CALL enhance (
+      call enhance (
      I       dkm1, hbl, kbl, diffus, casea
      U     , ghat
      O     , blmc
@@ -260,32 +263,32 @@ c !!!NOTE!!! In shallow (2-level) regions and for shallow mixed layers
 c (< 1 level), diffusivity blmc can become negative.  The max-s below
 c are a hack until this problem is properly diagnosed and fixed.
 c-----------------------------------------------------------------------
-      DO k = 1, Nr
-         DO i = 1, imt
-            IF (k .LT. kbl(i)) THEN
+      do k = 1, Nr
+         do i = 1, imt
+            if (k .lt. kbl(i)) then
 #ifdef ALLOW_SHELFICE
 C     when there is shelfice on top (msk(i)=0), reset the boundary layer
 C     mixing coefficients blmc to pure Ri-number based mixing
-               blmc(i,k,1) = MAX ( blmc(i,k,1)*msk(i),
+               blmc(i,k,1) = max ( blmc(i,k,1)*msk(i),
      &              diffus(i,k,1) )
-               blmc(i,k,2) = MAX ( blmc(i,k,2)*msk(i),
+               blmc(i,k,2) = max ( blmc(i,k,2)*msk(i),
      &              diffus(i,k,2) )
-               blmc(i,k,3) = MAX ( blmc(i,k,3)*msk(i),
+               blmc(i,k,3) = max ( blmc(i,k,3)*msk(i),
      &              diffus(i,k,3) )
 #endif /* not ALLOW_SHELFICE */
-               diffus(i,k,1) = MAX ( blmc(i,k,1), viscArNr(1) )
-               diffus(i,k,2) = MAX ( blmc(i,k,2), diffusKzS(i,Nr) )
-               diffus(i,k,3) = MAX ( blmc(i,k,3), diffusKzT(i,Nr) )
-            ELSE
+               diffus(i,k,1) = max ( blmc(i,k,1), viscArNr(1) )
+               diffus(i,k,2) = max ( blmc(i,k,2), diffusKzS(i,Nr) )
+               diffus(i,k,3) = max ( blmc(i,k,3), diffusKzT(i,Nr) )
+            else
                ghat(i,k) = 0. _d 0
-            ENDIF
-         ENDDO
-      ENDDO
+            endif
+         end do
+      end do
 
 #endif /* ALLOW_KPP */
 
-      RETURN
-      END
+      return
+      end
 
 c*************************************************************************
 
@@ -353,9 +356,9 @@ c boplume   : haline buoyancy forcing               (m^2/s^3)
 c coriol    : Coriolis parameter                        (1/s)
       INTEGER bi, bj
       _RL     myTime
-      INTEGER myIter
-      INTEGER myThid
-      INTEGER kmtj(imt)
+      integer myIter
+      integer myThid
+      integer kmtj(imt)
       _RL dvsq    (imt,Nr)
       _RL dbloc   (imt,Nr)
       _RL Ritop   (imt,Nr)
@@ -363,7 +366,7 @@ c coriol    : Coriolis parameter                        (1/s)
       _RL bo      (imt)
       _RL bosol   (imt)
       _RL coriol  (imt)
-      INTEGER ikppkey
+      integer ikppkey
 #ifdef ALLOW_SALT_PLUME
       _RL boplume (imt,Nrp1)
       _RL SPDepth (imt)
@@ -386,7 +389,7 @@ c sigma     : normalized depth (d/hbl)
       _RL bfsfc  (imt)
       _RL stable (imt)
       _RL casea  (imt)
-      INTEGER kbl(imt)
+      integer kbl(imt)
       _RL Rib    (imt,Nr)
       _RL sigma  (imt)
 
@@ -398,23 +401,24 @@ c wm, ws    : turbulent velocity scales         (m/s)
       _RL wm(imt), ws(imt)
       _RL worka(imt)
       _RL bvsq, vtsq, hekman, hmonob, hlimit, tempVar1, tempVar2
-      INTEGER i, kl
+      integer i, kl
 
       _RL         p5    , eins
-      PARAMETER ( p5=0.5, eins=1.0 )
+      parameter ( p5=0.5, eins=1.0 )
       _RL         minusone
-      PARAMETER ( minusone=-1.0 )
+      parameter ( minusone=-1.0 )
 #ifdef SALT_PLUME_VOLUME
-      INTEGER km, km1
+      integer km, km1
       _RL temp
 #endif
 #ifdef ALLOW_AUTODIFF_TAMC
-      INTEGER kkppkey
+      integer kkppkey
 #endif
 
 #ifdef ALLOW_DIAGNOSTICS
 c     KPPBFSFC - Bo+radiation absorbed to d=hbf*hbl + plume (m^2/s^3)
       _RL KPPBFSFC(imt,Nr)
+      _RL KPPRi(imt,Nr)
 #endif /* ALLOW_DIAGNOSTICS */
 
 c find bulk Richardson number at every grid level until > Ricr
@@ -428,23 +432,24 @@ c       kbl(i)=kmtj(i) and hbl(i)=-zgrid(kmtj(i))
 
 c     initialize hbl and kbl to bottomed out values
 
-      DO i = 1, imt
+      do i = 1, imt
          Rib(i,1) = 0. _d 0
+         if (kmtj(i).LT.1) kmtj(i) = 1
          kbl(i) = kmtj(i)
-         IF (kmtj(i).LT.1) kbl(i) = 1
          kl     = kbl(i)
          hbl(i) = -zgrid(kl)
-      ENDDO
+      end do
 
 #ifdef ALLOW_DIAGNOSTICS
-      DO kl = 1, Nr
-         DO i = 1, imt
+      do kl = 1, Nr
+         do i = 1, imt
             KPPBFSFC(i,kl) = 0. _d 0
-         ENDDO
-      ENDDO
+            KPPRi(i,kl) = 0. _d 0
+         enddo
+      enddo
 #endif /* ALLOW_DIAGNOSTICS */
 
-      DO kl = 2, Nr
+      do kl = 2, Nr
 
 #ifdef ALLOW_AUTODIFF_TAMC
          kkppkey = (ikppkey-1)*Nr + kl
@@ -452,13 +457,13 @@ c     initialize hbl and kbl to bottomed out values
 
 c     compute bfsfc = sw fraction at hbf * zgrid
 
-         DO i = 1, imt
+         do i = 1, imt
             worka(i) = zgrid(kl)
-         ENDDO
+         end do
 #ifdef ALLOW_AUTODIFF_TAMC
 CADJ store worka = comlev1_kpp_k, key = kkppkey, kind=isbyte
 #endif
-         CALL SWFRAC(
+         call SWFRAC(
      I       imt, hbf,
      U       worka,
      I       myTime, myIter, myThid )
@@ -466,7 +471,7 @@ CADJ store worka = comlev1_kpp_k, key = kkppkey, kind=isbyte
 CADJ store worka = comlev1_kpp_k, key = kkppkey, kind=isbyte
 #endif
 
-         DO i = 1, imt
+         do i = 1, imt
 
 c     use caseA as temporary array
 
@@ -476,34 +481,34 @@ c     compute bfsfc= Bo + radiative contribution down to hbf * hbl
 
             bfsfc(i) = bo(i) + bosol(i)*(1. - worka(i))
 
-         ENDDO
+         end do
 #ifdef ALLOW_SALT_PLUME
 c     compute bfsfc = plume fraction at hbf * zgrid
          IF ( useSALT_PLUME ) THEN
 #ifndef SALT_PLUME_VOLUME
-           DO i = 1, imt
+           do i = 1, imt
               worka(i) = zgrid(kl)
-           ENDDO
+           enddo
 Ccatn: in original way: accumulate all fractions of boplume above zgrid(kl)
-           CALL SALT_PLUME_FRAC(
+           call SALT_PLUME_FRAC(
      I         imt, hbf,SPDepth,
 #ifdef SALT_PLUME_SPLIT_BASIN
      I         lon,lat,
 #endif /* SALT_PLUME_SPLIT_BASIN */
      U         worka,
      I         myTime, myIter, myThid)
-           DO i = 1, imt
+           do i = 1, imt
               bfsfc(i) = bfsfc(i) + boplume(i,1)*(worka(i))
-C            km=MAX(1,kbl(i)-1)
+C            km=max(1,kbl(i)-1)
 C            temp = (plumefrac(i,km)+plumefrac(i,kbl(i)))/2.0
 C            bfsfc(i) = bfsfc(i) + boplume(i,1)*temp
-           ENDDO
+           enddo
 #else /* def SALT_PLUME_VOLUME */
 catn: in vol way: need to integrate down to hbl, so first locate
 c     k level associated with this hbl, then sum up all SPforc[T,S]
            DO i = 1, imt
-            km =MAX(1,kbl(i)-1)
-            km1=MAX(1,kbl(i))
+            km =max(1,kbl(i)-1)
+            km1=max(1,kbl(i))
             temp = (boplume(i,km)+boplume(i,km1))*p5
             bfsfc(i) = bfsfc(i) + temp
            ENDDO
@@ -512,28 +517,28 @@ c     k level associated with this hbl, then sum up all SPforc[T,S]
 #endif /* ALLOW_SALT_PLUME */
 
 #ifdef ALLOW_DIAGNOSTICS
-         DO i = 1, imt
+         do i = 1, imt
             KPPBFSFC(i,kl) = bfsfc(i)
-         ENDDO
+         enddo
 #endif /* ALLOW_DIAGNOSTICS */
 
-         DO i = 1, imt
+         do i = 1, imt
             stable(i) = p5 + sign(p5,bfsfc(i))
             sigma(i) = stable(i) + (1. - stable(i)) * epsilon
-         ENDDO
+         enddo
 
 c-----------------------------------------------------------------------
 c     compute velocity scales at sigma, for hbl= caseA = -zgrid(kl)
 c-----------------------------------------------------------------------
 
-         CALL wscale (
+         call wscale (
      I        sigma, casea, ustar, bfsfc,
      O        wm, ws, myThid )
 #ifdef ALLOW_AUTODIFF_TAMC
 CADJ store ws = comlev1_kpp_k, key = kkppkey, kind=isbyte
 #endif
 
-         DO i = 1, imt
+         do i = 1, imt
 
 c-----------------------------------------------------------------------
 c     compute the turbulent shear contribution to Rib
@@ -542,17 +547,12 @@ c-----------------------------------------------------------------------
             bvsq = p5 *
      1           ( dbloc(i,kl-1) / (zgrid(kl-1)-zgrid(kl  ))+
      2             dbloc(i,kl  ) / (zgrid(kl  )-zgrid(kl+1)))
-CMLC     Van Roekel et al 2018 suggest this, but our solution is
-CMLC     probably OK, too:
-CML            bvsq = MAX
-CML     1           ( dbloc(i,kl-1) / (zgrid(kl-1)-zgrid(kl  )),
-CML     2             dbloc(i,kl  ) / (zgrid(kl  )-zgrid(kl+1)))
 
-            IF (bvsq .EQ. 0. _d 0) THEN
+            if (bvsq .eq. 0. _d 0) then
               vtsq = 0. _d 0
-            ELSE
-              vtsq = -zgrid(kl) * ws(i) * SQRT(ABS(bvsq)) * Vtc
-            ENDIF
+            else
+              vtsq = -zgrid(kl) * ws(i) * sqrt(abs(bvsq)) * Vtc
+            endif
 
 c     compute bulk Richardson number at new level
 c     note: Ritop needs to be zero on land and ocean bottom
@@ -567,20 +567,19 @@ c     ph: test for zero nominator
 c
 
             tempVar1  = dvsq(i,kl) + vtsq
-#ifdef KPP_SMOOTH_REGULARISATION
-            tempVar2 = tempVar1 + phepsi
-#else
-            tempVar2 = MAX(tempVar1, phepsi)
-#endif /* KPP_SMOOTH_REGULARISATION */
+            tempVar2 = max(tempVar1, phepsi)
             Rib(i,kl) = Ritop(i,kl) / tempVar2
+#ifdef ALLOW_DIAGNOSTICS
+            KPPRi(i,kl) = Rib(i,kl)
+#endif
 
-         ENDDO
-      ENDDO
+         end do
+      end do
 
 #ifdef ALLOW_DIAGNOSTICS
       IF ( useDiagnostics ) THEN
          CALL DIAGNOSTICS_FILL(KPPBFSFC,'KPPbfsfc',0,Nr,2,bi,bj,myThid)
-         CALL DIAGNOSTICS_FILL(Rib     ,'KPPRi   ',0,Nr,2,bi,bj,myThid)
+         CALL DIAGNOSTICS_FILL(KPPRi   ,'KPPRi   ',0,Nr,2,bi,bj,myThid)
       ENDIF
 #endif /* ALLOW_DIAGNOSTICS */
 
@@ -594,11 +593,11 @@ CADJ &     shape = (/ (sNx+2*OLx)*(sNy+2*OLy),Nr /)
 #endif
 cph)
 
-      DO kl = 2, Nr
-         DO i = 1, imt
-            IF (kbl(i).EQ.kmtj(i) .AND. Rib(i,kl).GT.Ricr) kbl(i) = kl
-         ENDDO
-      ENDDO
+      do kl = 2, Nr
+         do i = 1, imt
+            if (kbl(i).eq.kmtj(i) .and. Rib(i,kl).gt.Ricr) kbl(i) = kl
+         end do
+      end do
 
 #ifdef ALLOW_AUTODIFF_TAMC
 CADJ store kbl = comlev1_kpp
@@ -606,18 +605,15 @@ CADJ &   , key=ikppkey, kind=isbyte,
 CADJ &     shape = (/ (sNx+2*OLx)*(sNy+2*OLy) /)
 #endif
 
-      DO i = 1, imt
+      do i = 1, imt
          kl = kbl(i)
 c     linearly interpolate to find hbl where Rib = Ricr
-         IF (kl.GT.1 .AND. kl.LT.kmtj(i)) THEN
+         if (kl.gt.1 .and. kl.lt.kmtj(i)) then
             tempVar1 = (Rib(i,kl)-Rib(i,kl-1))
             hbl(i) = -zgrid(kl-1) + (zgrid(kl-1)-zgrid(kl)) *
      1           (Ricr - Rib(i,kl-1)) / tempVar1
-C     this is the MOM5 formulation, (nearly) identical results
-CML            hbl(i) = ((Rib(i,kl-1)-Ricr)*zgrid(kl) -
-CML     1           (Rib(i,kl)-Ricr)*zgrid(kl-1))/tempVar1
-         ENDIF
-      ENDDO
+         endif
+      end do
 
 #ifdef ALLOW_AUTODIFF_TAMC
 CADJ store hbl = comlev1_kpp
@@ -629,15 +625,15 @@ c-----------------------------------------------------------------------
 c     find stability and buoyancy forcing for boundary layer
 c-----------------------------------------------------------------------
 
-      DO i = 1, imt
+      do i = 1, imt
          worka(i) = hbl(i)
-      ENDDO
+      end do
 #ifdef ALLOW_AUTODIFF_TAMC
 CADJ store worka = comlev1_kpp
 CADJ &   , key=ikppkey, kind=isbyte,
 CADJ &     shape = (/ (sNx+2*OLx)*(sNy+2*OLy) /)
 #endif
-      CALL SWFRAC(
+      call SWFRAC(
      I       imt, minusone,
      U       worka,
      I       myTime, myIter, myThid )
@@ -647,33 +643,33 @@ CADJ &   , key=ikppkey, kind=isbyte,
 CADJ &     shape = (/ (sNx+2*OLx)*(sNy+2*OLy) /)
 #endif
 
-      DO i = 1, imt
+      do i = 1, imt
          bfsfc(i)  = bo(i) + bosol(i) * (1. - worka(i))
-      ENDDO
+      end do
 
 #ifdef ALLOW_SALT_PLUME
       IF ( useSALT_PLUME ) THEN
 #ifndef SALT_PLUME_VOLUME
-        DO i = 1, imt
+        do i = 1, imt
            worka(i) = hbl(i)
-        ENDDO
-        CALL SALT_PLUME_FRAC(
+        enddo
+        call SALT_PLUME_FRAC(
      I         imt,minusone,SPDepth,
 #ifdef SALT_PLUME_SPLIT_BASIN
      I         lon,lat,
 #endif /* SALT_PLUME_SPLIT_BASIN */
      U         worka,
      I         myTime, myIter, myThid )
-        DO i = 1, imt
+        do i = 1, imt
            bfsfc(i) = bfsfc(i) + boplume(i,1) * (worka(i))
-C            km=MAX(1,kbl(i)-1)
+C            km=max(1,kbl(i)-1)
 C            temp = (plumefrac(i,km)+plumefrac(i,kbl(i)))/2.0
 C            bfsfc(i) = bfsfc(i) + boplume(i,1)*temp
-        ENDDO
+        enddo
 #else /* def SALT_PLUME_VOLUME */
         DO i = 1, imt
-            km =MAX(1,kbl(i)-1)
-            km1=MAX(1,kbl(i))
+            km =max(1,kbl(i)-1)
+            km1=max(1,kbl(i))
             temp = (boplume(i,km)+boplume(i,km1))/2.0
             bfsfc(i) = bfsfc(i) + temp
         ENDDO
@@ -687,10 +683,10 @@ CADJ &     shape = (/ (sNx+2*OLx)*(sNy+2*OLy) /)
 #endif
 
 c--   ensure bfsfc is never 0
-      DO i = 1, imt
+      do i = 1, imt
          stable(i) = p5 + sign( p5, bfsfc(i) )
-         bfsfc(i) = sign(eins,bfsfc(i))*MAX(phepsi,ABS(bfsfc(i)))
-      ENDDO
+         bfsfc(i) = sign(eins,bfsfc(i))*max(phepsi,abs(bfsfc(i)))
+      end do
 
 cph(
 cph  added stable to store list to avoid extensive recomp.
@@ -707,16 +703,16 @@ c     ph: test for zero nominator
 c-----------------------------------------------------------------------
 
       IF ( LimitHblStable ) THEN
-       DO i = 1, imt
-        IF (bfsfc(i) .GT. 0.0) THEN
-         hekman = cekman * ustar(i) / MAX(ABS(Coriol(i)),phepsi)
-         hmonob = cmonob * ustar(i)*ustar(i)*ustar(i)
-     &        / vonk / bfsfc(i)
-         hlimit = stable(i) * MIN(hekman,hmonob)
-     &        + (stable(i)-1.) * zgrid(Nr)
-         hbl(i) = MIN(hbl(i),hlimit)
-        ENDIF
-       ENDDO
+      do i = 1, imt
+         if (bfsfc(i) .gt. 0.0) then
+            hekman = cekman * ustar(i) / max(abs(Coriol(i)),phepsi)
+            hmonob = cmonob * ustar(i)*ustar(i)*ustar(i)
+     &           / vonk / bfsfc(i)
+            hlimit = stable(i) * min(hekman,hmonob)
+     &             + (stable(i)-1.) * zgrid(Nr)
+            hbl(i) = min(hbl(i),hlimit)
+         end if
+      end do
       ENDIF
 
 #ifdef ALLOW_AUTODIFF_TAMC
@@ -725,10 +721,10 @@ CADJ &   , key=ikppkey, kind=isbyte,
 CADJ &     shape = (/ (sNx+2*OLx)*(sNy+2*OLy) /)
 #endif
 
-      DO i = 1, imt
-         hbl(i) = MAX(hbl(i),minKPPhbl)
+      do i = 1, imt
+         hbl(i) = max(hbl(i),minKPPhbl)
          kbl(i) = kmtj(i)
-      ENDDO
+      end do
 
 #ifdef ALLOW_AUTODIFF_TAMC
 CADJ store hbl = comlev1_kpp
@@ -740,27 +736,27 @@ c-----------------------------------------------------------------------
 c      find new kbl
 c-----------------------------------------------------------------------
 
-      DO kl = 2, Nr
-         DO i = 1, imt
-            IF ( kbl(i).EQ.kmtj(i) .AND. (-zgrid(kl)).GT.hbl(i) ) THEN
+      do kl = 2, Nr
+         do i = 1, imt
+            if ( kbl(i).eq.kmtj(i) .and. (-zgrid(kl)).gt.hbl(i) ) then
                kbl(i) = kl
-            ENDIF
-         ENDDO
-      ENDDO
+            endif
+         end do
+      end do
 
 c-----------------------------------------------------------------------
 c      find stability and buoyancy forcing for final hbl values
 c-----------------------------------------------------------------------
 
-      DO i = 1, imt
+      do i = 1, imt
          worka(i) = hbl(i)
-      ENDDO
+      end do
 #ifdef ALLOW_AUTODIFF_TAMC
 CADJ store worka = comlev1_kpp
 CADJ &   , key=ikppkey, kind=isbyte,
 CADJ &     shape = (/ (sNx+2*OLx)*(sNy+2*OLy) /)
 #endif
-      CALL SWFRAC(
+      call SWFRAC(
      I     imt, minusone,
      U     worka,
      I     myTime, myIter, myThid )
@@ -770,33 +766,33 @@ CADJ &   , key=ikppkey, kind=isbyte,
 CADJ &     shape = (/ (sNx+2*OLx)*(sNy+2*OLy) /)
 #endif
 
-      DO i = 1, imt
+      do i = 1, imt
          bfsfc(i) = bo(i) + bosol(i) * (1. - worka(i))
-      ENDDO
+      end do
 
 #ifdef ALLOW_SALT_PLUME
       IF ( useSALT_PLUME ) THEN
 #ifndef SALT_PLUME_VOLUME
-        DO i = 1, imt
+        do i = 1, imt
            worka(i) = hbl(i)
-        ENDDO
-        CALL SALT_PLUME_FRAC(
+        enddo
+        call SALT_PLUME_FRAC(
      I         imt,minusone,SPDepth,
 #ifdef SALT_PLUME_SPLIT_BASIN
      I         lon,lat,
 #endif /* SALT_PLUME_SPLIT_BASIN */
      U         worka,
      I         myTime, myIter, myThid )
-        DO i = 1, imt
+        do i = 1, imt
            bfsfc(i) = bfsfc(i) + boplume(i,1) * (worka(i))
-C            km=MAX(1,kbl(i)-1)
+C            km=max(1,kbl(i)-1)
 C            temp = (plumefrac(i,km)+plumefrac(i,kbl(i)))/2.0
 C            bfsfc(i) = bfsfc(i) + boplume(i,1)*temp
-        ENDDO
+        enddo
 #else /* def SALT_PLUME_VOLUME */
         DO i = 1, imt
-            km =MAX(1,kbl(i)-1)
-            km1=MAX(1,kbl(i)-0)
+            km =max(1,kbl(i)-1)
+            km1=max(1,kbl(i)-0)
             temp = (boplume(i,km)+boplume(i,km1))/2.0
             bfsfc(i) = bfsfc(i) + temp
         ENDDO
@@ -810,25 +806,25 @@ CADJ &     shape = (/ (sNx+2*OLx)*(sNy+2*OLy) /)
 #endif
 
 c--   ensures bfsfc is never 0
-      DO i = 1, imt
+      do i = 1, imt
          stable(i) = p5 + sign( p5, bfsfc(i) )
-         bfsfc(i) = sign(eins,bfsfc(i))*MAX(phepsi,ABS(bfsfc(i)))
-      ENDDO
+         bfsfc(i) = sign(eins,bfsfc(i))*max(phepsi,abs(bfsfc(i)))
+      end do
 
 c-----------------------------------------------------------------------
 c determine caseA and caseB
 c-----------------------------------------------------------------------
 
-      DO i = 1, imt
+      do i = 1, imt
          kl = kbl(i)
          casea(i) = p5 +
      1        sign(p5, -zgrid(kl) - p5*hwide(kl) - hbl(i))
-      ENDDO
+      end do
 
 #endif /* ALLOW_KPP */
 
-      RETURN
-      END
+      return
+      end
 
 c*************************************************************************
 
@@ -842,7 +838,7 @@ c     use a 2D-lookup table for wm and ws as functions of ustar and
 c     zetahat (=vonk*sigma*hbl*bfsfc).
 c
 c     note: the lookup table is only used for unstable conditions
-c     (zehat.LE.0), in the stable domain wm (=ws) gets computed
+c     (zehat.le.0), in the stable domain wm (=ws) gets computed
 c     directly.
 c
       IMPLICIT NONE
@@ -857,7 +853,7 @@ c hbl     : boundary layer depth (m)
 c ustar   : surface friction velocity         (m/s)
 c bfsfc   : total surface buoyancy flux       (m^2/s^3)
 c myThid  : thread number for this instance of the routine
-      INTEGER myThid
+      integer myThid
       _RL sigma(imt)
       _RL hbl  (imt)
       _RL ustar(imt)
@@ -875,7 +871,7 @@ c------
 c zehat   : = zeta *  ustar**3
       _RL zehat
 
-      INTEGER iz, izp1, ju, i, jup1
+      integer iz, izp1, ju, i, jup1
       _RL udiff, zdiff, zfrac, ufrac, fzfrac, wam
       _RL wbm, was, wbs, u3, tempVar
 
@@ -884,10 +880,10 @@ c use lookup table for zehat < zmax only; otherwise use
 c stable formulae
 c-----------------------------------------------------------------------
 
-      DO i = 1, imt
+      do i = 1, imt
          zehat = vonk*sigma(i)*hbl(i)*bfsfc(i)
 
-         IF (zehat .LE. zmax) THEN
+         if (zehat .le. zmax) then
 
             zdiff = zehat - zmin
 C     For extremely negative buoyancy forcing bfsfc, zehat and hence
@@ -899,16 +895,16 @@ C     linear extrapolation with nearest neighbor extrapolation so that
 C     only the lower limit values of the lookup tables wmt/wst are used.
 C     Alternatively, one can get rid of the lookup table altogether
 C     and compute the coefficients online (done in NEMO, for example).
-C           zdiff = MAX( 0. _d 0, zehat - zmin )
-            iz    = INT( zdiff / deltaz )
-            iz    = MIN( iz, nni )
-            iz    = MAX( iz, 0 )
+C           zdiff = max( 0. _d 0, zehat - zmin )
+            iz    = int( zdiff / deltaz )
+            iz    = min( iz, nni )
+            iz    = max( iz, 0 )
             izp1  = iz + 1
 
             udiff = ustar(i) - umin
-            ju    = INT( udiff / deltau )
-            ju    = MIN( ju, nnj )
-            ju    = MAX( ju, 0 )
+            ju    = int( udiff / deltau )
+            ju    = min( ju, nnj )
+            ju    = max( ju, 0 )
             jup1  = ju + 1
 
             zfrac = zdiff / deltaz - float(iz)
@@ -923,21 +919,21 @@ C           zdiff = MAX( 0. _d 0, zehat - zmin )
             wbs   = fzfrac     * wst(iz,ju  ) + zfrac * wst(izp1,ju  )
             ws(i) = (1.-ufrac) * wbs          + ufrac * was
 
-         ELSE
+         else
 
             u3 = ustar(i) * ustar(i) * ustar(i)
             tempVar = u3 + conc1 * zehat
             wm(i) = vonk * ustar(i) * u3 / tempVar
             ws(i) = wm(i)
 
-         ENDIF
+         endif
 
-      ENDDO
+      end do
 
 #endif /* ALLOW_KPP */
 
-      RETURN
-      END
+      return
+      end
 
 c*************************************************************************
 
@@ -974,14 +970,14 @@ c     dblocSm(imt,Nr)      horizontally smoothed dbloc              (m/s^2)
 c     diffusKzS(imt,Nr)- background vertical diffusivity for scalars    (m^2/s)
 c     diffusKzT(imt,Nr)- background vertical diffusivity for theta      (m^2/s)
 c     myThid :: My Thread Id. number
-      INTEGER kmtj (imt)
+      integer kmtj (imt)
       _RL shsq     (imt,Nr)
       _RL dbloc    (imt,Nr)
       _RL dblocSm  (imt,Nr)
       _RL diffusKzS(imt,Nr)
       _RL diffusKzT(imt,Nr)
-      INTEGER ikppkey
-      INTEGER myThid
+      integer ikppkey
+      integer myThid
 
 c output
 c     diffus(imt,0:Nrp1,1)  vertical viscosivity coefficient        (m^2/s)
@@ -997,11 +993,11 @@ c     fRi, fcon             function of Rig
       _RL Rig
       _RL fRi, fcon
       _RL ratio
-      INTEGER i, ki, kp1
+      integer i, ki, kp1
       _RL c1, c0
 
 #ifdef ALLOW_KPP_VERTICALLY_SMOOTH
-      INTEGER mr
+      integer mr
 CADJ INIT kpp_ri_tape_mr = common, 1
 #endif
 
@@ -1017,34 +1013,30 @@ c     set values at bottom and below to nearest value above bottom
 #ifdef ALLOW_AUTODIFF
 C     break data flow dependence on diffus
       diffus(1,1,1) = 0.0
-      DO ki = 1, Nr
-         DO i = 1, imt
+      do ki = 1, Nr
+         do i = 1, imt
             diffus(i,ki,1) = 0.
             diffus(i,ki,2) = 0.
             diffus(i,ki,3) = 0.
-         ENDDO
-      ENDDO
+         enddo
+      enddo
 #endif
 
-      DO ki = 1, Nr
-         DO i = 1, imt
-            IF     (kmtj(i) .LE. 1      ) THEN
+      do ki = 1, Nr
+         do i = 1, imt
+            if     (kmtj(i) .LE. 1      ) then
                diffus(i,ki,1) = 0.
                diffus(i,ki,2) = 0.
-            ELSEIF (ki      .GE. kmtj(i)) THEN
+            elseif (ki      .GE. kmtj(i)) then
                diffus(i,ki,1) = diffus(i,ki-1,1)
                diffus(i,ki,2) = diffus(i,ki-1,2)
-            ELSE
+            else
                diffus(i,ki,1) = dblocSm(i,ki) * (zgrid(ki)-zgrid(ki+1))
-#ifdef KPP_SMOOTH_REGULARISATION
-     &            / ( Shsq(i,ki) + phepsi**2 )
-#else
-     &            / MAX( Shsq(i,ki), phepsi )
-#endif
+     &              / max( Shsq(i,ki), phepsi )
                diffus(i,ki,2) = dbloc(i,ki)   / (zgrid(ki)-zgrid(ki+1))
-            ENDIF
-         ENDDO
-      ENDDO
+            endif
+         end do
+      end do
 #ifdef ALLOW_AUTODIFF_TAMC
 CADJ store diffus = comlev1_kpp, key=ikppkey, kind=isbyte
 #endif
@@ -1052,50 +1044,39 @@ CADJ store diffus = comlev1_kpp, key=ikppkey, kind=isbyte
 c-----------------------------------------------------------------------
 c     vertically smooth Ri
 #ifdef ALLOW_KPP_VERTICALLY_SMOOTH
-      DO mr = 1, num_v_smooth_Ri
+      do mr = 1, num_v_smooth_Ri
 
 #ifdef ALLOW_AUTODIFF_TAMC
 CADJ store diffus(:,:,1) = kpp_ri_tape_mr
 CADJ &  , key=mr, shape=(/ (sNx+2*OLx)*(sNy+2*OLy),Nr+2 /)
-CMLCADJ store diffus(:,:,2) = kpp_ri_tape_mr
-CMLCADJ &  , key=mr, shape=(/ (sNx+2*OLx)*(sNy+2*OLy),Nr+2 /)
 #endif
 
-         CALL z121 (
+         call z121 (
      U     diffus(1,0,1),
      I     myThid )
-C     it may also make sense to smooth buoyancy vertically
-CML         CALL z121 (
-CML     U     diffus(1,0,2),
-CML     I     myThid )
-      ENDDO
+      end do
 #endif
 
 c-----------------------------------------------------------------------
 c                           after smoothing loop
 
-      DO ki = 1, Nr
-         DO i = 1, imt
+      do ki = 1, Nr
+         do i = 1, imt
 
 c  evaluate f of Brunt-Vaisala squared for convection, store in fcon
 
-            Rig   = MAX ( diffus(i,ki,2) , BVSQcon )
-            ratio = MIN ( (BVSQcon - Rig) / BVSQcon, c1 )
+            Rig   = max ( diffus(i,ki,2) , BVSQcon )
+            ratio = min ( (BVSQcon - Rig) / BVSQcon, c1 )
             fcon  = c1 - ratio * ratio
             fcon  = fcon * fcon * fcon
 
 c  evaluate f of smooth Ri for shear instability, store in fRi
 
-            Rig  = MAX ( diffus(i,ki,1), c0 )
-            ratio = MIN ( Rig / Riinfty , c1 )
+            Rig  = max ( diffus(i,ki,1), c0 )
+            ratio = min ( Rig / Riinfty , c1 )
             fRi   = c1 - ratio * ratio
             fRi   = fRi * fRi * fRi
-#ifdef KPP_SCALE_SHEARMIXING
-C     reduce shear mixing when there is no shear (Polzin, 1996, JPO, 1409-1425)
-C     importend from MOM5 code
-            fRi   = fRi * shsq(i,ki)*shsq(i,ki)
-     &           /(shsq(i,ki)*shsq(i,ki) + 1. _d -16)
-#endif
+
 c ----------------------------------------------------------------------
 c            evaluate diffusivities and viscosity
 c    mixing due to internal waves, and shear and static instability
@@ -1107,35 +1088,35 @@ c    mixing due to internal waves, and shear and static instability
             diffus(i,ki,3) = diffusKzT(i,kp1)
 #else /* EXCLUDE_KPP_SHEAR_MIX */
 # ifdef ALLOW_AUTODIFF
-            IF ( inAdMode .AND. .NOT. inAdExact ) THEN
+            if ( inAdMode ) then
               diffus(i,ki,1) = viscArNr(1)
               diffus(i,ki,2) = diffusKzS(i,kp1)
               diffus(i,ki,3) = diffusKzT(i,kp1)
-            ELSE
+            else
 # else /* ALLOW_AUTODIFF */
-            IF ( .TRUE. ) THEN
+            if ( .TRUE. ) then
 # endif /* ALLOW_AUTODIFF */
               diffus(i,ki,1) = viscArNr(1) + fcon*difmcon + fRi*difm0
               diffus(i,ki,2) = diffusKzS(i,kp1)+fcon*difscon+fRi*difs0
               diffus(i,ki,3) = diffusKzT(i,kp1)+fcon*diftcon+fRi*dift0
-            ENDIF
+            endif
 #endif /* EXCLUDE_KPP_SHEAR_MIX */
-         ENDDO
-      ENDDO
+         end do
+      end do
 
 c ------------------------------------------------------------------------
 c         set surface values to 0.0
 
-      DO i = 1, imt
+      do i = 1, imt
          diffus(i,0,1) = c0
          diffus(i,0,2) = c0
          diffus(i,0,3) = c0
-      ENDDO
+      end do
 
 #endif /* ALLOW_KPP */
 
-      RETURN
-      END
+      return
+      end
 
 c*************************************************************************
 
@@ -1160,7 +1141,7 @@ c input/output
 c-------------
 c v     : 2-D array to be smoothed in Nrp1 direction
 c myThid: thread number for this instance of the routine
-      INTEGER myThid
+      integer myThid
       _RL v(imt,0:Nrp1)
 
 #ifdef ALLOW_KPP
@@ -1168,10 +1149,10 @@ c myThid: thread number for this instance of the routine
 c local
       _RL zwork, zflag
       _RL KRi_range(1:Nrp1)
-      INTEGER i, k, km1, kp1
+      integer i, k, km1, kp1
 
       _RL         p0      , p25       , p5      , p2
-      PARAMETER ( p0 = 0.0, p25 = 0.25, p5 = 0.5, p2 = 2.0 )
+      parameter ( p0 = 0.0, p25 = 0.25, p5 = 0.5, p2 = 2.0 )
 
       KRi_range(Nrp1) = p0
 
@@ -1183,7 +1164,7 @@ CHPF$ INDEPENDENT
 CADJ INIT z121tape = common, Nr
 #endif /* ALLOW_AUTODIFF_TAMC */
 
-      DO i = 1, imt
+      do i = 1, imt
 
          k = 1
 #ifdef ALLOW_AUTODIFF_TAMC
@@ -1191,11 +1172,11 @@ CADJ STORE v(i,k) = z121tape
 #endif
          v(i,Nrp1) = v(i,Nr)
 
-         DO k = 1, Nr
+         do k = 1, Nr
             KRi_range(k) = p5 + SIGN(p5,v(i,k))
             KRi_range(k) = KRi_range(k) *
      &                     ( p5 + SIGN(p5,(Riinfty-v(i,k))) )
-         ENDDO
+         end do
 
          zwork  = KRi_range(1) * v(i,1)
          v(i,1) = p2 * v(i,1) +
@@ -1203,7 +1184,7 @@ CADJ STORE v(i,k) = z121tape
          zflag  = p2 + KRi_range(1) * KRi_range(2)
          v(i,1) = v(i,1) / zflag
 
-         DO k = 2, Nr
+         do k = 2, Nr
 #ifdef ALLOW_AUTODIFF_TAMC
 CADJ STORE v(i,k), zwork = z121tape
 #endif
@@ -1216,14 +1197,14 @@ CADJ STORE v(i,k), zwork = z121tape
             zwork = KRi_range(k) * zflag
             zflag = p2 + KRi_range(k)*(KRi_range(kp1)+KRi_range(km1))
             v(i,k) = v(i,k) / zflag
-         ENDDO
+         end do
 
-      ENDDO
+      end do
 
 #endif /* ALLOW_KPP */
 
-      RETURN
-      END
+      return
+      end
 
 c*************************************************************************
 
@@ -1244,7 +1225,7 @@ c     bi, bj : array indices
 c     k      : vertical index used for masking
 c     myThid : thread number for this instance of the routine
       INTEGER myThid
-      INTEGER k, bi, bj
+      integer k, bi, bj
 
 c     input/output
 c     fld    : 2-D array to be smoothed
@@ -1253,20 +1234,20 @@ c     fld    : 2-D array to be smoothed
 #ifdef ALLOW_KPP
 
 c     local
-      INTEGER i, j, im1, ip1, jm1, jp1
+      integer i, j, im1, ip1, jm1, jp1
       _RL tempVar
       _RL fld_tmp( 1-OLx:sNx+OLx, 1-OLy:sNy+OLy )
 
-      INTEGER   iMin      , iMax          , jMin      , jMax
-      PARAMETER(iMin=2-OLx, iMax=sNx+OLx-1, jMin=2-OLy, jMax=sNy+OLy-1)
+      integer   imin      , imax          , jmin      , jmax
+      parameter(imin=2-OLx, imax=sNx+OLx-1, jmin=2-OLy, jmax=sNy+OLy-1)
 
       _RL        p0    , p5    , p25     , p125      , p0625
-      PARAMETER( p0=0.0, p5=0.5, p25=0.25, p125=0.125, p0625=0.0625 )
+      parameter( p0=0.0, p5=0.5, p25=0.25, p125=0.125, p0625=0.0625 )
 
-      DO j = jMin, jMax
+      DO j = jmin, jmax
          jm1 = j-1
          jp1 = j+1
-         DO i = iMin, iMax
+         DO i = imin, imax
             im1 = i-1
             ip1 = i+1
             tempVar =
@@ -1298,16 +1279,16 @@ c     local
       ENDDO
 
 c     transfer smoothed field to output array
-      DO j = jMin, jMax
-         DO i = iMin, iMax
+      DO j = jmin, jmax
+         DO i = imin, imax
             fld(i,j) = fld_tmp(i,j)
          ENDDO
       ENDDO
 
 #endif /* ALLOW_KPP */
 
-      RETURN
-      END
+      return
+      end
 
 c*************************************************************************
 
@@ -1341,14 +1322,14 @@ c     casea (imt)                 = 1 in case A
 c     diffus(imt,0:Nrp1,mdiff)    vertical diffusivities              (m^2/s)
 c     kbl   (imt)                 -1 of first grid level below hbl
 c     myThid               thread number for this instance of the routine
-      INTEGER myThid
+      integer myThid
       _RL ustar (imt)
       _RL bfsfc (imt)
       _RL hbl   (imt)
       _RL stable(imt)
       _RL casea (imt)
       _RL diffus(imt,0:Nrp1,mdiff)
-      INTEGER kbl(imt)
+      integer kbl(imt)
 
 c output
 c     dkm1 (imt,mdiff)            boundary layer difs at kbl-1 level
@@ -1359,7 +1340,7 @@ c     sigma(imt)                  normalized depth (d / hbl)
       _RL blmc (imt,Nr,mdiff)
       _RL ghat (imt,Nr)
       _RL sigma(imt)
-      INTEGER ikppkey
+      integer ikppkey
 
 #ifdef ALLOW_KPP
 
@@ -1370,36 +1351,31 @@ c     ws(imt), wm(imt)           turbulent velocity scales             (m/s)
       _RL gat1m(imt), gat1s(imt), gat1t(imt)
       _RL dat1m(imt), dat1s(imt), dat1t(imt)
       _RL ws(imt), wm(imt)
-      INTEGER i, kn, ki, kl
-#ifndef KPP_DO_NOT_MATCH_DIFFUSIVITIES
-# ifndef KPP_DO_NOT_MATCH_DERIVATIVES
-      _RL R, dvdzup, dvdzdn
-# endif
-      _RL delhat
-#endif
-      _RL viscp, difsp, diftp, visch, difsh, difth
-      _RL f1, sig, a1, a2, a3
+      integer i, kn, ki, kl
+      _RL R, dvdzup, dvdzdn, viscp
+      _RL difsp, diftp, visch, difsh, difth
+      _RL f1, sig, a1, a2, a3, delhat
       _RL Gm, Gs, Gt
       _RL tempVar
 
       _RL    p0    , eins
-      PARAMETER (p0=0.0, eins=1.0)
+      parameter (p0=0.0, eins=1.0)
 #ifdef ALLOW_AUTODIFF_TAMC
-      INTEGER kkppkey
+      integer kkppkey
 #endif
 
 c-----------------------------------------------------------------------
 c compute velocity scales at hbl
 c-----------------------------------------------------------------------
 
-      DO i = 1, imt
+      do i = 1, imt
          sigma(i) = stable(i) * 1.0 + (1. - stable(i)) * epsilon
-      ENDDO
+      end do
 
 #ifdef ALLOW_AUTODIFF_TAMC
 CADJ STORE sigma = comlev1_kpp, key=ikppkey, kind=isbyte
 #endif
-      CALL wscale (
+      call wscale (
      I        sigma, hbl, ustar, bfsfc,
      O        wm, ws, myThid )
 #ifdef ALLOW_AUTODIFF_TAMC
@@ -1407,70 +1383,47 @@ CADJ STORE wm = comlev1_kpp, key=ikppkey, kind=isbyte
 CADJ STORE ws = comlev1_kpp, key=ikppkey, kind=isbyte
 #endif
 
-      DO i = 1, imt
-         wm(i) = sign(eins,wm(i))*MAX(phepsi,ABS(wm(i)))
-         ws(i) = sign(eins,ws(i))*MAX(phepsi,ABS(ws(i)))
-      ENDDO
+      do i = 1, imt
+         wm(i) = sign(eins,wm(i))*max(phepsi,abs(wm(i)))
+         ws(i) = sign(eins,ws(i))*max(phepsi,abs(ws(i)))
+      end do
 #ifdef ALLOW_AUTODIFF_TAMC
 CADJ STORE wm = comlev1_kpp, key=ikppkey, kind=isbyte
 CADJ STORE ws = comlev1_kpp, key=ikppkey, kind=isbyte
 #endif
 
-      DO i = 1, imt
+      do i = 1, imt
 
-         kn = INT(caseA(i)+phepsi) *(kbl(i) -1) +
-     $        (1 - INT(caseA(i)+phepsi)) * kbl(i)
+         kn = int(caseA(i)+phepsi) *(kbl(i) -1) +
+     $        (1 - int(caseA(i)+phepsi)) * kbl(i)
 
 c-----------------------------------------------------------------------
 c find the interior viscosities and derivatives at hbl(i)
 c-----------------------------------------------------------------------
 
-C     initialise diffusivities (*h) and derivatives (*p)
-#ifdef KPP_DO_NOT_MATCH_DIFFUSIVITIES
-         visch  = 0.
-         difsh  = 0.
-         difth  = 0.
-         viscp  = 0.
-         difsp  = 0.
-         diftp  = 0.
-#else /* DO_MATCH_DIFFUSIVITIES */
-# ifdef KPP_DO_NOT_MATCH_DERIVATIVES
-         viscp  = 0.
-         difsp  = 0.
-         diftp  = 0.
-         delhat = 0.
-# else /*  DO_MATCH_DERIVATIVES */
          delhat = 0.5*hwide(kn) - zgrid(kn) - hbl(i)
          R      = 1.0 - delhat / hwide(kn)
          dvdzup = (diffus(i,kn-1,1) - diffus(i,kn  ,1)) / hwide(kn)
          dvdzdn = (diffus(i,kn  ,1) - diffus(i,kn+1,1)) / hwide(kn+1)
-CML   This is the same as:
-CML      viscp  = (1.-R) * MAX(dvdzup,0.) + R  * MAX(dvdzdn,0.)
-CML   why do we need that here?
-         viscp  = 0.5 * ( (1.-R) * (dvdzup + ABS(dvdzup)) +
-     1                        R  * (dvdzdn + ABS(dvdzdn))  )
+         viscp  = 0.5 * ( (1.-R) * (dvdzup + abs(dvdzup)) +
+     1                        R  * (dvdzdn + abs(dvdzdn))  )
 
          dvdzup = (diffus(i,kn-1,2) - diffus(i,kn  ,2)) / hwide(kn)
          dvdzdn = (diffus(i,kn  ,2) - diffus(i,kn+1,2)) / hwide(kn+1)
-         difsp  = 0.5 * ( (1.-R) * (dvdzup + ABS(dvdzup)) +
-     1                        R  * (dvdzdn + ABS(dvdzdn))  )
+         difsp  = 0.5 * ( (1.-R) * (dvdzup + abs(dvdzup)) +
+     1                        R  * (dvdzdn + abs(dvdzdn))  )
 
          dvdzup = (diffus(i,kn-1,3) - diffus(i,kn  ,3)) / hwide(kn)
          dvdzdn = (diffus(i,kn  ,3) - diffus(i,kn+1,3)) / hwide(kn+1)
-         diftp  = 0.5 * ( (1.-R) * (dvdzup + ABS(dvdzup)) +
-     1                        R  * (dvdzdn + ABS(dvdzdn))  )
-# endif /* KPP_DO_NOT_MATCH_DERIVATIVES */
+         diftp  = 0.5 * ( (1.-R) * (dvdzup + abs(dvdzup)) +
+     1                        R  * (dvdzdn + abs(dvdzdn))  )
+
          visch  = diffus(i,kn,1) + viscp * delhat
          difsh  = diffus(i,kn,2) + difsp * delhat
          difth  = diffus(i,kn,3) + diftp * delhat
-#endif /* KPP_DO_NOT_MATCH_DIFFUSIVITIES */
 
          f1 = stable(i) * conc1 * bfsfc(i) /
-#ifdef KPP_SMOOTH_REGULARISATION
-     &        (ustar(i)**4 + phepsi)
-#else
-     &        MAX(ustar(i)**4,phepsi)
-#endif
+     &        max(ustar(i)**4,phepsi)
          gat1m(i) = visch / hbl(i) / wm(i)
          dat1m(i) = -viscp / wm(i) + f1 * visch
 
@@ -1480,7 +1433,7 @@ CML   why do we need that here?
          gat1t(i) = difth /  hbl(i) / ws(i)
          dat1t(i) = -diftp / ws(i) + f1 * difth
 
-      ENDDO
+      end do
 #ifdef KPP_AUTODIFF_MORE_STORE
 CADJ STORE gat1m = comlev1_kpp, key=ikppkey, kind=isbyte
 CADJ STORE gat1s = comlev1_kpp, key=ikppkey, kind=isbyte
@@ -1489,18 +1442,18 @@ CADJ STORE dat1m = comlev1_kpp, key=ikppkey, kind=isbyte
 CADJ STORE dat1s = comlev1_kpp, key=ikppkey, kind=isbyte
 CADJ STORE dat1t = comlev1_kpp, key=ikppkey, kind=isbyte
 #endif
-      DO i = 1, imt
-         dat1m(i) = MIN(dat1m(i),p0)
-         dat1s(i) = MIN(dat1s(i),p0)
-         dat1t(i) = MIN(dat1t(i),p0)
-      ENDDO
+      do i = 1, imt
+         dat1m(i) = min(dat1m(i),p0)
+         dat1s(i) = min(dat1s(i),p0)
+         dat1t(i) = min(dat1t(i),p0)
+      end do
 #ifdef KPP_AUTODIFF_MORE_STORE
 CADJ STORE dat1m = comlev1_kpp, key=ikppkey, kind=isbyte
 CADJ STORE dat1s = comlev1_kpp, key=ikppkey, kind=isbyte
 CADJ STORE dat1t = comlev1_kpp, key=ikppkey, kind=isbyte
 #endif
 
-      DO ki = 1, Nr
+      do ki = 1, Nr
 
 #ifdef ALLOW_AUTODIFF_TAMC
          kkppkey = (ikppkey-1)*Nr + ki
@@ -1510,10 +1463,10 @@ c-----------------------------------------------------------------------
 c     compute turbulent velocity scales on the interfaces
 c-----------------------------------------------------------------------
 
-         DO i = 1, imt
+         do i = 1, imt
             sig      = (-zgrid(ki) + 0.5 * hwide(ki)) / hbl(i)
-            sigma(i) = stable(i)*sig + (1.-stable(i))*MIN(sig,epsilon)
-         ENDDO
+            sigma(i) = stable(i)*sig + (1.-stable(i))*min(sig,epsilon)
+         end do
 #ifdef KPP_AUTODIFF_MORE_STORE
 CADJ STORE wm = comlev1_kpp_k, key = kkppkey
 CADJ STORE ws = comlev1_kpp_k, key = kkppkey
@@ -1521,7 +1474,7 @@ CADJ STORE ws = comlev1_kpp_k, key = kkppkey
 #ifdef ALLOW_AUTODIFF_TAMC
 CADJ STORE sigma = comlev1_kpp_k, key = kkppkey
 #endif
-         CALL wscale (
+         call wscale (
      I        sigma, hbl, ustar, bfsfc,
      O        wm, ws, myThid )
 #ifdef ALLOW_AUTODIFF_TAMC
@@ -1533,7 +1486,7 @@ c-----------------------------------------------------------------------
 c     compute the dimensionless shape functions at the interfaces
 c-----------------------------------------------------------------------
 
-         DO i = 1, imt
+         do i = 1, imt
             sig = (-zgrid(ki) + 0.5 * hwide(ki)) / hbl(i)
             a1 = sig - 2.
             a2 = 3. - 2. * sig
@@ -1556,24 +1509,21 @@ c     nonlocal transport term = ghat * <ws>o
 c-----------------------------------------------------------------------
 
             tempVar = ws(i) * hbl(i)
-#ifdef KPP_SMOOTH_REGULARISATION
-            ghat(i,ki) = (1.-stable(i)) * cg / (phepsi+tempVar)
-#else
-            ghat(i,ki) = (1.-stable(i)) * cg / MAX(phepsi,tempVar)
-#endif
-         ENDDO
-      ENDDO
+            ghat(i,ki) = (1.-stable(i)) * cg / max(phepsi,tempVar)
+
+         end do
+      end do
 
 c-----------------------------------------------------------------------
 c find diffusivities at kbl-1 grid level
 c-----------------------------------------------------------------------
 
-      DO i = 1, imt
+      do i = 1, imt
          kl = kbl(i)
          sig      = -zgrid(kl-1) / hbl(i)
          sigma(i) = stable(i) * sig
-     &            + (1. - stable(i)) * MIN(sig,epsilon)
-      ENDDO
+     &            + (1. - stable(i)) * min(sig,epsilon)
+      end do
 
 #ifdef KPP_AUTODIFF_MORE_STORE
 CADJ STORE wm = comlev1_kpp, key=ikppkey, kind=isbyte
@@ -1582,7 +1532,7 @@ CADJ STORE ws = comlev1_kpp, key=ikppkey, kind=isbyte
 #ifdef ALLOW_AUTODIFF_TAMC
 CADJ STORE sigma = comlev1_kpp, key=ikppkey, kind=isbyte
 #endif
-      CALL wscale (
+      call wscale (
      I        sigma, hbl, ustar, bfsfc,
      O        wm, ws, myThid )
 #ifdef ALLOW_AUTODIFF_TAMC
@@ -1590,7 +1540,7 @@ CADJ STORE wm = comlev1_kpp, key=ikppkey, kind=isbyte
 CADJ STORE ws = comlev1_kpp, key=ikppkey, kind=isbyte
 #endif
 
-      DO i = 1, imt
+      do i = 1, imt
          kl = kbl(i)
          sig = -zgrid(kl-1) / hbl(i)
          a1 = sig - 2.
@@ -1602,12 +1552,12 @@ CADJ STORE ws = comlev1_kpp, key=ikppkey, kind=isbyte
          dkm1(i,1) = hbl(i) * wm(i) * sig * (1. + sig * Gm)
          dkm1(i,2) = hbl(i) * ws(i) * sig * (1. + sig * Gs)
          dkm1(i,3) = hbl(i) * ws(i) * sig * (1. + sig * Gt)
-      ENDDO
+      end do
 
 #endif /* ALLOW_KPP */
 
-      RETURN
-      END
+      return
+      end
 
 c*************************************************************************
 
@@ -1631,10 +1581,10 @@ c     kbl(imt)                  grid above hbl
 c     diffus(imt,0:Nrp1,mdiff) vertical diffusivities           (m^2/s)
 c     casea(imt)                = 1 in caseA, = 0 in case B
 c     myThid                    thread number for this instance of the routine
-      INTEGER   myThid
+      integer   myThid
       _RL dkm1  (imt,mdiff)
       _RL hbl   (imt)
-      INTEGER kbl   (imt)
+      integer kbl   (imt)
       _RL diffus(imt,0:Nrp1,mdiff)
       _RL casea (imt)
 
@@ -1651,33 +1601,29 @@ c     enhanced bound. layer mixing coeff.
 c local
 c     fraction hbl lies beteen zgrid neighbors
       _RL delta
-      INTEGER ki, i, md
+      integer ki, i, md
       _RL dkmp5, dstar
 
-      DO i = 1, imt
+      do i = 1, imt
          ki = kbl(i)-1
-         IF ((ki .ge. 1) .AND. (ki .LT. Nr)) THEN
+         if ((ki .ge. 1) .and. (ki .lt. Nr)) then
             delta = (hbl(i) + zgrid(ki)) / (zgrid(ki) - zgrid(ki+1))
-            DO md = 1, mdiff
+            do md = 1, mdiff
                dkmp5         =      casea(i)  * diffus(i,ki,md) +
      1                         (1.- casea(i)) * blmc  (i,ki,md)
-C     I think that this is meant here, but I cannot be sure because there
-C     there is no reference for this. In MOM6/CVMix, the square is outside
-C     of the parentheses
-CML               dstar         = (1.- delta**2) * dkm1(i,md)
                dstar         = (1.- delta)**2 * dkm1(i,md)
      &                       + delta**2 * dkmp5
                blmc(i,ki,md) = (1.- delta)*diffus(i,ki,md)
      &                       + delta*dstar
-            ENDDO
+            end do
             ghat(i,ki) = (1.- casea(i)) * ghat(i,ki)
-         ENDIF
-      ENDDO
+         endif
+      end do
 
 #endif /* ALLOW_KPP */
 
-      RETURN
-      END
+      return
+      end
 
 c*************************************************************************
 
@@ -1701,7 +1647,7 @@ c               g * [ drho{1,k}/rho{1,k} - drho{k,k}/rho{k,k} ]         (m/s^2)
 c      ttalpha= thermal expansion coefficient without 1/rho factor
 c               d(rho) / d(potential temperature)                    (kg/m^3/C)
 c      ssbeta = salt expansion coefficient without 1/rho factor
-c               d(rho) / d(salinity)                          ((kg/m^3)/(g/kg))
+c               d(rho) / d(salinity)                               (kg/m^3/PSU)
 c
 c     see also subroutines find_rho.F find_alpha.F find_beta.F
 c
@@ -1749,55 +1695,54 @@ c     work1,2,3    - work arrays for holding horizontal slabs
       _RL WORK2 (1-OLx:sNx+OLx,1-OLy:sNy+OLy)
       _RL WORK3 (1-OLx:sNx+OLx,1-OLy:sNy+OLy)
 
-      INTEGER i, j, k
+      INTEGER I, J, K
       INTEGER ikppkey, kkppkey
 
 c calculate density, alpha, beta in surface layer, and set dbsfc to zero
 
       kkppkey = (ikppkey-1)*Nr + 1
 
-      k = 1
 #ifdef KPP_AUTODIFF_MORE_STORE
-CADJ STORE theta(:,:,k,bi,bj) = comlev1_kpp_k,
+CADJ STORE theta(:,:,1,bi,bj) = comlev1_kpp_k,
 CADJ &     key=kkppkey, kind=isbyte
-CADJ STORE salt (:,:,k,bi,bj) = comlev1_kpp_k,
+CADJ STORE salt (:,:,1,bi,bj) = comlev1_kpp_k,
 CADJ &     key=kkppkey, kind=isbyte
 #endif /* KPP_AUTODIFF_MORE_STORE */
       CALL FIND_RHO_2D(
      I     1-OLx, sNx+OLx, 1-OLy, sNy+OLy, 1,
-     I     theta(1-OLx,1-OLy,k,bi,bj), salt(1-OLx,1-OLy,k,bi,bj),
+     I     theta(1-OLx,1-OLy,1,bi,bj), salt(1-OLx,1-OLy,1,bi,bj),
      O     WORK1,
-     I     k, bi, bj, myThid )
+     I     1, bi, bj, myThid )
 #ifdef KPP_AUTODIFF_MORE_STORE
-CADJ STORE theta(:,:,k,bi,bj) = comlev1_kpp_k,
+CADJ STORE theta(:,:,1,bi,bj) = comlev1_kpp_k,
 CADJ &     key=kkppkey, kind=isbyte
-CADJ STORE salt (:,:,k,bi,bj) = comlev1_kpp_k,
+CADJ STORE salt (:,:,1,bi,bj) = comlev1_kpp_k,
 CADJ &     key=kkppkey, kind=isbyte
 #endif /* KPP_AUTODIFF_MORE_STORE */
 
-      CALL FIND_ALPHA(
+      call FIND_ALPHA(
      I     bi, bj, 1-OLx, sNx+OLx, 1-OLy, sNy+OLy, 1, 1,
      O     WORK2, myThid )
 
-      CALL FIND_BETA(
+      call FIND_BETA(
      I     bi, bj, 1-OLx, sNx+OLx, 1-OLy, sNy+OLy, 1, 1,
      O     WORK3, myThid )
 
-      DO j = 1-OLy, sNy+OLy
-       DO i = 1-OLx, sNx+OLx
-        RHO1(i,j)      = WORK1(i,j) + rhoConst
-        TTALPHA(i,j,1) = WORK2(i,j)
-        SSBETA(i,j,1)  = WORK3(i,j)
-        DBSFC(i,j,1)   = 0.
-       ENDDO
-      ENDDO
+      DO J = 1-OLy, sNy+OLy
+         DO I = 1-OLx, sNx+OLx
+            RHO1(I,J)      = WORK1(I,J) + rhoConst
+            TTALPHA(I,J,1) = WORK2(I,J)
+            SSBETA(I,J,1)  = WORK3(I,J)
+            DBSFC(I,J,1)   = 0.
+         END DO
+      END DO
 
 c calculate alpha, beta, and gradients in interior layers
 
 CHPF$  INDEPENDENT, NEW (RHOK,RHOKM1,RHO1K,WORK1,WORK2)
-      DO k = 2, Nr
+      DO K = 2, Nr
 
-         kkppkey = (ikppkey-1)*Nr + k
+      kkppkey = (ikppkey-1)*Nr + k
 
 #ifdef KPP_AUTODIFF_MORE_STORE
 CADJ STORE theta(:,:,k,bi,bj) = comlev1_kpp_k,
@@ -1844,40 +1789,40 @@ CADJ STORE rho1k (:,:)          = comlev1_kpp_k,
 CADJ &     key=kkppkey, kind=isbyte
 #endif /* KPP_AUTODIFF_MORE_STORE */
 
-         CALL FIND_ALPHA(
-     I        bi, bj, 1-OLx, sNx+OLx, 1-OLy, sNy+OLy, k, k,
+         call FIND_ALPHA(
+     I        bi, bj, 1-OLx, sNx+OLx, 1-OLy, sNy+OLy, K, K,
      O        WORK1, myThid )
 
-         CALL FIND_BETA(
-     I        bi, bj, 1-OLx, sNx+OLx, 1-OLy, sNy+OLy, k, k,
+         call FIND_BETA(
+     I        bi, bj, 1-OLx, sNx+OLx, 1-OLy, sNy+OLy, K, K,
      O        WORK2, myThid )
 
-         DO j = 1-OLy, sNy+OLy
-            DO i = 1-OLx, sNx+OLx
-               TTALPHA(i,j,k) = WORK1 (i,j)
-               SSBETA(i,j,k)  = WORK2 (i,j)
-               DBLOC(i,j,k-1) = gravity * (RHOK(i,j) - RHOKM1(i,j)) /
-     &                                    (RHOK(i,j) + rhoConst)
-               DBSFC(i,j,k)   = gravity * (RHOK(i,j) - RHO1K (i,j)) /
-     &                                    (RHOK(i,j) + rhoConst)
-            ENDDO
-         ENDDO
+         DO J = 1-OLy, sNy+OLy
+            DO I = 1-OLx, sNx+OLx
+               TTALPHA(I,J,K) = WORK1 (I,J)
+               SSBETA(I,J,K)  = WORK2 (I,J)
+               DBLOC(I,J,K-1) = gravity * (RHOK(I,J) - RHOKM1(I,J)) /
+     &                                    (RHOK(I,J) + rhoConst)
+               DBSFC(I,J,K)   = gravity * (RHOK(I,J) - RHO1K (I,J)) /
+     &                                    (RHOK(I,J) + rhoConst)
+            END DO
+         END DO
 
-      ENDDO
+      END DO
 
-c     compute arrays for k = Nrp1
-      DO j = 1-OLy, sNy+OLy
-       DO i = 1-OLx, sNx+OLx
-        TTALPHA(i,j,Nrp1) = TTALPHA(i,j,Nr)
-        SSBETA(i,j,Nrp1)  = SSBETA(i,j,Nr)
-        DBLOC(i,j,Nr)     = 0.
-       ENDDO
-      ENDDO
+c     compute arrays for K = Nrp1
+      DO J = 1-OLy, sNy+OLy
+         DO I = 1-OLx, sNx+OLx
+            TTALPHA(I,J,Nrp1) = TTALPHA(I,J,Nr)
+            SSBETA(I,J,Nrp1)  = SSBETA(I,J,Nr)
+            DBLOC(I,J,Nr)     = 0.
+         END DO
+      END DO
 
 #ifdef ALLOW_DIAGNOSTICS
       IF ( useDiagnostics ) THEN
-       CALL DIAGNOSTICS_FILL(DBSFC ,'KPPdbsfc',0,Nr,2,bi,bj,myThid)
-       CALL DIAGNOSTICS_FILL(DBLOC ,'KPPdbloc',0,Nr,2,bi,bj,myThid)
+         CALL DIAGNOSTICS_FILL(DBSFC ,'KPPdbsfc',0,Nr,2,bi,bj,myThid)
+         CALL DIAGNOSTICS_FILL(DBLOC ,'KPPdbloc',0,Nr,2,bi,bj,myThid)
       ENDIF
 #endif /* ALLOW_DIAGNOSTICS */
 
@@ -1892,7 +1837,7 @@ c*************************************************************************
      I     TTALPHA, SSBETA,
      U     kappaRT,
      U     kappaRS,
-     I     ikppkey, iMin, iMax, jMin, jMax, bi, bj, myThid )
+     I     ikppkey, imin, imax, jmin, jmax, bi, bj, myThid )
 c
 c-----------------------------------------------------------------------
 c     "KPP_DOUBLEDIFF" adds the double diffusive contributions
@@ -1900,14 +1845,14 @@ C     as Rrho-dependent parameterizations to kappaRT and kappaRS
 c
 c     input:
 c     bi, bj  = array indices on which to apply calculations
-c     iMin, iMax, jMin, jMax = array boundaries
+c     imin, imax, jmin, jmax = array boundaries
 c     ikppkey = key for TAMC/TAF automatic differentiation
 c     myThid  = thread id
 c
 c      ttalpha= thermal expansion coefficient without 1/rho factor
 c               d(rho) / d(potential temperature)                    (kg/m^3/C)
 c      ssbeta = salt expansion coefficient without 1/rho factor
-c               d(rho) / d(salinity)                          ((kg/m^3)/(g/kg))
+c               d(rho) / d(salinity)                               (kg/m^3/PSU)
 c     output: updated
 c     kappaRT/S :: background diffusivities for temperature and salinity
 c
@@ -1929,7 +1874,7 @@ c-----------------------------------------------------------------------
 #endif
 
 c-------------- Routine arguments -----------------------------------------
-      INTEGER ikppkey, iMin, iMax, jMin, jMax, bi, bj, myThid
+      INTEGER ikppkey, imin, imax, jmin, jmax, bi, bj, myThid
 
       _RL TTALPHA( 1-OLx:sNx+OLx, 1-OLy:sNy+OLy, Nrp1 )
       _RL SSBETA ( 1-OLx:sNx+OLx, 1-OLy:sNy+OLy, Nrp1 )
@@ -1941,10 +1886,10 @@ c-------------- Routine arguments -----------------------------------------
 C--------------------------------------------------------------------------
 C
 C     local variables
-C     i,j,k :: loop indices
+C     I,J,K :: loop indices
 C     kkppkey :: key for TAMC/TAF automatic differentiation
 C
-      INTEGER i, j, k
+      INTEGER I, J, K
       INTEGER kkppkey
 C     alphaDT   :: d\rho/d\theta * d\theta
 C     betaDS    :: d\rho/dsalt * dsalt
@@ -1974,51 +1919,51 @@ CMLCADJ STORE salt (:,:,1,bi,bj) = comlev1_kpp_k,
 CMLCADJ &     key=kkppkey, kind=isbyte
 CML#endif /* KPP_AUTODIFF_MORE_STORE */
 
-      DO k = 1, Nr
-       Km1 = MAX(k-1,1)
-       DO j = 1-OLy, sNy+OLy
-        DO i = 1-OLx, sNx+OLx
-         alphaDT(i,j) = ( theta(i,j,km1,bi,bj)-theta(i,j,k,bi,bj) )
-     &        * 0.5 _d 0 * ABS( TTALPHA(i,j,km1) + TTALPHA(i,j,k) )
-         betaDS(i,j)  = ( salt(i,j,km1,bi,bj)-salt(i,j,k,bi,bj) )
-     &        * 0.5 _d 0 * ( SSBETA(i,j,km1) + SSBETA(i,j,k) )
-         nuddt(i,j) = 0. _d 0
-         nudds(i,j) = 0. _d 0
+      DO K = 1, Nr
+       Km1 = MAX(K-1,1)
+       DO J = 1-OLy, sNy+OLy
+        DO I = 1-OLx, sNx+OLx
+         alphaDT(I,J) = ( theta(I,J,Km1,bi,bj)-theta(I,J,K,bi,bj) )
+     &        * 0.5 _d 0 * ABS( TTALPHA(I,J,Km1) + TTALPHA(I,J,K) )
+         betaDS(I,J)  = ( salt(I,J,Km1,bi,bj)-salt(I,J,K,bi,bj) )
+     &        * 0.5 _d 0 * ( SSBETA(I,J,Km1) + SSBETA(I,J,K) )
+         nuddt(I,J) = 0. _d 0
+         nudds(I,J) = 0. _d 0
         ENDDO
        ENDDO
-       IF ( k .GT. 1 ) THEN
-        DO j = jMin, jMax
-         DO i = iMin, iMax
+       IF ( K .GT. 1 ) THEN
+        DO J = jMin, jMax
+         DO I = iMin, iMax
           Rrho  = 0. _d 0
 C     Now we have many different cases
 C     a. alphaDT > 0 and betaDS > 0 => salt fingering
 C        (salinity destabilizes)
-          IF (      alphaDT(i,j) .GT. betaDS(i,j)
-     &         .AND. betaDS(i,j) .GT. 0. _d 0 ) THEN
-           Rrho = MIN( alphaDT(i,j)/betaDS(i,j), Rrho0 )
+          IF (      alphaDT(I,J) .GT. betaDS(I,J)
+     &         .AND. betaDS(I,J) .GT. 0. _d 0 ) THEN
+           Rrho = MIN( alphaDT(I,J)/betaDS(I,J), Rrho0 )
 C     Large et al. 1994, eq. 31a
-C          nudds(i,j) = dsfmax * ( 1. _d 0 - (Rrho - 1. _d 0) * rFac )**3
+C          nudds(I,J) = dsfmax * ( 1. _d 0 - (Rrho - 1. _d 0) * rFac )**3
            nutmp      =          ( 1. _d 0 - (Rrho - 1. _d 0) * rFac )
-           nudds(i,j) = dsfmax * nutmp * nutmp * nutmp
+           nudds(I,J) = dsfmax * nutmp * nutmp * nutmp
 C     Large et al. 1994, eq. 31c
-           nuddt(i,j) = 0.7 _d 0 * nudds(i,j)
-          ELSEIF (   alphaDT(i,j) .LT. 0. _d 0
-     &          .AND. betaDS(i,j) .LT. 0. _d 0
-     &          .AND.alphaDT(i,j) .GT. betaDS(i,j) ) THEN
+           nuddt(I,J) = 0.7 _d 0 * nudds(I,J)
+          ELSEIF (   alphaDT(I,J) .LT. 0. _d 0
+     &          .AND. betaDS(I,J) .LT. 0. _d 0
+     &          .AND.alphaDT(I,J) .GT. betaDS(I,J) ) THEN
 C     b. alphaDT < 0 and betaDS < 0 => semi-convection, diffusive convection
 C        (temperature destabilizes)
 C     for Rrho >= 1 the water column is statically unstable and we never
 C     reach this point
-           Rrho = alphaDT(i,j)/betaDS(i,j)
+           Rrho = alphaDT(I,J)/betaDS(I,J)
 C     Large et al. 1994, eq. 32
-           nuddt(i,j) = numol * 0.909 _d 0
+           nuddt(I,J) = numol * 0.909 _d 0
      &          * exp ( 4.6 _d 0 * exp (
      &          - 5.4 _d 0 * ( 1. _d 0/Rrho - 1. _d 0 ) ) )
 CMLC     or
 CMLC     Large et al. 1994, eq. 33
-CML         nuddt(i,j) = numol * 8.7 _d 0 * Rrho**1.1
+CML         nuddt(I,J) = numol * 8.7 _d 0 * Rrho**1.1
 C     Large et al. 1994, eqs. 34
-           nudds(i,j) = nuddt(i,j) * MAX( 0.15 _d 0 * Rrho,
+           nudds(I,J) = nuddt(I,J) * MAX( 0.15 _d 0 * Rrho,
      &          1.85 _d 0 * Rrho - 0.85 _d 0 )
           ELSE
 C     Do nothing, because in this case the water colume is unstable
@@ -2027,13 +1972,13 @@ C     to shear instability will dominate
           ENDIF
          ENDDO
         ENDDO
-C     ENDIF ( k .GT. 1 )
+C     ENDIF ( K .GT. 1 )
        ENDIF
 C
-       DO j = 1-OLy, sNy+OLy
-        DO i = 1-OLx, sNx+OLx
-         kappaRT(i,j,k) = kappaRT(i,j,k) + nuddt(i,j)
-         kappaRS(i,j,k) = kappaRS(i,j,k) + nudds(i,j)
+       DO J = 1-OLy, sNy+OLy
+        DO I = 1-OLx, sNx+OLx
+         kappaRT(I,J,K) = kappaRT(I,J,K) + nuddt(I,J)
+         kappaRS(I,J,K) = kappaRS(I,J,K) + nudds(I,J)
         ENDDO
        ENDDO
 #ifdef ALLOW_DIAGNOSTICS
@@ -2042,7 +1987,7 @@ C
         CALL DIAGNOSTICS_FILL(nudds,'KPPnudds',k,1,2,bi,bj,myThid)
        ENDIF
 #endif /* ALLOW_DIAGNOSTICS */
-C     end of k-loop
+C     end of K-loop
       ENDDO
 #endif /* ALLOW_KPP */
 

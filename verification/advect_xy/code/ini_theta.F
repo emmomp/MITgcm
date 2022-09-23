@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/verification/advect_xy/code/ini_theta.F,v 1.4 2010/01/18 19:42:10 jmc Exp $
+C $Name:  $
+
 #include "CPP_OPTIONS.h"
 
 CBOP

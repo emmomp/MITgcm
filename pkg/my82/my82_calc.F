@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/my82/my82_calc.F,v 1.9 2015/02/23 21:20:15 jmc Exp $
+C $Name:  $
+
 #include "MY82_OPTIONS.h"
 
 CBOP
@@ -19,8 +22,8 @@ C
 C--------------------------------------------------------------------
 
 C global parameters updated by pp_calc
-C     MYviscAz  :: MY82 eddy viscosity coefficient              (m^2/s)
-C     MYdiffKzT :: MY82 diffusion coefficient for temperature   (m^2/s)
+C     PPviscAz   - PP eddy viscosity coefficient              (m^2/s)
+C     PPdiffKzT  - PP diffusion coefficient for temperature   (m^2/s)
 C
 C \ev
 
@@ -47,6 +50,7 @@ C     myThid :: My Thread Id number
       INTEGER myIter
       INTEGER myThid
 
+#ifdef ALLOW_MY82
 C !LOCAL VARIABLES: ====================================================
 c Local constants
 C     imin, imax, jmin, jmax  - array computation indices
@@ -178,13 +182,7 @@ C     Set a maximum and mask land point
 C     end third k-loop
       ENDDO
 
-#ifdef ALLOW_DIAGNOSTICS
-      IF ( useDiagnostics ) THEN
-       CALL DIAGNOSTICS_FILL(MYviscAr,'MYVISCAR',0,Nr,1,bi,bj,myThid)
-       CALL DIAGNOSTICS_FILL(MYdiffKr,'MYDIFFKR',0,Nr,1,bi,bj,myThid)
-       CALL DIAGNOSTICS_FILL(MYhbl   ,'MYHBL   ',0,1 ,1,bi,bj,myThid)
-      ENDIF
-#endif /* ALLOW_DIAGNOSTICS */
+#endif /* ALLOW_MY82 */
 
       RETURN
       END

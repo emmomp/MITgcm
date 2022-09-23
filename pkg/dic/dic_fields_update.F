@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/dic/dic_fields_update.F,v 1.2 2016/06/14 20:38:36 jmc Exp $
+C $Name:  $
+
 #include "DIC_OPTIONS.h"
 
 CBOP
@@ -21,6 +24,7 @@ C !USES: ===============================================================
 # include "THSICE_VARS.h"
 #endif
 #ifdef ALLOW_SEAICE
+# define SEAICE_EXCLUDE_WIND_STRESS
 # include "SEAICE_SIZE.h"
 # include "SEAICE.h"
 #endif

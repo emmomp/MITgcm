@@ -1,3 +1,6 @@
+C $Header: /u/gcmpack/MITgcm/pkg/mom_fluxform/mom_u_del2u.F,v 1.10 2014/02/09 18:51:46 jmc Exp $
+C $Name:  $
+
 #include "MOM_FLUXFORM_OPTIONS.h"
 
 CBOP
