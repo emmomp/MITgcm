@@ -193,27 +193,10 @@ CEOP
        WRITE(msgBuf,'(A,2I3)')
      &      'GAD_ADVECTION: maxpass < trIdentity ',
      &      maxpass, trIdentity
-<<<<<<< HEAD
-           CALL PRINT_ERROR( msgBuf, myThid )
-           STOP 'ABNORMAL END: S/R GAD_ADVECTION'
-          ENDIF
-=======
        CALL PRINT_ERROR( msgBuf, myThid )
        STOP 'ABNORMAL END: S/R GAD_ADVECTION'
       ENDIF
 C
-      IF ( inAdMode .AND. useApproxAdvectionInAdMode ) THEN
-C     In AD-mode, we change non-linear, potentially unstable AD advection
-C     schemes to linear schemes with more stability. So far only DST3 with
-C     flux limiting is replaced by DST3 without flux limiting, but any
-C     combination is possible.
-       IF ( advectionSchArg.EQ.ENUM_DST3_FLUX_LIMIT )
-     &      advectionScheme = ENUM_DST3
-       IF ( vertAdvecSchArg.EQ.ENUM_DST3_FLUX_LIMIT )
-     &      vertAdvecScheme = ENUM_DST3
-C     here is room for more advection schemes as this becomes necessary
-      ENDIF
->>>>>>> 7c50f0793 (ctrl/autodiff cleanup  (#471))
 #endif /* ALLOW_AUTODIFF_TAMC */
 
 #ifdef ALLOW_DIAGNOSTICS

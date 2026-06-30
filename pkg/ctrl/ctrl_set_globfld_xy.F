@@ -79,15 +79,16 @@ c     Initialise temporary file
                 globfld3d(i,j,k,bi,bj) = 0. _d 0
               enddo
             enddo
-         enddo
+          enddo
+        enddo
       enddo
 c     Initialise temporary file
       do bj = jtlo,jthi
          do bi = itlo,ithi
             do k = 1,nr
-               do j = jmin,jmax
-                  do i = imin,imax
-                     globfld3d(i,j,k,bi,bj) = 0. _d 0
+               do j = 1-OLy,sNy+OLy
+                  do i = 1-OLx,sNx+OLx
+                    globfld3d(i,j,k,bi,bj) = 0. _d 0
                   enddo
                enddo
             enddo

@@ -5,6 +5,7 @@
 
 #include <stdlib.h>
 #include <unistd.h>
+#include <stdio.h>
 /*  Here, we get the definition of the FC_NAMEMANGLE() macro. */
 #include "FC_NAMEMANGLE.h"
 

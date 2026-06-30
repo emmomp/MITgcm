@@ -79,7 +79,8 @@ c     Initialise temporary file
                 globfld3d(i,j,k,bi,bj) = 0. _d 0
               enddo
             enddo
-         enddo
+          enddo
+        enddo
       enddo
 
 c--   Only the master thread will do I/O.

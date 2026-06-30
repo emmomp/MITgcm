@@ -48,23 +48,25 @@ c     == external ==
 c     == end of interface ==
 
 c     Initialise temporary file
-      DO bj = myByLo(myThid),myByHi(myThid)
-        DO bi = myBxLo(myThid),myBxHi(myThid)
-          DO k = 1,nr
-            DO j = 1-OLy,sNy+OLy
-              DO i = 1-OLx,sNx+OLx
+      do bj = myByLo(myThid),myByHi(myThid)
+        do bi = myBxLo(myThid),myBxHi(myThid)
+          do k = 1,nr
+            do j = 1-OLy,sNy+OLy
+              do i = 1-OLx,sNx+OLx
                 globfld3d(i,j,k,bi,bj) = 0. _d 0
-              ENDDO
-            ENDDO
-          ENDDO
-        ENDDO
-      ENDDO
+              enddo
+            enddo
+          enddo
+        enddo
+      enddo
 
-      DO irec = 1, ncvarrecs(ivartype)
+      _BEGIN_MASTER( mythid )
+
+      do irec = 1, ncvarrecs(ivartype)
         CALL WRITE_REC_3D_RL( fname, ctrlprec, Nr,
      &                        globfld3d,
      &                        irec, optimcycle, myThid )
-      ENDDO
+      enddo
 
       _END_MASTER( mythid )
 
